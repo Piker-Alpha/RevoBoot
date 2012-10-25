@@ -54,9 +54,9 @@ struct SMBStructure requiredStructures[] =
 {
 	{ kSMBTypeBIOSInformation		/*   0 */ ,		 0,		 5,		false,		0	},
 	{ kSMBTypeSystemInformation		/*   1 */ ,		 6,		10,		false,		0	},
-	{ kSMBTypeBaseBoard				/*   2 */ ,		11,		12,		false,		0	},
+	{ kSMBTypeBaseBoard				/*   2 */ ,		11,		14,		false,		0	},
 	{ kSMBUnused					/*   3 */ ,		 0,		 0,		false,		0	},
-	{ kSMBTypeProcessorInformation	/*   4 */ ,		13,		14,		true,		0	},
+	{ kSMBTypeProcessorInformation	/*   4 */ ,		15,		16,		true,		0	},
 	{ kSMBUnused					/*   5 */ ,		 0,		 0,		false,		0	},
 	{ kSMBUnused					/*   6 */ ,		 0,		 0,		false,		0	},
 	{ kSMBUnused					/*   7 */ ,		 0,		 0,		false,		0	},
@@ -69,7 +69,7 @@ struct SMBStructure requiredStructures[] =
 	{ kSMBUnused					/*  14 */ ,		 0,		 0,		false,		0	},
 	{ kSMBUnused					/*  15 */ ,		 0,		 0,		false,		0	},
 	{ kSMBUnused					/*  16 */ ,		 0,		 0,		false,		0	},
-	{ kSMBTypeMemoryDevice			/*  17 */ ,		15,		19,		true,		0	}
+	{ kSMBTypeMemoryDevice			/*  17 */ ,		17,		21,		true,		0	}
 };
 
 
@@ -130,6 +130,11 @@ struct SMBProperty SMBProperties[] =
 	
 	{ kSMBTypeBaseBoard,			0x04,	kSMBString,		.plainData		= APPLE_INC				},
 	{ kSMBTypeBaseBoard,			0x05,	kSMBString,		.plainData		= SMB_BOARD_PRODUCT		},
+    
+#if TARGET_MODEL & MACPRO
+    { kSMBTypeBaseBoard,			0x07,	kSMBString,		.plainData		= STATIC_SMBOARDSERIAL	},
+	{ kSMBTypeBaseBoard,			0x0d,	kSMBByte,		.getSMBByte		= getBoardType          },
+#endif
 	
 	//------------------------------------------------------------------------------------------------
 	

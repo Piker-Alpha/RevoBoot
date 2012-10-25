@@ -331,6 +331,10 @@
 	#undef USE_STATIC_CPU_DATA					// Prevent boot failures due to wrong settings (until I figured out what we are missing).
 #endif
 
+#if TARGET_MODEL & MACPRO
+    #define STATIC_SMBOARDSERIAL            "SOMEBOARDNMBR" // Example only!
+#endif
+
 #define OVERRIDE_DYNAMIC_MEMORY_DETECTION	0	// Set to 0 by default. Change this to 0 only when your SMBIOS data (type 17) is correct, or when
 												// you want/need to override some/all of the SMBIOS data.
 												//

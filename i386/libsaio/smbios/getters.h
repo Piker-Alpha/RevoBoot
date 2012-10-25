@@ -346,3 +346,12 @@ static SMBDWord getBIOSFeaturesEX(void)
 {
 	return (0x010002c1);
 }
+
+//==============================================================================
+
+#if TARGET_MODEL & MACPRO
+static SMBByte getBoardType(void)
+{
+	return 0x0b;	// Some logic here or just return 11/0x0b.
+}
+#endif
