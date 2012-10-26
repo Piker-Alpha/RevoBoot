@@ -1,4 +1,4 @@
 make clean
 clear
-make > out.log
+make MODEL=%1 > out.log
 
