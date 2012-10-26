@@ -1,10 +1,18 @@
-DIR = libsaio
+#
+# File: RevoBoot/i386/libsaio/Makefile
+#
+# Updates:
+#
+#			- Major cleanup (PikerAlpha, October 2012).
+#			- DMAKE_TARGET_MODEL added (PikerAlpha, October 2012).
+#			- Static data selectors added (PikerAlpha, October 2012).
+#
+
+
 include ../MakePaths.dir
 
 UTILDIR = ../util
 LIBSADIR = ../libsa
-INSTALLDIR = $(DSTROOT)/System/Library/Frameworks/System.framework/Versions/B/PrivateHeaders/standalone
-#SYMROOT=
 
 OPTIM = -Os -Oz
 DEBUG = -DNOTHING
@@ -14,23 +22,15 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost \
     -DRCZ_COMPRESSED_FILE_SUPPORT $(DEBUG) \
     -DREVOBOOT_VERSION_INFO=\"RevoBoot\ v$(PRODUCT_VERSION_NUMBER)\" \
     -DMAKE_TARGET_OS=$(PRODUCT_OS_TARGET) \
+    -DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
+    -DACPI_DATA_FILE=$(MAKE_ACPI_DATA_FILE) \
+    -DEFI_DATA_FILE=$(MAKE_EFI_DATA_FILE) \
+    -DSMBIOS_DATA_FILE=$(MAKE_SMBIOS_DATA_FILE) \
     -fno-builtin -static $(OMIT_FRAME_POINTER_CFLAG) \
     -mpreferred-stack-boundary=2 -fno-align-functions -fno-stack-protector \
     -march=pentium4 -msse2 -mfpmath=sse -msoft-float
 
-
-DEFINES=
-CONFIG = hd
 INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSADIR)
-ifneq "" "$(wildcard /bin/mkdirs)"
-  MKDIRS = /bin/mkdirs
-else
-  MKDIRS = /bin/mkdir -p
-endif
-AS = as
-LD = ld
-# LIBS= -lc_static
-LIBS=
 
 VPATH = $(OBJROOT):$(SYMROOT)
 
@@ -44,21 +44,10 @@ SAIO_OBJS = table.o asm.o bios.o biosfn.o \
 
 SAIO_EXTERN_OBJS = console.o
 
-SFILES =
-CFILES = 
-HFILES = 
-EXPORTED_HFILES =
-INSTALLED_HFILES =
-OTHERFILES = Makefile
-ALLSRC =  $(SFILES) $(CFILES) \
-	$(HFILES) $(OTHERFILES)
 LIBS = libsaio.a
 DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
 
-lion: all
-mountain-lion: all
-
-all: $(DIRS_NEEDED) libsaio.h $(LIBS)
+$(MAKEGOAL): $(DIRS_NEEDED) libsaio.h $(LIBS)
 
 libsaio.a: $(SAIO_EXTERN_OBJS) $(SAIO_OBJS)
 	rm -f $(SYMROOT)/$(@F)
@@ -66,6 +55,3 @@ libsaio.a: $(SAIO_EXTERN_OBJS) $(SAIO_OBJS)
 	ranlib $(SYMROOT)/$(@F)
 
 include ../MakeInc.dir
-
-# dependencies
--include $(OBJROOT)/Makedep
