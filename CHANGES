@@ -1,3 +1,30 @@
+RevoBoot v1.5.21
+================
+- Model data for new Macmini6,N added (PikerAlpha, October 2012).
+- VERSION updated to v1.5.21
+
+
+RevoBoot v1.5.20
+================
+- Automatic data selection for ACPI/EFI and SMBIOS data (PikerAlpha, October 2012)
+- Copies ACPI/EFI/SMBIOS/data-template.h to [your model.h] for new configurations (PikerAlpha, October 2012)
+
+
+RevoBoot v1.5.10
+================
+- Makefiles cleaned up/optimized (PikerAlpha, October 2012).
+- make now defaults to Mountain Lion (PikerAlpha, October 2012).
+- MODEL=[your model] argument added to makefiles (PikerAlpha, October 2012).
+- MODEL=$1 added to RevoBoot/r for optional model identifier (PikerAlpha, October 2012).
+- make now creates RevoBoot/i386/config/SETTINGS when missing (PikerAlpha, October 2012).
+- Makefile now copies settings-template.h to SETTINGS/[your model.h] when missing (PikerAlpha, October 2012).
+
+
+RevoBoot v1.5.01
+================
+- MacPro SMBIOS board serial/type added (dgsga, October 2012).
+
+
 RevoBoot v1.5.00
 ================
 - RevoBoot project forked (PikerAlpha, October 2012).
