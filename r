@@ -1,4 +1,4 @@
 make clean
 clear
-make mountain-lion > out.log
+make > out.log
 
