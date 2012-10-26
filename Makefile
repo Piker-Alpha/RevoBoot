@@ -10,6 +10,7 @@
 #			- Creates RevoBoot/config/SETTINGS when missing (PikerAlpha, October 2012).
 #			- Copies settings-template.h to SETTINGS/ModelnameNN.h when missing (PikerAlpha, October 2012).
 #			- Automatic ACPI/EFI/SMBIOS data selection (PikerAlpha, October 2012).
+#			- Copies ACPI/EFI/SMBIOS/data-template.h for new conigurations (PikerAlpha, October 2012).
 #
 
 #
@@ -132,6 +133,18 @@ SETTINGS_DIR=$(CONFIG_DIR)/SETTINGS
 SETTINGS_FILE=$(SETTINGS_DIR)/$(MAKE_TARGET_MODEL).h
 
 $(MAKEGOAL): $(SYMROOT) $(OBJROOT)
+	@if [ ! -f $(ARCH_DIR)/config/$(MAKE_ACPI_DATA_FILE) ]; then \
+		cp -n $(ARCH_DIR)/config/ACPI/data-template.h $(ARCH_DIR)/config/$(MAKE_ACPI_DATA_FILE); \
+	fi;
+
+	@if [ ! -f $(ARCH_DIR)/config/$(MAKE_EFI_DATA_FILE) ]; then \
+		cp -n $(ARCH_DIR)/config/EFI/data-template.h $(ARCH_DIR)/config/$(MAKE_EFI_DATA_FILE); \
+	fi;
+
+	@if [ ! -f $(ARCH_DIR)/config/$(MAKE_SMBIOS_DATA_FILE) ]; then \
+		cp -n $(ARCH_DIR)/config/SMBIOS/data-template.h $(ARCH_DIR)/config/$(MAKE_SMBIOS_DATA_FILE); \
+	fi;
+
 	@if [ ! -d $(SETTINGS_DIR) ]; then \
 		/bin/mkdir -p $(SETTINGS_DIR); \
 	fi;
