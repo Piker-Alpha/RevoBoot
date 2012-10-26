@@ -136,7 +136,19 @@
 // -------------------------------------------------------------------------------------
 	#define SMB_FAMILY	"Macmini"
 
-	#if (TARGET_MODEL == MACMINI_53)
+	#if (TARGET_MODEL == MACMINI_62)
+		// Intel Core i7-3615QM @ 2.30 GHz (4 cores - 8 threads)
+		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B00.1208091121"
+		#define SMB_PRODUCT_NAME	"Macmini6,2"
+		#define SMB_BOARD_PRODUCT	"Mac-F65AE981FFA204ED"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '2' }
+	#elif (TARGET_MODEL == MACMINI_61)
+		// Intel Core i5-3210M @ 2.50 GH (2 cores - 4 theeads)
+		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B00.1208091121"
+		#define SMB_PRODUCT_NAME	"Macmini6,1"
+		#define SMB_BOARD_PRODUCT	"Mac-031AEE4D24BFF0B1"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '1' }
+	#elif (TARGET_MODEL == MACMINI_53)
 		// Intel Core i7-2635QM @ 2.0GHz (4 cores - 8 threads)
 		#define SMB_BIOS_VERSION	"MM51.88Z.0077.B10.1201241549"
 		#define SMB_PRODUCT_NAME	"Macmini5,3"
