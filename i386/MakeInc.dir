@@ -1,16 +1,11 @@
 #
-# Common makefile targets.
+# File: RevoBoot/i386/MakeInc.dir
 #
-# Define these variables (if desired) in directory makefiles:
-#	DIRS_NEEDED
-#	INSTALLDIR
-#	SRCROOT
+# Updates:
 #
-ifneq "" "$(wildcard /bin/mkdirs)"
-  MKDIRS = /bin/mkdirs
-else
-  MKDIRS = /bin/mkdir -p
-endif
+#		- Major cleanup (PikerAlpha, October 2012).
+#
+
 
 #
 # Use /usr/bin/gcc instead of /usr/bin/cc (symbolic link to clang in Xcode 4.3.2 and greater).
@@ -26,22 +21,6 @@ CC = gcc
 #OMIT_FRAME_POINTER_CFLAG=-fomit-frame-pointer
 OMIT_FRAME_POINTER_CFLAG=
 
-installsrc:: $(SRCROOT)
-	cp $(ALLSRC) $(SRCROOT)
-	cd $(SRCROOT); chmod a-w $(ALLSRC)
-
-install:: installhdrs
-	@if [ -z "$(RC_ARCHS)" -o -n "$(RC_i386)" ]; then 	\
-		$(MAKE) install_i386 OBJROOT=${OBJROOT}		\
-			SYMROOT=${SYMROOT} DSTROOT=${DSTROOT}	\
-			SRCROOT=${SRCROOT}; 			\
-	else							\
-		echo i386 not selected - null build.;		\
-	fi
-
-install_i386:: all
-
-installhdrs::
 
 .SUFFIXES: .s .i .c .o
 
@@ -69,5 +48,5 @@ boot2.o:
 $(OBJROOT)/%.o: %.s
 	$(CC) $(CPPFLAGS) -c $(INC) -arch i386 -o $(OBJROOT)/$(@F) $<
 
-$(DIRS_NEEDED) $(INSTALLDIR) $(SRCROOT):
-	$(MKDIRS) $@
+$(DIRS_NEEDED): # $(INSTALLDIR) $(SRCROOT):
+	@/bin/mkdir -p $@
