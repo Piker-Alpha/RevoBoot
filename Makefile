@@ -99,7 +99,7 @@ ifdef MODEL
 		#
 		# Include default/empty static data file (no model identifier specified).
 		#
-		DATA_FILE = data.h
+		DATA_FILE = data
 	endif
 else
 	#
@@ -109,16 +109,16 @@ else
 	#
 	# Include default/empty static data file (no model identifier specified).
 	#
-	DATA_FILE = data.h
+	DATA_FILE = data
 endif
 
 #
 # Export target filenames for static ACPI, EFI and SMBIOS data.
 # 
 
-export MAKE_ACPI_DATA_FILE = ACPI/$(DATA_FILE)
-export MAKE_EFI_DATA_FILE = EFI/$(DATA_FILE)
-export MAKE_SMBIOS_DATA_FILE = SMBIOS/$(DATA_FILE)
+export MAKE_ACPI_DATA_FILE = ACPI/$(DATA_FILE).h
+export MAKE_EFI_DATA_FILE = EFI/$(DATA_FILE).h
+export MAKE_SMBIOS_DATA_FILE = SMBIOS/$(DATA_FILE).h
 
 #
 # Our one and only build target directory.
