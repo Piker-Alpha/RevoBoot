@@ -4,8 +4,9 @@ RevoBoot comes with configuration templates of which some you need to change:
 ACPI/data-template.h
 --------------------
 
-This file is optional. Only required when you want to inject static ACPI table data. 
-Copy/rename the file to data.h and add your (modified) ACPI tables.
+RevoBoot's build process will copy this file for new configurations to the target modelidentifier 
+and use it, but only when you didn't already do this yourself. Make all required changes in 
+the new file only or it won't be used at all.
 
 Note: We use 'factory tables' for the original ACPI tables in the BIOS and 'modified' 
       for new/modified ACPI tables.
@@ -14,8 +15,9 @@ Note: We use 'factory tables' for the original ACPI tables in the BIOS and 'modi
 EFI/data-template.h
 -------------------
 
-This file is optional. Only required when you want/need to inject EFI device properties. 
-Copy/rename the file to data.h and add your EFI device properties.
+RevoBoot's build process will copy this file for new configurations to the target modelidentifier 
+and use it, but only when you didn't already do this yourself. Make all required changes in 
+the new file only or it won't be used at all.
 
 Note: A simple HOWTO will (hopefully) soon be added to the EFI directory. 
 
@@ -23,36 +25,38 @@ Note: A simple HOWTO will (hopefully) soon be added to the EFI directory.
 SMBIOS/data-template.h
 ----------------------
 
-This file is optional. Only required when you want to inject static ACPI table data. 
-Copy/rename the file to data.h and add your static SMBIOS data.
+RevoBoot's build process will copy this file for new configurations to the target modelidentifier 
+and use it, but only when you didn't already do this yourself. Make all required changes in 
+the new file only or it won't be used at all.
 
 Note: You can extract the SMBIOS table data with: /smbios/tools/smbios2struct2 
       Make instruction are included in the source code.
 
 
+settings.h
+----------
+
+This file selects the target settings file based on the specified model identifier. Using 
+make MODEL=Macmini51 or use ./r Macmini51 (examples) makes it select RevoBoot/i386/config/SETTINGS/Macmini51.h
+All future changes need to be made in this file, or they won't be picked up.
+
+
 settings-template.h
 -------------------
 
-This is the default configuration template for RevoBoot. Every possible option can be found in it. 
-You have to either copy or rename this file to settings.h and change it so that it matches your 
-hardware configuration.
+RevoBoot's build process first checks RevoBoot/i386/config/SETTINGS/*.h per target model identifier 
+(example: Macmini51,h) and use it, or copies RevoBoot/i386/config/settings-template.h to the target model 
+identifier (when the file is missing) to prevent build errors.
+
+People with working RevoBoot configurations can simply copy their settings.h to SETTINGS/[your model].h 
+This will allow the RevoBoot build process to compile without errors, but make sure to use the latest 
+preprocessor options.
 
 
-data-template.h
----------------
+ACPI/EFI/SMBIOS/data.h
+----------------------
 
-RevoBoot has one main include file for static data in the ACPI, EFI and SMBIOS directories. 
-This enables you to add files for different target configurations there. Here's an example 
-for two setups:
+These are RevoBoot's main data selector files to support (optional) static data. 
 
-#include "ACPI/data-hp.h"
-#include "EFI/data-hp.h"
-#include "SMBIOS/data-hp.h"
+Note: Do not change this file!
 
-or (not both):
-
-#include "ACPI/data-asus.h" 
-#include "EFI/data-asus.h" 
-#include "SMBIOS/data-asus.h" 
-
-Note: We plan to add a make option for this. To let it select the files for the target configuration. 
