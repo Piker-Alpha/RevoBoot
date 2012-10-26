@@ -100,7 +100,7 @@
 		// Intel Core i7-3520QM @ 2.90 GHz - 2 cores / 4 threads.
 		#define SMB_BIOS_VERSION	"MBP102.88Z.00FE.B00.1207181057"
 		#define SMB_PRODUCT_NAME	"MacBookPro10,2"
-		#define SMB_BOARD_PRODUCT	"MMac-AFD8A9D944EA4843"
+		#define SMB_BOARD_PRODUCT	"Mac-AFD8A9D944EA4843"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '2' }
 	#elif (TARGET_MODEL == MACBOOK_PRO_101)
 		// Intel Core i7-3720QM @ 2.60 GHz - 4 cores / 8 threads.
