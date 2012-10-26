@@ -1,3 +1,3 @@
-sudo cp sym/i386/boot /Volumes/USBBOOT/
-sudo diskutil unmount /Volumes/USBBOOT
+sudo cp sym/i386/boot /Volumes/$1/
+sudo diskutil unmount /Volumes/$1
 
