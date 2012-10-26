@@ -12,9 +12,10 @@
  *			- SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
  *			- STATIC_MODEL_NAME moved to libsaio/i386/SMBIOS/model_data.h (PikerAlpha, October 2012).
  *			- STATIC_MAC_PRODUCT_NAME moved to libsaio/i386/SMBIOS/model_data.h (PikerAlpha, October 2012).
- *			- STATIC_SMBIOS_MODEL_ID rrenamed to TARGET_MODEL (PikerAlpha, October 2012).
+ *			- STATIC_SMBIOS_MODEL_ID renamed to TARGET_MODEL (PikerAlpha, October 2012).
  *			- OVERRIDE_DYNAMIC_PRODUCT_DETECTION removed/no longer supported (PikerAlpha, October 2012).
  *			- INTEL_CORE_TECHNOLOGY per default set to 1 (PikerAlpha, October 2012).
+ *			- INJECT_EFI_DEVICE_PROPERTIES per default set to 1 (PikerAlpha, October 2012). 
  *
  */
 
@@ -216,13 +217,13 @@
 											// Note: CPU info data will not be displayed when USE_STATIC_CPU_DATA is set to 1
 
 #if DEBUG_CPU
-#define DEBUG_CPU_TURBO_RATIOS			0	// Set to 0 by default. Change this to 1 when you want to check the core ratio.
+	#define DEBUG_CPU_TURBO_RATIOS		0	// Set to 0 by default. Change this to 1 when you want to check the core ratio.
 
-#define DEBUG_CST_SUPPORT				0	// Set to 0 by default. Change this to 1 to check the in BIOS enabled C-States.
+	#define DEBUG_CST_SUPPORT		0	// Set to 0 by default. Change this to 1 to check the in BIOS enabled C-States.
 
-#define DEBUG_TSS_SUPPORT				0	// Set to 0 by default. Change this to 1 to check the T-State Clock Modulation.
+	#define DEBUG_TSS_SUPPORT		0	// Set to 0 by default. Change this to 1 to check the T-State Clock Modulation.
 
-#define DEBUG_CPU_TDP					0	// Set to 0 by default. Change this to 1 when you want to check the TDP.
+	#define DEBUG_CPU_TDP			0	// Set to 0 by default. Change this to 1 when you want to check the TDP.
 #endif
 
 //---------------------------------------------------------- CPU/STATIC_DATA.C -------------------------------------------------------------
@@ -233,7 +234,7 @@
 
 	#define STATIC_CPU_NumThreads		4				// Used in: i386/libsaio/ACPI/ssdt_pr_generator.h
 
-	#define STATIC_CPU_FSBFrequency		100000000ULL	// 9 digits + ULL - used in: i386/libsaio/efi.c
+	#define STATIC_CPU_FSBFrequency		100000000ULL	// 9 digits + ULL - used in: RevoBoot/i386/libsaio/efi.c
 
 	#define STATIC_CPU_QPISpeed			0				// kSMBTypeOemProcessorBusSpeed (0 for Sandy Bridge / Jaketown).
 #endif
@@ -331,10 +332,6 @@
 	#undef USE_STATIC_CPU_DATA					// Prevent boot failures due to wrong settings (until I figured out what we are missing).
 #endif
 
-#if TARGET_MODEL & MACPRO
-    #define STATIC_SMBOARDSERIAL            "SOMEBOARDNMBR" // Example only!
-#endif
-
 #define OVERRIDE_DYNAMIC_MEMORY_DETECTION	0	// Set to 0 by default. Change this to 0 only when your SMBIOS data (type 17) is correct, or when
 												// you want/need to override some/all of the SMBIOS data.
 												//
@@ -352,6 +349,10 @@
 													// MACPRO and MACPRO_51, MACPRO_41, MACPRO_31
 													//
 													// Note: MACMINI (without _NNN) selects the default model (last one i.e. MACMINI_51).
+
+#if TARGET_MODEL & MACPRO
+    #define STATIC_SMBOARDSERIAL            "SOMEBOARDNMBR" // Example only!
+#endif
 
 #define DEBUG_SMBIOS						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
