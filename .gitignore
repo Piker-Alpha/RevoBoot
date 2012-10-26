@@ -1,5 +1,9 @@
 .DS_Store
 
+out.log
+obj/*
+sym/*
+
 i386/config/SETTINGS/*.h
 
 i386/config/ACPI/default.h
