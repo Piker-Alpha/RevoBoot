@@ -20,6 +20,7 @@
  *			- EFI/SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
  *			- SMB_PRODUCT_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
  *			- EFI_MODEL_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
+ *			- Data for new MacBookPro and Macmini added (PikerAlpha, October 2012).
  *
  * Credits:
  *			- blackosx, DB1, dgsga, FKA, humph, scrax and STLVNUB (testers).
@@ -95,14 +96,20 @@
 // -------------------------------------------------------------------------------------
 	#define SMB_FAMILY	"MacBookPro"
 
-	#if (TARGET_MODEL == MACBOOK_PRO_101)
-	// Intel Core i7-3720QM @ 2.60 GHz - 4 cores / 8 threads.
+	#if (TARGET_MODEL == MACBOOK_PRO_102)
+		// Intel Core i7-3520QM @ 2.90 GHz - 2 cores / 4 threads.
+		#define SMB_BIOS_VERSION	"MBP102.88Z.00FE.B00.1207181057"
+		#define SMB_PRODUCT_NAME	"MacBookPro10,2"
+		#define SMB_BOARD_PRODUCT	"MMac-AFD8A9D944EA4843"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '2' }
+	#elif (TARGET_MODEL == MACBOOK_PRO_101)
+		// Intel Core i7-3720QM @ 2.60 GHz - 4 cores / 8 threads.
 		#define SMB_BIOS_VERSION	"MBP101.88Z.00EE.B00.1205101839"
 		#define SMB_PRODUCT_NAME	"MacBookPro10,1"
 		#define SMB_BOARD_PRODUCT	"Mac-C3EC7CD22292981F"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '1' }
 	#elif (TARGET_MODEL == MACBOOK_PRO_91)
-	// Intel Core i7-3820QM @ 2.70 GHz - 4 cores / 8 threads.
+		// Intel Core i7-3820QM @ 2.70 GHz - 4 cores / 8 threads.
 		#define SMB_BIOS_VERSION	"MBP91.88Z.00D3.B00.1203211536"
 		#define SMB_PRODUCT_NAME	"MacBookPro9,1"
 		#define SMB_BOARD_PRODUCT	"Mac-4B7AC7E43945597E"
