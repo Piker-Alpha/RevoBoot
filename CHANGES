@@ -1,3 +1,9 @@
+RevoBoot v1.5.23
+================
+- Bug fix and cleanups in RevoBoot/i386/libsaio/SMBIOS/dynamic_data.h (PikerAlpha, October 2012).
+- VERSION updated to v1.5.23
+
+
 RevoBoot v1.5.22
 ================
 - Bug fix in RevoBoot/Makefile (PikerAlpha, October 2012).
