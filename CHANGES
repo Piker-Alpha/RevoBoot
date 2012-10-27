@@ -1,3 +1,9 @@
+RevoBoot v1.5.22
+================
+- Bug fix in RevoBoot/Makefile (PikerAlpha, October 2012).
+- VERSION updated to v1.5.22
+
+
 RevoBoot v1.5.21
 ================
 - Model data for new Macmini6,N added (PikerAlpha, October 2012).
