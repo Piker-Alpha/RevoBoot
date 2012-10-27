@@ -283,8 +283,6 @@
 											//
 											// Note: Do not change this setting, unless you know what you are doing.
 
-#define STATIC_SMSERIALNUMBER			"SOMESRLNUMBR" // Example only!
-
 #define STATIC_SYSTEM_SERIAL_NUMBER		{ 'S', 'O', 'M', 'E', 'S', 'R', 'L', 'N', 'U', 'M', 'B', 'R' } // Example only!
 
 #define STATIC_SYSTEM_ID				{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F } // Example only!
@@ -350,8 +348,8 @@
 													//
 													// Note: MACMINI (without _NNN) selects the default model (last one i.e. MACMINI_51).
 
-#if TARGET_MODEL & MACPRO
-    #define STATIC_SMBOARDSERIAL            "SOMEBOARDNMBR" // Example only!
+#if (TARGET_MODEL & MACPRO)
+	#define SMB_BOARD_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
 #endif
 
 #define DEBUG_SMBIOS						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
