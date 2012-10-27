@@ -100,7 +100,7 @@ ifdef MODEL
 		#
 		# Include default/empty static data file (no model identifier specified).
 		#
-		DATA_FILE = data
+		DATA_FILE = data-template
 	endif
 else
 	#
@@ -110,7 +110,7 @@ else
 	#
 	# Include default/empty static data file (no model identifier specified).
 	#
-	DATA_FILE = data
+	DATA_FILE = data-template
 endif
 
 #
@@ -133,16 +133,16 @@ SETTINGS_DIR=$(CONFIG_DIR)/SETTINGS
 SETTINGS_FILE=$(SETTINGS_DIR)/$(MAKE_TARGET_MODEL).h
 
 $(MAKEGOAL): $(SYMROOT) $(OBJROOT)
-	@if [ ! -f $(ARCH_DIR)/config/$(MAKE_ACPI_DATA_FILE) ]; then \
-		cp -n $(ARCH_DIR)/config/ACPI/data-template.h $(ARCH_DIR)/config/$(MAKE_ACPI_DATA_FILE); \
+	@if [ ! -f $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE) ]; then \
+		cp -n $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE); \
 	fi;
 
-	@if [ ! -f $(ARCH_DIR)/config/$(MAKE_EFI_DATA_FILE) ]; then \
-		cp -n $(ARCH_DIR)/config/EFI/data-template.h $(ARCH_DIR)/config/$(MAKE_EFI_DATA_FILE); \
+	@if [ ! -f $(CONFIG_DIR)/$(MAKE_EFI_DATA_FILE) ]; then \
+		cp -n $(CONFIG_DIR)/EFI/data-template.h $(CONFIG_DIR)/$(MAKE_EFI_DATA_FILE); \
 	fi;
 
-	@if [ ! -f $(ARCH_DIR)/config/$(MAKE_SMBIOS_DATA_FILE) ]; then \
-		cp -n $(ARCH_DIR)/config/SMBIOS/data-template.h $(ARCH_DIR)/config/$(MAKE_SMBIOS_DATA_FILE); \
+	@if [ ! -f $(CONFIG_DIR)/$(MAKE_SMBIOS_DATA_FILE) ]; then \
+		cp -n $(CONFIG_DIR)/SMBIOS/data-template.h $(CONFIG_DIR)/$(MAKE_SMBIOS_DATA_FILE); \
 	fi;
 
 	@if [ ! -d $(SETTINGS_DIR) ]; then \
