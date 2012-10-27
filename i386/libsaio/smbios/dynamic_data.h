@@ -11,6 +11,7 @@
  *			- SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
  *			- SMBProperties changed for speed and simplicity (PikerAlpha, October 2012).
  *			- Calls with SMBProperties.keyString cleaned up (PikerAlpha, October 2012).
+ *			- Fixed requiredStructures.start/stop values (PikerAlpha, October 2012).
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -36,6 +37,18 @@
 #include "smbios.h"
 #include "model_data.h"
 
+#if (TARGET_MODEL & MACPRO)
+	/*
+	 * Number of additional properties for MacPro models.
+	 */
+	#define PROBOARD	2
+#else
+	/*
+	 * No additional properties for other Mac models.
+	*/
+	#define PROBOARD	0
+#endif
+
 //------------------------------------------------------------------------------
 
 struct SMBStructure
@@ -52,24 +65,24 @@ struct SMBStructure
 
 struct SMBStructure requiredStructures[] =
 {
-	{ kSMBTypeBIOSInformation		/*   0 */ ,		 0,		 5,		false,		0	},
-	{ kSMBTypeSystemInformation		/*   1 */ ,		 6,		10,		false,		0	},
-	{ kSMBTypeBaseBoard				/*   2 */ ,		11,		14,		false,		0	},
-	{ kSMBUnused					/*   3 */ ,		 0,		 0,		false,		0	},
-	{ kSMBTypeProcessorInformation	/*   4 */ ,		15,		16,		true,		0	},
-	{ kSMBUnused					/*   5 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*   6 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*   7 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*   8 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*   9 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  10 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  11 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  12 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  13 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  14 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  15 */ ,		 0,		 0,		false,		0	},
-	{ kSMBUnused					/*  16 */ ,		 0,		 0,		false,		0	},
-	{ kSMBTypeMemoryDevice			/*  17 */ ,		17,		21,		true,		0	}
+	{ kSMBTypeBIOSInformation		/*   0 */ ,	 0,					5,					false,	0	},
+	{ kSMBTypeSystemInformation		/*   1 */ ,	 6,					10,					false,	0	},
+	{ kSMBTypeBaseBoard				/*   2 */ ,	(11 + PROBOARD),	(12 + PROBOARD),	false,	0	},
+	{ kSMBUnused					/*   3 */ ,	 0,					0,					false,	0	},
+	{ kSMBTypeProcessorInformation	/*   4 */ ,	(13 + PROBOARD),	(14 + PROBOARD),	true,	0	},
+	{ kSMBUnused					/*   5 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*   6 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*   7 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*   8 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*   9 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  10 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  11 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  12 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  13 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  14 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  15 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused					/*  16 */ ,	 0,					0,					false,	0	},
+	{ kSMBTypeMemoryDevice			/*  17 */ ,	(15 + PROBOARD),	(19 + PROBOARD),	true,	0	}
 };
 
 
@@ -103,64 +116,63 @@ struct SMBProperty
 };
 
 #define APPLE_INC			"Apple Inc."
-#define SMB_SYSTEM_VERSION	"1.0"
 
 //------------------------------------------------------------------------------
 
 struct SMBProperty SMBProperties[] =
 {
-	//------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 	
-	{ kSMBTypeBIOSInformation,		0x04,	kSMBString,		.plainData		= APPLE_INC				},
-	{ kSMBTypeBIOSInformation,		0x05,	kSMBString,		.plainData		= SMB_BIOS_VERSION		},
-	{ kSMBTypeBIOSInformation,		0x06,	kSMBWord,		.getSMBWord		= getBIOSLocation		},
-	{ kSMBTypeBIOSInformation,		0x08,	kSMBString,		.getSMBString	= getBIOSDate			},
-	{ kSMBTypeBIOSInformation,		0x0a,	kSMBQWord,		.getSMBQWord	= getBIOSFeatures		},
-	{ kSMBTypeBIOSInformation,		0x12,	kSMBDWord,		.getSMBDWord	= getBIOSFeaturesEX		},
+	{ kSMBTypeBIOSInformation,		0x04,	kSMBString,		.plainData		= APPLE_INC					},
+	{ kSMBTypeBIOSInformation,		0x05,	kSMBString,		.plainData		= SMB_BIOS_VERSION			},
+	{ kSMBTypeBIOSInformation,		0x06,	kSMBWord,		.getSMBWord		= getBIOSLocation			},
+	{ kSMBTypeBIOSInformation,		0x08,	kSMBString,		.getSMBString	= getBIOSDate				},
+	{ kSMBTypeBIOSInformation,		0x0a,	kSMBQWord,		.getSMBQWord	= getBIOSFeatures			},
+	{ kSMBTypeBIOSInformation,		0x12,	kSMBDWord,		.getSMBDWord	= getBIOSFeaturesEX			},
 
-	//------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 	
-	{ kSMBTypeSystemInformation,	0x04,	kSMBString,		.plainData		= APPLE_INC				},
-	{ kSMBTypeSystemInformation,	0x05,	kSMBString,		.plainData		= SMB_PRODUCT_NAME		},
-	{ kSMBTypeSystemInformation,	0x06,	kSMBString,		.plainData		= SMB_SYSTEM_VERSION	},
-	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= STATIC_SMSERIALNUMBER	},
-	{ kSMBTypeSystemInformation,	0x1a,	kSMBString,		.plainData		= SMB_FAMILY			},
+	{ kSMBTypeSystemInformation,	0x04,	kSMBString,		.plainData		= APPLE_INC					},
+	{ kSMBTypeSystemInformation,	0x05,	kSMBString,		.plainData		= SMB_PRODUCT_NAME			},
+	{ kSMBTypeSystemInformation,	0x06,	kSMBString,		.plainData		= "1.0"						},
+	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= STATIC_SMSERIALNUMBER		},
+	{ kSMBTypeSystemInformation,	0x1a,	kSMBString,		.plainData		= SMB_FAMILY				},
 	
-	//------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 	
-	{ kSMBTypeBaseBoard,			0x04,	kSMBString,		.plainData		= APPLE_INC				},
-	{ kSMBTypeBaseBoard,			0x05,	kSMBString,		.plainData		= SMB_BOARD_PRODUCT		},
-    
-#if TARGET_MODEL & MACPRO
-    { kSMBTypeBaseBoard,			0x07,	kSMBString,		.plainData		= STATIC_SMBOARDSERIAL	},
-	{ kSMBTypeBaseBoard,			0x0d,	kSMBByte,		.getSMBByte		= getBoardType          },
+	{ kSMBTypeBaseBoard,			0x04,	kSMBString,		.plainData		= APPLE_INC					},
+	{ kSMBTypeBaseBoard,			0x05,	kSMBString,		.plainData		= SMB_BOARD_PRODUCT			},
+
+#if (TARGET_MODEL & MACPRO)
+    { kSMBTypeBaseBoard,			0x07,	kSMBString,		.plainData		= SMB_BOARD_SERIAL_NUMBER	},
+	{ kSMBTypeBaseBoard,			0x0d,	kSMBByte,		.getSMBByte		= getBoardType				},
 #endif
+
+	//----------------------------------------------------------------------------------------------------
 	
-	//------------------------------------------------------------------------------------------------
+	{ kSMBTypeProcessorInformation,	0x12,	kSMBWord,		.getSMBWord		= getFSBFrequency			},
+	{ kSMBTypeProcessorInformation,	0x14,	kSMBWord,		.getSMBWord		= getCPUFrequency			},
 	
-	{ kSMBTypeProcessorInformation,	0x12,	kSMBWord,		.getSMBWord		= getFSBFrequency		},
-	{ kSMBTypeProcessorInformation,	0x14,	kSMBWord,		.getSMBWord		= getCPUFrequency		},
-	
-	//------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
 	
 #if DYNAMIC_RAM_OVERRIDE_SIZE
-	{ kSMBTypeMemoryDevice,			0x0c,	kSMBWord,		.getSMBWord		= getRAMSize			},
+	{ kSMBTypeMemoryDevice,			0x0c,	kSMBWord,		.getSMBWord		= getRAMSize				},
 #endif
 	
-	{ kSMBTypeMemoryDevice,			0x10,	kSMBString,		.getSMBString	= NULL					},
-	{ kSMBTypeMemoryDevice,			0x11,	kSMBString,		.getSMBString	= NULL					},
+	{ kSMBTypeMemoryDevice,			0x10,	kSMBString,		.getSMBString	= NULL						},
+	{ kSMBTypeMemoryDevice,			0x11,	kSMBString,		.getSMBString	= NULL						},
 
 #if DYNAMIC_RAM_OVERRIDE_TYPE
-	{ kSMBTypeMemoryDevice,			0x12,	kSMBByte,		.getSMBByte		= getRAMType			},
+	{ kSMBTypeMemoryDevice,			0x12,	kSMBByte,		.getSMBByte		= getRAMType				},
 #endif
 
 #if DYNAMIC_RAM_OVERRIDE_FREQUENCY  
-	{ kSMBTypeMemoryDevice,			0x15,	kSMBWord,		.getSMBWord		= getRAMFrequency		},
+	{ kSMBTypeMemoryDevice,			0x15,	kSMBWord,		.getSMBWord		= getRAMFrequency			},
 #endif
 
-	{ kSMBTypeMemoryDevice,			0x17,	kSMBString,		.getSMBString	= getRAMVendor			},
-	{ kSMBTypeMemoryDevice,			0x18,	kSMBString,		.getSMBString	= getRAMSerialNumber	},
-	{ kSMBTypeMemoryDevice,			0x1a,	kSMBString,		.getSMBString	= getRAMPartNumber		},
+	{ kSMBTypeMemoryDevice,			0x17,	kSMBString,		.getSMBString	= getRAMVendor				},
+	{ kSMBTypeMemoryDevice,			0x18,	kSMBString,		.getSMBString	= getRAMSerialNumber		},
+	{ kSMBTypeMemoryDevice,			0x1a,	kSMBString,		.getSMBString	= getRAMPartNumber			},
 };
 
 
@@ -266,7 +278,7 @@ void setupSMBIOS(void)
 		newtablesPtr += 8;
 	}
 
-#if DYNAMIC_RAM_OVERRIDE_SIZE || DYNAMIC_RAM_OVERRIDE_TYPE || DYNAMIC_RAM_OVERRIDE_FREQUENCY
+#if (DYNAMIC_RAM_OVERRIDE_SIZE || DYNAMIC_RAM_OVERRIDE_TYPE || DYNAMIC_RAM_OVERRIDE_FREQUENCY)
 	requiredStructures[17].stop = (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
 #endif
 
