@@ -14,7 +14,7 @@
 
 #if (PATCH_ACPI_TABLE_DATA && INCLUDE_ACPI_DATA)
 	#undef INCLUDE_ACPI_DATA
-
+	// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
 	#include STRING(ACPI_DATA_FILE)
 #endif
 
