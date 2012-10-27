@@ -8,6 +8,5 @@
 
 #define TO_STRING_DO(a)		#a
 #define STRING(a)			TO_STRING_DO(a)
-#define INCLUDE_FILE		STRING(SETTINGS_FILE)
 
-#include INCLUDE_FILE
+#include STRING(SETTINGS_FILE)
