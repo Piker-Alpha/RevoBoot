@@ -3,6 +3,7 @@
  *
  * Updates:
  *			- Dynamic and static SMBIOS data gathering added by DHP in 2010.
+ *			- New path for static EFI data (PikerAlpha, October 2012).
  *
  * Credits:
  *			- blackosx, DB1, dgsga, FKA, humph, scrax and STLVNUB (testers).
@@ -13,8 +14,8 @@
 
 #include "essentials.h"
 
-#define INCLUDE_SMBIOS_DATA		1
-#include "../../config/data.h"
+// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+#include STRING(SMBIOS_DATA_FILE)
 
 static uint32_t SMBIOS_Table[] = 
 {
