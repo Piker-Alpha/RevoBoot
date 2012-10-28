@@ -31,15 +31,12 @@
  *			- STATIC_MODEL_NAME moved over from settings.h (PikerAlpha, October 2012).
  *			- STATIC_MODEL_NAME renamed to EFI_MODEL_NAME (PikerAlpha, October 2012).
  *			- Now no longer includes platform.h (PikerAlpha, October 2012).
+ *			- Data selector moved over from RevoBoot/i386/config/data.h (PikerAlpha, October 2012).
  *
  */
 
 
 #include "efi/fake_efi.h"
-
-#define INCLUDE_EFI_DATA	1
-
-#include "../config/data.h"
 
 //==============================================================================
 
@@ -177,6 +174,8 @@ void initEFITree(void)
 	gPlatform.EFI.Nodes.Chosen = chosenNode;
 
 #if INJECT_EFI_DEVICE_PROPERTIES
+	// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+	#include STRING(EFI_DATA_FILE)
 
 	static EFI_UINT8 const EFI_DEVICE_PROPERTIES[] = 
 	{
