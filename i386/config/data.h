@@ -8,9 +8,14 @@
  *
  *			- Refactored by DHP in 2010-2011.
  *			- Automatic model data selection (PikerAlpha, October 2012).
- *
+ *			- Static ACPI data selector moved to RevoBoot/i386/libsaio/ACPI/static_data.h (PikerAlpha, October 2012).
+ *			- Static EFI data selector moved to RevoBoot/i386/libsaio/efi.c (PikerAlpha, October 2012).
+ *			- Static SMBIOS data selector moved to RevoBoot/i386/libsaio/SMBIOS/dynamic_data.h (PikerAlpha, October 2012).
+ *			- This file is no longer included with RevoBoot v1.5.25 (PikerAlpha, October 2012).
  */
 
+
+!!__WHEN_YOU_SEE_THIS_STUPID_ERROR_THAN_SOMETHING_IS_WRONG__!!
 
 #if (PATCH_ACPI_TABLE_DATA && INCLUDE_ACPI_DATA)
 	#undef INCLUDE_ACPI_DATA
