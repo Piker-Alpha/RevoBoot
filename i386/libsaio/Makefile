@@ -23,9 +23,9 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost \
     -DREVOBOOT_VERSION_INFO=\"RevoBoot\ v$(PRODUCT_VERSION_NUMBER)\" \
     -DMAKE_TARGET_OS=$(PRODUCT_OS_TARGET) \
     -DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
-    -DACPI_DATA_FILE=$(MAKE_ACPI_DATA_FILE) \
-    -DEFI_DATA_FILE=$(MAKE_EFI_DATA_FILE) \
-    -DSMBIOS_DATA_FILE=$(MAKE_SMBIOS_DATA_FILE) \
+    -DACPI_DATA_FILE=../../config/$(MAKE_ACPI_DATA_FILE) \
+    -DEFI_DATA_FILE=../config/$(MAKE_EFI_DATA_FILE) \
+    -DSMBIOS_DATA_FILE=../../config/$(MAKE_SMBIOS_DATA_FILE) \
     -fno-builtin -static $(OMIT_FRAME_POINTER_CFLAG) \
     -mpreferred-stack-boundary=2 -fno-align-functions -fno-stack-protector \
     -march=pentium4 -msse2 -mfpmath=sse -msoft-float
