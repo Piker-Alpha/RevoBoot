@@ -1,19 +1,18 @@
 /*
- * Copyright 2009 by Master Chief.
+ * Static data overrides for ACPI tables. Copyright 2009 by Master Chief.
  *
- * Refactored (dynamic and static ACPI patching) by DHP in 2010/2011.
+ * Updates:
+ *			- Refactored (dynamic and static ACPI patching) by DHP in 2010/2011.
+ *			- Data selector moved over from RevoBoot/i386/config/data.h (PikerAlpha, October 2012).
  */
 
 #ifndef __LIBSAIO_ACPI_STATIC_DATA_H
 #define __LIBSAIO_ACPI_STATIC_DATA_H
 
-#define INCLUDE_ACPI_DATA	1
+// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+#include STRING(ACPI_DATA_FILE)
 
-#include "../config/data.h"
-
-// The STATIC_xxx_TABLE_DATA's here will get replaced with the data from private_data.h
-
-// Static data overrides for essential tables.
+// The STATIC_xxx_TABLE_DATA's here will get replaced with the data from RevoBoot/i386/config/ACPI/[default/MacmodelNN].h
 
 static uint32_t APIC_Table[] = 
 {
