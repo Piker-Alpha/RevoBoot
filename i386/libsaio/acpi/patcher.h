@@ -20,8 +20,11 @@ extern ACPI_RSDP * getACPIBaseAddress();
 	#include "ssdt_pr_generator.h"
 #endif
 
+
 #if LOAD_EXTRA_ACPI_TABLES && (LOAD_DSDT_TABLE_FROM_EXTRA_ACPI || LOAD_SSDT_TABLE_FROM_EXTRA_ACPI)
 //==============================================================================
+
+extern long loadBinaryData(char *aFilePath, void **aMemoryAddress);
 
 int loadACPITable(int tableIndex)
 {
