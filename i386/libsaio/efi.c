@@ -32,6 +32,7 @@
  *			- STATIC_MODEL_NAME renamed to EFI_MODEL_NAME (PikerAlpha, October 2012).
  *			- Now no longer includes platform.h (PikerAlpha, October 2012).
  *			- Data selector moved over from RevoBoot/i386/config/data.h (PikerAlpha, October 2012).
+ *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
  *
  */
 
@@ -174,17 +175,35 @@ void initEFITree(void)
 	gPlatform.EFI.Nodes.Chosen = chosenNode;
 
 #if INJECT_EFI_DEVICE_PROPERTIES
-	// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
-	#include STRING(EFI_DATA_FILE)
+	_EFI_DEBUG_DUMP("Injecting static EFI device-properties [%s]\n", SMB_PRODUCT_NAME);
 
-	static EFI_UINT8 const EFI_DEVICE_PROPERTIES[] = 
-	{
-		STATIC_EFI_DEVICE_PROPERTIES
-	};
+	#if LOAD_STATIC_EFI_DATA_FROM_EXTRA
+		extern long loadBinaryData(char *aFilePath, void **aMemoryAddress);
+	
+		char dirSpec[32] = "";
+		sprintf(dirSpec, "/Extra/EFI/%s", STRING(STATIC_DATA_FILENAME));
 
-	_EFI_DEBUG_DUMP("Injecting EFI device-properties\n");
+		void * staticEFIData = (void *)kLoadAddr;
 
-	DT__AddProperty(efiNode, "device-properties", sizeof(EFI_DEVICE_PROPERTIES), (EFI_CHAR8*) &EFI_DEVICE_PROPERTIES);
+		_EFI_DEBUG_DUMP("Loading: %s\n", dirSpec);
+
+		long fileSize = loadBinaryData(dirSpec, &staticEFIData);
+	
+		if (fileSize)
+		{
+			DT__AddProperty(efiNode, "device-properties", fileSize, (EFI_CHAR8*) staticEFIData);
+		}
+	#else
+		// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+		#include STRING(EFI_DATA_FILE)
+
+		static EFI_UINT8 const EFI_DEVICE_PROPERTIES[] =
+		{
+			STATIC_EFI_DEVICE_PROPERTIES
+		};
+
+		DT__AddProperty(efiNode, "device-properties", sizeof(EFI_DEVICE_PROPERTIES), (EFI_CHAR8*) &EFI_DEVICE_PROPERTIES);
+	#endif
 #endif
 
 	_EFI_DEBUG_DUMP("Exiting initEFITree()\n");
