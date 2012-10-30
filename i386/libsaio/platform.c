@@ -276,5 +276,13 @@ void initPlatform(int biosDevice)
 
 	initKernelBootConfig();
 
+#if (LOAD_STATIC_EFI_DATA_FROM_EXTRA)
+	/*
+	 * We need to call this much earlier in the boot process when static EFI data
+	 * is read from: /Extra/EFI[MacModelNN.bin]. Otherwise LoadFile (load.c) fails.
+	 */
+	initPartitionChain();
+#endif
+
 	initEFITree();
 }
