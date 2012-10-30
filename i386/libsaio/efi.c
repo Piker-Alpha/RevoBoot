@@ -39,6 +39,7 @@
 
 #include "efi/fake_efi.h"
 
+
 //==============================================================================
 
 void initEFITree(void)
@@ -47,7 +48,7 @@ void initEFITree(void)
 
 	static char ACPI[] = "ACPI";
 
-	// The required information should be added to private_data.h
+	// The information from RevoBoot/i386/libsaio/SMBIOS/model_data.h is used here.
 	static EFI_CHAR16 const MODEL_NAME[]			= EFI_MODEL_NAME;
 	static EFI_CHAR16 const SYSTEM_SERIAL_NUMBER[]	= STATIC_SYSTEM_SERIAL_NUMBER;
 
