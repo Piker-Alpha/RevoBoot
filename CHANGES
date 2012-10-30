@@ -1,3 +1,11 @@
+RevoBoot v1.5.31
+================
+- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
+- Restored lost STATIC_SMSERIALNUMBER in setings-template.h (PikerAlpha, October 2012).
+- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
+- VERSION updated to v1.5.31
+
+
 RevoBoot v1.5.30
 ================
 - Move/update /Extra/ data reading to RevoBoot/i386/libsaio/load.c (PikerAlpha, October 2012).
