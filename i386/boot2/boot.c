@@ -204,7 +204,14 @@ void boot(int biosdev)
 		}
 	}
 
+#if (LOAD_STATIC_EFI_DATA_FROM_EXTRA == 0)
+	/*
+	 * We can only make this call here when static EFI is included from
+	 * RevoBoot/i386/config/EFI/[MacModelNN.h] Not when the data is read
+	 * from: /Extra/ because then: RevoBoot/i386/libsaio/platform.c calls it.
+	 */
 	initPartitionChain();
+#endif
 
 	#define loadCABootPlist() loadSystemConfig(&bootInfo->bootConfig)
 
