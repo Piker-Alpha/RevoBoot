@@ -1,16 +1,16 @@
 /*
  * Copyright (c) 2009 by Master Chief.
- * Dynamic and static SMBIOS data gathering added by DHP in 2010.
- * Refactorized by DHP in 2011.
+ *
+ * Updates:
+ *
+ *			- Dynamic and static SMBIOS data gathering added by DHP in 2010.
+ *			- Refactorized by DHP in 2011.
+ *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
  */
 
 #include "platform.h"
 
 #if USE_STATIC_SMBIOS_DATA
-
-#include "smbios/static_data.h"
-
-
 //==============================================================================
 
 void setupSMBIOS(void)
@@ -19,15 +19,13 @@ void setupSMBIOS(void)
 
 	// Allocate 1 page of kernel memory (sufficient for a stripped SMBIOS table).
     void * kernelMemory = (void *)AllocateKernelMemory(4096);
-
+	
 	// Setup a new Entry Point Structure at the beginning of the newly allocated memory page.
 	struct SMBEntryPoint * newEPS = (struct SMBEntryPoint *) kernelMemory;
 
-    int tableLength = sizeof(SMBIOS_Table);
+	// Include additional/conditional code snippet.
+	#include "smbios/static_data.h"
 
-	// Copy the static SMBIOS data into the newly allocated memory page. Right after the new EPS.
-    memcpy((kernelMemory + sizeof(* newEPS)), SMBIOS_Table, tableLength);
-	
     newEPS->anchor[0]			= 0x5f;		// _
     newEPS->anchor[1]			= 0x53;		// S
     newEPS->anchor[2]			= 0x4d;		// M
@@ -69,9 +67,8 @@ void setupSMBIOS(void)
 	_SMBIOS_DEBUG_DUMP("New SMBIOS replacement setup.\n");
 	_SMBIOS_DEBUG_SLEEP(5);
 }
-
 #else
 
 #include "smbios/dynamic_data.h"
 
-#endif
+#endif // #if USE_STATIC_SMBIOS_DATA
