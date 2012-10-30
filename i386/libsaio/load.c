@@ -427,3 +427,31 @@ static long DecodeSymbolTable(long cmdBase)
     
 	return 0;
 }
+
+
+//==============================================================================
+// Public function (RevoBoot v1.5.30 and greater). Called from our ACPI patcher
+// which looks in /Extra/ACPI/ for [TableName].aml but it is also used in two
+// other places, being libsaio/efi.c and libsaio/SMBIOS/static_data.h This to
+// get static (binary) data from /Extra/[EFI/SMBIOS]/[FileName].bin
+
+long loadBinaryData(char *aFilePath, void **aMemoryAddress)
+{
+	long fileSize = LoadFile(aFilePath);
+
+	printf("fileSize is: %ld", fileSize);
+
+	if (fileSize > 0)
+	{
+		*aMemoryAddress = (void *)malloc(fileSize);
+		
+		if (aMemoryAddress)
+		{
+			memcpy(*aMemoryAddress, (void *)kLoadAddr, fileSize);
+
+			return fileSize;
+		}
+	}
+
+	return 0;
+}
