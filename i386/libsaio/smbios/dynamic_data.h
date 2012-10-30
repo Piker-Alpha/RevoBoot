@@ -12,6 +12,7 @@
  *			- SMBProperties changed for speed and simplicity (PikerAlpha, October 2012).
  *			- Calls with SMBProperties.keyString cleaned up (PikerAlpha, October 2012).
  *			- Fixed requiredStructures.start/stop values (PikerAlpha, October 2012).
+ *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER(PikerAlpha, October 2012).
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -135,7 +136,7 @@ struct SMBProperty SMBProperties[] =
 	{ kSMBTypeSystemInformation,	0x04,	kSMBString,		.plainData		= APPLE_INC					},
 	{ kSMBTypeSystemInformation,	0x05,	kSMBString,		.plainData		= SMB_PRODUCT_NAME			},
 	{ kSMBTypeSystemInformation,	0x06,	kSMBString,		.plainData		= "1.0"						},
-	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= STATIC_SMSERIALNUMBER		},
+	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= SMB_SYSTEM_SERIAL_NUMBER		},
 	{ kSMBTypeSystemInformation,	0x1a,	kSMBString,		.plainData		= SMB_FAMILY				},
 	
 	//----------------------------------------------------------------------------------------------------
