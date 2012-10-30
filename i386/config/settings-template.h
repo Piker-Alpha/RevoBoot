@@ -16,6 +16,8 @@
  *			- OVERRIDE_DYNAMIC_PRODUCT_DETECTION removed/no longer supported (PikerAlpha, October 2012).
  *			- INTEL_CORE_TECHNOLOGY per default set to 1 (PikerAlpha, October 2012).
  *			- INJECT_EFI_DEVICE_PROPERTIES per default set to 1 (PikerAlpha, October 2012). 
+ *			- USE_STATIC_EFI_DATA added (PikerAlpha, October 2012).
+ *			- USE_STATIC_SMBIOS_DATA added (PikerAlpha, October 2012).
  *
  */
 
@@ -273,6 +275,9 @@
 #define INJECT_EFI_DEVICE_PROPERTIES	0	// Set to 0 by default. Change this to 1 when you need to inject 'device-properties'.
 											//
 											// Note: Required when not setting device-properties from your DSDT/SSDT.
+#if INJECT_EFI_DEVICE_PROPERTIES
+	#define LOAD_STATIC_EFI_DATA_FROM_EXTRA	1	// Set to 0 by default. Change this to 1 to load: /Extra/EFI/[MacModelNN].bin
+#endif
 
 #define EFI_64_BIT						1	// Set to 1 by default for EFI64 on 64-bit platforms. Supporting both
 											// 32 and 64-bit boot modes (using arch=i386/x86_64 under Kernel Flags).
@@ -328,6 +333,10 @@
 
 #if (USE_STATIC_SMBIOS_DATA == 0 && USE_STATIC_CPU_DATA == 1)
 	#undef USE_STATIC_CPU_DATA					// Prevent boot failures due to wrong settings (until I figured out what we are missing).
+#endif
+
+#if USE_STATIC_SMBIOS_DATA
+	#define LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA	0	// Set to 0 by default. Change this to 1 to load: /Extra/SMBIOS/[MacModelNN].bin
 #endif
 
 #define OVERRIDE_DYNAMIC_MEMORY_DETECTION	0	// Set to 0 by default. Change this to 0 only when your SMBIOS data (type 17) is correct, or when
