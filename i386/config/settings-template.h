@@ -18,6 +18,9 @@
  *			- INJECT_EFI_DEVICE_PROPERTIES per default set to 1 (PikerAlpha, October 2012). 
  *			- USE_STATIC_EFI_DATA added (PikerAlpha, October 2012).
  *			- USE_STATIC_SMBIOS_DATA added (PikerAlpha, October 2012).
+ *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
+ *			- Restored lost STATIC_SMSERIALNUMBER (PikerAlpha, October 2012).
+ *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
  *
  */
 
@@ -288,7 +291,7 @@
 											//
 											// Note: Do not change this setting, unless you know what you are doing.
 
-#define STATIC_SYSTEM_SERIAL_NUMBER		{ 'S', 'O', 'M', 'E', 'S', 'R', 'L', 'N', 'U', 'M', 'B', 'R' } // Example only!
+#define EFI_SYSTEM_SERIAL_NUMBER		{ 'S', 'O', 'M', 'E', 'S', 'R', 'L', 'N', 'U', 'M', 'B', 'R' } // Example only!
 
 #define STATIC_SYSTEM_ID				{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F } // Example only!
 
@@ -356,6 +359,9 @@
 													// MACPRO and MACPRO_51, MACPRO_41, MACPRO_31
 													//
 													// Note: MACMINI (without _NNN) selects the default model (last one i.e. MACMINI_51).
+
+#define SMB_SYSTEM_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
+												// Note: Match this with EFI_SYSTEM_SERIAL_NUMBER
 
 #if (TARGET_MODEL & MACPRO)
 	#define SMB_BOARD_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
