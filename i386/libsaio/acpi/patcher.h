@@ -13,7 +13,6 @@
 
 extern ACPI_RSDP * getACPIBaseAddress();
 
-
 #if PATCH_ACPI_TABLE_DATA
 
 #if AUTOMATIC_SSDT_PR_CREATION
@@ -21,7 +20,7 @@ extern ACPI_RSDP * getACPIBaseAddress();
 #endif
 
 
-#if LOAD_EXTRA_ACPI_TABLES && (LOAD_DSDT_TABLE_FROM_EXTRA_ACPI || LOAD_SSDT_TABLE_FROM_EXTRA_ACPI)
+#if (LOAD_EXTRA_ACPI_TABLES && (LOAD_DSDT_TABLE_FROM_EXTRA_ACPI || LOAD_SSDT_TABLE_FROM_EXTRA_ACPI))
 //==============================================================================
 
 extern long loadBinaryData(char *aFilePath, void **aMemoryAddress);
