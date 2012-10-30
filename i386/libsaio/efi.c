@@ -33,6 +33,7 @@
  *			- Now no longer includes platform.h (PikerAlpha, October 2012).
  *			- Data selector moved over from RevoBoot/i386/config/data.h (PikerAlpha, October 2012).
  *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
+ *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012). 
  *
  */
 
@@ -50,7 +51,7 @@ void initEFITree(void)
 
 	// The information from RevoBoot/i386/libsaio/SMBIOS/model_data.h is used here.
 	static EFI_CHAR16 const MODEL_NAME[]			= EFI_MODEL_NAME;
-	static EFI_CHAR16 const SYSTEM_SERIAL_NUMBER[]	= STATIC_SYSTEM_SERIAL_NUMBER;
+	static EFI_CHAR16 const SYSTEM_SERIAL_NUMBER[]	= EFI_SYSTEM_SERIAL_NUMBER;
 
 	DT__Initialize(); // Add and initialize gPlatform.DT.RootNode
 
