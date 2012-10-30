@@ -279,7 +279,7 @@
 											//
 											// Note: Required when not setting device-properties from your DSDT/SSDT.
 #if INJECT_EFI_DEVICE_PROPERTIES
-	#define LOAD_STATIC_EFI_DATA_FROM_EXTRA	1	// Set to 0 by default. Change this to 1 to load: /Extra/EFI/[MacModelNN].bin
+	#define LOAD_STATIC_EFI_DATA_FROM_EXTRA	0	// Set to 0 by default. Change this to 1 to load: /Extra/EFI/[MacModelNN].bin
 #endif
 
 #define EFI_64_BIT						1	// Set to 1 by default for EFI64 on 64-bit platforms. Supporting both
