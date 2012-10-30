@@ -79,14 +79,18 @@ Property * DT__AddProperty(Node *node, const char *name, uint32_t length, void *
 {
 	Property *prop;
 
-	_EFI_DEBUG_DUMP("DT__AddProperty([Node '%s'], '%s', %d, 0x%x)\n", DT__GetName(node), name, length, value);
+#if (DEBUG_EFI & 2)
+		_EFI_DEBUG_DUMP("DT__AddProperty([Node '%s'], '%s', %d, 0x%x)\n", DT__GetName(node), name, length, value);
+#endif
 
 	if (freeProperties == NULL)
 	{
 		void *buf = malloc(kAllocSize);
 		int i;
 
+	#if (DEBUG_EFI & 2)
 		_EFI_DEBUG_DUMP("Allocating more free properties\n");
+	#endif
 
 		if (buf == 0)
 		{
@@ -129,7 +133,9 @@ Property * DT__AddProperty(Node *node, const char *name, uint32_t length, void *
 	node->last_prop = prop;
 	prop->next = 0;
 
-	// _EFI_DEBUG_DUMP("Done [0x%x]\n", prop);
+#if (DEBUG_EFI & 8)
+	_EFI_DEBUG_DUMP("Done [0x%x]\n", prop);
+#endif
 
 	DTInfo.numProperties++;
 	DTInfo.totalPropertySize += RoundToLong(length);
@@ -155,7 +161,9 @@ Node * DT__AddChild(Node *parent, const char *name)
 
 		int i;
 
+#if (DEBUG_EFI & 2)
 		_EFI_DEBUG_DUMP("Allocating more free nodes\n");
+#endif
 
 		bzero(buf, kAllocSize);
 		node = (Node *)buf;
@@ -174,13 +182,17 @@ Node * DT__AddChild(Node *parent, const char *name)
 		}
 	}
 
+#if (DEBUG_EFI & 2)
 	_EFI_DEBUG_DUMP("DT__AddChild(0x%x, '%s')\n", parent, name);
+#endif
 
 	node = freeNodes;
 	freeNodes = node->next;
 
+#if (DEBUG_EFI & 2)
 	_EFI_DEBUG_DUMP("Got free node 0x%x\n", node);
 	_EFI_DEBUG_DUMP("prop = 0x%x, children = 0x%x, next = 0x%x\n", node->properties, node->children, node->next);
+#endif
 
 	if (parent == NULL)
 	{
@@ -252,7 +264,9 @@ void DT__Finalize(void)
 	Node *node;
 	Property *prop;
 
-	// _EFI_DEBUG_DUMP("DT__Finalize\n");
+#if (DEBUG_EFI & 8)
+	_EFI_DEBUG_DUMP("DT__Finalize\n");
+#endif
 
 	for (prop = allocedProperties; prop != NULL; prop = prop->next)
 	{
@@ -332,7 +346,9 @@ void DT__FlattenDeviceTree(void **buffer_p, uint32_t *length)
 	uint32_t totalSize;
 	void * buf;
 
+#if (DEBUG_EFI & 2)
 	_EFI_DEBUG_DUMP("DT__FlattenDeviceTree(0x%x, 0x%x)\n", buffer_p, length);
+#endif
 
 #if (DEBUG_EFI & 4)
 	if (buffer_p) 
@@ -345,7 +361,9 @@ void DT__FlattenDeviceTree(void **buffer_p, uint32_t *length)
 	DTInfo.numProperties * sizeof(DeviceTreeNodeProperty) +
 	DTInfo.totalPropertySize;
 
+#if (DEBUG_EFI & 2)
 	_EFI_DEBUG_DUMP("Total size 0x%x\n", totalSize);
+#endif
 
 	if (buffer_p != 0)
 	{
@@ -385,11 +403,16 @@ char * DT__GetName(Node *node)
 {
 	Property *prop;
 
-	//_EFI_DEBUG_DUMP("DT__GetName(0x%x)\n", node);
-	//_EFI_DEBUG_DUMP("Node properties = 0x%x\n", node->properties);
+#if (DEBUG_EFI & 8)
+	_EFI_DEBUG_DUMP("DT__GetName(0x%x)\n", node);
+	_EFI_DEBUG_DUMP("Node properties = 0x%x\n", node->properties);
+#endif
+
 	for (prop = node->properties; prop; prop = prop->next)
 	{
-		//_EFI_DEBUG_DUMP("Prop '%s'\n", prop->name);
+#if (DEBUG_EFI & 8)
+		_EFI_DEBUG_DUMP("Prop '%s'\n", prop->name);
+#endif
 		if (strcmp(prop->name, "name") == 0)
 		{
 			return prop->value;
@@ -410,8 +433,10 @@ Node * DT__FindNode(const char *path, bool createIfMissing)
 	char *bp;
 	int i;
 
+#if (DEBUG_EFI & 2)
 	_EFI_DEBUG_DUMP("DT__FindNode('%s', %d)\n", path, createIfMissing);
-    
+#endif
+
 	// Start at root
 	node = gPlatform.DT.RootNode;
 
@@ -436,13 +461,15 @@ Node * DT__FindNode(const char *path, bool createIfMissing)
 		{
 			break; // last path entry
 		}
-
+#if (DEBUG_EFI & 2)
 		_EFI_DEBUG_DUMP("Node '%s'\n", nameBuf);
+#endif
 
 		for (child = node->children; child != 0; child = child->next)
 		{
+#if (DEBUG_EFI & 2)
 			_EFI_DEBUG_DUMP("Child 0x%x\n", child);
-
+#endif
 			if (strcmp(DT__GetName(child), nameBuf) == 0)
 			{
 				break;
@@ -451,7 +478,9 @@ Node * DT__FindNode(const char *path, bool createIfMissing)
 
 		if (child == 0 && createIfMissing)
 		{
+#if (DEBUG_EFI & 2)
 			_EFI_DEBUG_DUMP("Creating node\n");
+#endif
 
 			char *str = malloc(strlen(nameBuf) + 1);
 			// XXX this will leak
