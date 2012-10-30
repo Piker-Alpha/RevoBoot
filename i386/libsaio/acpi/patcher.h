@@ -7,6 +7,7 @@
  *			- Refactorized for Revolution by DHP in 2010.
  *			- A complete new implementation written for RevoBoot by DHP in 2011.
  *			- Automatic SSDT_PR creation added by DHP in June 2011.
+ *			- Call loadBinaryData from loadACPITable (PikerAlpha, October 2012).
  */
 
 
@@ -26,33 +27,32 @@ int loadACPITable(int tableIndex)
 {
 	_ACPI_DEBUG_DUMP("loadACPITable(%s / ", customTables[tableIndex].name);
 
-	char dirspec[32];
-	sprintf (dirspec, "/Extra/ACPI/%s.aml", customTables[tableIndex].name);
-	int fd = open(dirspec, 0);
+	char dirSpec[32] = "";
+	sprintf(dirSpec, "/Extra/ACPI/%s.aml", customTables[tableIndex].name);
 
-	if (fd < 0)
+	void * tableAddress = (void *)kLoadAddr;
+
+	/*
+	 * loadBinaryData calls LoadFile (both in sys.c) to load table data into a
+	 * load buffer at kLoadAddr (defined in memory.h) and copies it into a new
+	 * allocated memory block (kLoadAddr gets overwritten by the next call).
+	 */
+	long fileSize = loadBinaryData(dirSpec, &tableAddress);
+
+	if (fileSize)
 	{
-		_ACPI_DEBUG_DUMP("Error: File not found.)\n");
+		_ACPI_DEBUG_DUMP("%d bytes).\n", fileSize);
 
-		return -1;
+		// 'tableAddress' is copied into kernel memory later on (see setupACPI).
+		customTables[tableIndex].table			= tableAddress;
+		customTables[tableIndex].tableLength	= fileSize;
+
+		return 0;
 	}
 
-	int fileSize = file_size(fd);
-	void * kernelAddress = malloc(fileSize);
+	_ACPI_DEBUG_DUMP("Error: File not found.)\n");
 
-	if (kernelAddress)
-	{
-		read(fd, kernelAddress, fileSize);
-	}
-
-	close(fd);
-
-	_ACPI_DEBUG_DUMP("%d bytes).\n", fileSize);
-
-	customTables[tableIndex].table			= kernelAddress;
-	customTables[tableIndex].tableLength	= fileSize;
-
-	return 0;
+	return -1;
 }
 
 
