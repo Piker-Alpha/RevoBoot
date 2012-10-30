@@ -6,8 +6,8 @@
 #			- Major cleanup (PikerAlpha, October 2012).
 #			- DMAKE_TARGET_MODEL added (PikerAlpha, October 2012).
 #			- Static data selectors added (PikerAlpha, October 2012).
+#			- STATIC_DATA_FILENAME added (PikerAlpha, October 2012).
 #
-
 
 include ../MakePaths.dir
 
@@ -23,6 +23,7 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost \
     -DREVOBOOT_VERSION_INFO=\"RevoBoot\ v$(PRODUCT_VERSION_NUMBER)\" \
     -DMAKE_TARGET_OS=$(PRODUCT_OS_TARGET) \
     -DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
+    -DSTATIC_DATA_FILENAME=$(MAKE_TARGET_MODEL).bin \
     -DACPI_DATA_FILE=../../config/$(MAKE_ACPI_DATA_FILE) \
     -DEFI_DATA_FILE=../config/$(MAKE_EFI_DATA_FILE) \
     -DSMBIOS_DATA_FILE=../../config/$(MAKE_SMBIOS_DATA_FILE) \
