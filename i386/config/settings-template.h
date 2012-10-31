@@ -363,9 +363,7 @@
 #define SMB_SYSTEM_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
 												// Note: Match this with EFI_SYSTEM_SERIAL_NUMBER
 
-#if (TARGET_MODEL & MACPRO)
-	#define SMB_BOARD_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
-#endif
+#define SMB_BOARD_SERIAL_NUMBER             "SOMESRLNUMBR" // Example only!
 
 #define DEBUG_SMBIOS						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
