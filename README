@@ -1,25 +1,22 @@
 About this project:
 This Open Source hobby project is maintained by Pike and dgsga. Two long time supporters of the RevoBoot project.
 
-Note that we do not tolerate/share any (links to) copyrighted material. We only use purchased software and 
-we won't share any of it. Just get your copy of OS X in the Apple store. Should be affordable for everyone.
-
+Note that we do not tolerate/share any (links to) copyrighted material. We only use purchased software and we won't share any of it. Just get your copy of OS X in the Apple store. Should be affordable for everyone.
 
 Mountain Lion Server:
 RevoBoot has been confirmed to work with the Server app for Mountain Lion (12C60).
 
-
 Fusion Drive Support:
-Apple's new Fusion Drive* is a software implementation to speedup the load process 
-for frequently used applications, without limiting the storage capacity in a bad way.
+Apple's new Fusion Drive* is a software implementation to speedup the boot and load process for frequently used applications, without limiting the storage capacity in a bad way.
 See also: http://support.apple.com/kb/HT5446
 
-RevoBoot has <i>not</i> yet been confirmed to work with a Fusion Drive. We however expect it to work flawlessly.
+The new Mac's that come with a Fusion Drive boot from the third (Recovery HD like) partition on the SSD. This partition in 134.2 MB in size and is called "Boot OS X".
+The Recovery HD partition can be found as third partition on the HDD. Setting up a Fusion Drive on a Mac needs to be done with Internet Recovery.
 
+RevoBoot detects CoreStorage partitions and will boot from the boot helper partition on the SDD.
 
 Xcode Support for Mountain Lion:
-RevoBoot can be build on Snow Leopard, Lion and Mountain Lion. The latter requires 
-Xcode 4.5.1 and a libcc_kext.a from an older version of Xcode. See change log for instructions.
+RevoBoot can be build on Snow Leopard, Lion and Mountain Lion. The latter requires Xcode 4.5.1 and a libcc_kext.a from an older version of Xcode. See change log for instructions.
 
 
 Configuration:
