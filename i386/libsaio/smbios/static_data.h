@@ -5,6 +5,7 @@
  *			- Dynamic and static SMBIOS data gathering added by DHP in 2010.
  *			- New path for static EFI data (PikerAlpha, October 2012).
  *			- Optionally check /Extra/SMBIOS/[MacModelNN.bin] for static SMBIOS data (PikerAlpha, October 2012).
+ *			- Oops. Restoring lost lines (PikerAlpha, November 2012).
  *
  * Credits:
  *			- blackosx, DB1, dgsga, FKA, humph, scrax and STLVNUB (testers).
@@ -48,6 +49,9 @@
 	};
 
 	int tableLength = sizeof(SMBIOS_Table);
+
+	// Copy the static SMBIOS data into the newly allocated memory page. Right after the new EPS.
+	memcpy((kernelMemory + sizeof(* newEPS)), SMBIOS_Table, tableLength);
 #endif
 
 #endif /* !__LIBSAIO_SMBIOS_STATIC_DATA_H */
