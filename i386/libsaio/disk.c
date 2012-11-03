@@ -619,7 +619,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										else
 #endif
 
-#if CORE_STORAGE_SUPPORT						// Is this a CoreStorage partition?
+#if CORE_STORAGE_SUPPORT				// Is this a CoreStorage partition?
 										if (efi_guid_compare(&GPT_CORESTORAGE_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: CoreStorage GUID\n");
