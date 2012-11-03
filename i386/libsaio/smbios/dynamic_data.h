@@ -136,7 +136,7 @@ struct SMBProperty SMBProperties[] =
 	{ kSMBTypeSystemInformation,	0x04,	kSMBString,		.plainData		= APPLE_INC					},
 	{ kSMBTypeSystemInformation,	0x05,	kSMBString,		.plainData		= SMB_PRODUCT_NAME			},
 	{ kSMBTypeSystemInformation,	0x06,	kSMBString,		.plainData		= "1.0"						},
-	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= SMB_SYSTEM_SERIAL_NUMBER		},
+	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= SMB_SYSTEM_SERIAL_NUMBER	},
 	{ kSMBTypeSystemInformation,	0x1a,	kSMBString,		.plainData		= SMB_FAMILY				},
 	
 	//----------------------------------------------------------------------------------------------------
@@ -498,4 +498,3 @@ void setupSMBIOS(void)
 
 
 #endif /* !__LIBSAIO_SMBIOS_PATCHER_H */
-
