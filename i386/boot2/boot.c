@@ -47,7 +47,9 @@
  */
 
 /* 
- * Refactorized by DHP in 2010 and 2011.
+ * Updates:
+ *		- Refactorized by DHP in 2010 and 2011.
+ *		- Optionally include Recovery HD support code (PikerAlpha, November 2012).
  */
 
 
@@ -193,6 +195,7 @@ void boot(int biosdev)
 	showBootLogo();
 #endif
 
+#if LION_RECOVERY_SUPPORT
 	// A bit ugly maybe, but this will be changed sometime soon.
 	while (readKeyboardStatus())
 	{
@@ -203,6 +206,7 @@ void boot(int biosdev)
 			gPlatform.BootRecoveryHD = true;
 		}
 	}
+#endif
 
 #if (LOAD_STATIC_EFI_DATA_FROM_EXTRA == 0)
 	/*
