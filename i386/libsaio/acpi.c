@@ -26,6 +26,9 @@
  * EFI implementation for Revolution Copyright (c) 2010 by DHP.
  * All rights reserved.
  *
+ * Updates:
+ *
+ *			- Moved #include to end of file, eliminating need of extern in patcher.h (PikerAlpha, October 2012).
  */
 
 
@@ -72,28 +75,18 @@ void updateACPITableData(struct acpi_2_rsdp * rsdp, struct acpi_2_xsdt * xsdt, i
 
 
 #if APPLE_STYLE_ACPI
-
 	//------------------------- Used in acpi/patcher.h -------------------------
-
 	#define _ACPI_SET(target, str, len) strncpy(target, str, len)
 	#define _ACPI_SET_APPLE_OEMID(target) _ACPI_SET((target)->OEMID, "Apple ", 6)
 	#define _ACPI_SET_APPLE_OEMTargetID(target) _ACPI_SET((target)->OEMTableID, "Apple00", 8)
-
 	//--------------------------------------------------------------------------
-
 #else
-
 	//--------------------------- Void replacements ----------------------------
-
 	#define _ACPI_SET(target, str, len)
 	#define _ACPI_SET_APPLE_OEMID(target)
 	#define _ACPI_SET_APPLE_OEMTargetID(target)
-
 	//--------------------------------------------------------------------------
-
 #endif
-
-#include "acpi/patcher.h" // Macro's in this include file must be live now.
 
 
 //==============================================================================
@@ -136,4 +129,4 @@ struct acpi_2_rsdp * getACPIBaseAddress()
 #endif
 }
 
-
+#include "acpi/patcher.h" // Macro's in this include file must be live now.
