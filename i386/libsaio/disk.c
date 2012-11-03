@@ -565,7 +565,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 								gDiskBVMap		= map;
 
 #if CORE_STORAGE_SUPPORT
-								bool codeStoragePartition = false;
+								bool coreStoragePartition = false;
 #endif
 
 								for (; gptID <= gptCount; gptID++)
@@ -619,14 +619,14 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										else
 #endif
 
-#if CORE_STORAGE_SUPPORT							// Is this a CoreStorage partition?
+#if CORE_STORAGE_SUPPORT						// Is this a CoreStorage partition?
 										if (efi_guid_compare(&GPT_CORESTORAGE_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: CoreStorage GUID\n");
 
 											coreStoragePartition = true;
 											
-											continue; // Start searching for the Recovery HD partition.
+											continue; // Start searching for the Recovery HD/Boot OS X partition.
 										}
 										else if (!coreStoragePartition && 
 #else
