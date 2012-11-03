@@ -1,3 +1,8 @@
+RevoBoot v1.5.33
+================
+- Restored lost lines in RevoBoot/i386/libsaio/SMBIOS/static_data.h (PikerAlpha, November 2012).
+
+
 RevoBoot v1.5.32
 ================
 - Optionally include Recovery HD support code in boot.c (PikerAlpha, October 2012).
