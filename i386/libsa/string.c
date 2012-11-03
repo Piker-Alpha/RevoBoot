@@ -25,6 +25,9 @@
 
 #include "libsa.h"
 
+
+//==========================================================================
+
 void * memset(void * dst, int val, size_t len)
 {
     asm volatile ( "rep; stosb"
@@ -36,6 +39,8 @@ void * memset(void * dst, int val, size_t len)
 }
 
 #if 0
+//==========================================================================
+
 void * memcpy(void * dst, const void * src, size_t len)
 {
     asm volatile ( "rep; movsb"
@@ -46,10 +51,16 @@ void * memcpy(void * dst, const void * src, size_t len)
     return dst;
 }
 
+
+//==========================================================================
+
 void bcopy(const void * src, void * dst, size_t len)
 {
 	memcpy(dst, src, len);
 }
+
+
+//==========================================================================
 
 void bzero(void * dst, size_t len)
 {
@@ -57,6 +68,8 @@ void bzero(void * dst, size_t len)
 }
 
 #else
+//==========================================================================
+
 void * memcpy(void * dst, const void * src, size_t len)
 {
     asm volatile ( "cld                  \n\t"
@@ -73,6 +86,9 @@ void * memcpy(void * dst, const void * src, size_t len)
     return dst;
 }
 
+
+//==========================================================================
+
 void bcopy(const void * src, void * dst, size_t len)
 {
     asm volatile ( "cld                  \n\t"
@@ -86,6 +102,9 @@ void bcopy(const void * src, void * dst, size_t len)
        : "c" (len), "D" (dst), "S" (src)
        : "memory", "%edx" );
 }
+
+
+//==========================================================================
 
 void bzero(void * dst, size_t len)
 {
@@ -104,9 +123,10 @@ void bzero(void * dst, size_t len)
 #endif
 
 /* #if DONT_USE_GCC_BUILT_IN_STRLEN */
-
 #define tolower(c)     ((int)((c) & ~0x20))
 #define toupper(c)     ((int)((c) | 0x20))
+
+//==========================================================================
 
 int strlen(const char * s)
 {
@@ -114,10 +134,12 @@ int strlen(const char * s)
 	while (*s++) n++;
 	return(n);
 }
-
 /*#endif*/
 
+
+//==========================================================================
 /* NOTE: Moved from ntfs.c */
+
 int memcmp(const void *p1, const void *p2, int len)
 {
     while (len--) {
@@ -126,6 +148,9 @@ int memcmp(const void *p1, const void *p2, int len)
     }
     return 0;
 }
+
+
+//==========================================================================
 
 int strcmp(const char * s1, const char * s2)
 {
@@ -136,6 +161,9 @@ int strcmp(const char * s1, const char * s2)
 	return (*s1 - *s2);
 }
 
+
+//==========================================================================
+
 int strncmp(const char * s1, const char * s2, size_t len)
 {
 	register int n = len;
@@ -145,6 +173,9 @@ int strncmp(const char * s1, const char * s2, size_t len)
 	return(n<0 ? 0 : *s1 - *--s2);
 }
 
+
+//==========================================================================
+
 char * strcpy(char * s1, const char * s2)
 {
 	register char *ret = s1;
@@ -152,6 +183,9 @@ char * strcpy(char * s1, const char * s2)
 		continue;
 	return ret;
 }
+
+
+//==========================================================================
 
 char * strncpy(char * s1, const char * s2, size_t n)
 {
@@ -161,6 +195,9 @@ char * strncpy(char * s1, const char * s2, size_t n)
 	return ret;
 }
 
+
+//==========================================================================
+
 char * strlcpy(char * s1, const char * s2, size_t n)
 {
 	register char *ret = s1;
@@ -169,6 +206,9 @@ char * strlcpy(char * s1, const char * s2, size_t n)
 	if (!n) *--s1=0;
 	return ret;
 }
+
+
+//==========================================================================
 
 char * strstr(const char *in, const char *str)
 {
@@ -193,6 +233,9 @@ char * strstr(const char *in, const char *str)
     return (char *) (in - 1);
 }
 
+
+//==========================================================================
+
 int ptol(const char *str)
 {
 	register int c = *str;
@@ -204,6 +247,9 @@ int ptol(const char *str)
 	else c = 0;
 	return c;
 }
+
+
+//==========================================================================
 
 int atoi(const char *str)
 {
@@ -217,6 +263,9 @@ int atoi(const char *str)
 	return sum;
 }
 
+
+//==========================================================================
+
 char *strncat(char *s1, const char *s2, size_t n)
 {
 	register char *ret = s1;
@@ -228,17 +277,25 @@ char *strncat(char *s1, const char *s2, size_t n)
 	return ret;
 }
 
+
+//==========================================================================
+
 char *strcat(char *s1, const char *s2)
 {
 	return(strncat(s1, s2, strlen(s2)));
 }
+
+
+//==========================================================================
 
 char *strdup(const char *s1)
 {
 	return strcpy(malloc(strlen(s1) + 1), s1);
 }
 
+
 #if STRNCASECMP
+//==========================================================================
 int strncasecmp(const char *s1, const char *s2, size_t len)
 {
 	register int n = len;
@@ -249,7 +306,10 @@ int strncasecmp(const char *s1, const char *s2, size_t len)
 }
 #endif
 
+
+//==========================================================================
 /* COPYRIGHT NOTICE: checksum8 from AppleSMBIOS */
+
 uint8_t checksum8( void * start, unsigned int length )
 {
     uint8_t   csum = 0;
@@ -262,3 +322,27 @@ uint8_t checksum8( void * start, unsigned int length )
     return csum;
 }
 
+
+#if LOAD_MODEL_SPECIFIC_STATIC_DATA
+//==========================================================================
+
+char * removeChar(char *aSourceString, char aTargetChar)
+{
+	char *source = aSourceString;
+	char *destination = aSourceString;
+	
+    for (; *source != '\0'; source++)
+	{
+		*destination = *source;
+		
+        if (*destination != aTargetChar)
+		{
+			destination++;
+		}
+    }
+	
+	*destination = '\0';
+	
+	return (aSourceString);
+}
+#endif
