@@ -1,3 +1,17 @@
+RevoBoot v1.5.34
+================
+- LOAD_STATIC_EFI_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (PikerAlpha, October 2012).
+- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (PikerAlpha, October 2012).
+- New LOAD_MODEL_SPECIFIC_ACPI_DATA setting in settings-template.h (PikerAlpha, October 2012).
+- New LOAD_MODEL_SPECIFIC_STATIC_DATA setting in settings-template.h (PikerAlpha, October 2012).
+
+Notes:
+
+Static EFI/SMBIOS data will be used when RevoBoot can't find model specific data: /Extra/[EFI/SMBIOS]/MacModelNN.bin
+DSDT.aml will be loaded when RevoBoot can't find: /Extra/ACPI/DSDT-MacModelNN.aml (example).
+You <i>must</i> use the latest version of RevoBoot/i386/config/settings-template.h or things won't work. 
+
+
 RevoBoot v1.5.33
 ================
 - Restored lost lines in RevoBoot/i386/libsaio/SMBIOS/static_data.h (PikerAlpha, November 2012).
