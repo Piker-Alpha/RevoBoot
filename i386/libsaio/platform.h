@@ -82,6 +82,10 @@
 #define MACPRO_41				MACPRO | (1 << 15)
 #define MACPRO_31				MACPRO					// Defaults to MacPro3,1
 
+//------------------------------------------------------------------------------
+
+// #define	LOAD_MODEL_SPECIFIC_STATIC_DATA	(LOAD_MODEL_SPECIFIC_ACPI_DATA || LOAD_MODEL_SPECIFIC_EFI_DATA || LOAD_MODEL_SPECIFIC_SMBIOS_DATA)
+
 #include "smbios/model_data.h"
 
 //------------------------------------------------------------------------------
@@ -146,7 +150,10 @@ typedef struct _PlatformInfo_t
 												// later updated in boot.c with the actual version info.
 	
 	char *				ModelID;				// Initialized in platform.c and used in boot.c
-	
+#if LOAD_MODEL_SPECIFIC_STATIC_DATA
+	char *				CommaLessModelID;		// Initialized in platform.c and used in i386/libsaio/ACPI/patcher.h,
+#endif												// i386/libsaio/efi.c and i386/libsaio/SMBIOS/static_data.h
+
 	char *				KextFileName;			// Initialized and used in drivers.c
 	char *				KextFileSpec;			// Initialized and used in drivers.c
 	char *				KextPlistSpec;			// Initialized and used in drivers.c
@@ -299,7 +306,6 @@ typedef struct _PlatformInfo_t
 	} SMBIOS;
 	
 } PlatformInfo_t;
-
 
 //------------------------------------------------------------------------------
 
