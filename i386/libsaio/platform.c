@@ -177,8 +177,14 @@ void initPlatform(int biosDevice)
 	gPlatform.MPS.Guid				= (EFI_GUID) EFI_MPS_TABLE_GUID;
 #endif // INCLUDE_MP_TABLE
 
-	// Used in boot.c to verify the checksum (adler32) of a pre-linked kernel.
-	gPlatform.ModelID				= SMB_PRODUCT_NAME;
+	// Used in boot.c to verify the checksum (adler32) of pre-linked kernels.
+	gPlatform.ModelID				= strdup(SMB_PRODUCT_NAME);
+
+#if LOAD_MODEL_SPECIFIC_STATIC_DATA
+	// Used in RevoBoot/i386/libsaio/ACPI/patcher.h, RevoBoot/i386/libsaio/efi.c
+	// and RevoBoot/i386/libsaio/SMBIOS/static_data.h
+	gPlatform.CommaLessModelID		= removeChar(strdup(gPlatform.ModelID), ',');
+#endif
 
 	// Determine system type based on product name. Used in
 	// acpi/patcher.h to update FADT->Preferred_PM_Profile
@@ -276,7 +282,7 @@ void initPlatform(int biosDevice)
 
 	initKernelBootConfig();
 
-#if (LOAD_STATIC_EFI_DATA_FROM_EXTRA)
+#if (LOAD_MODEL_SPECIFIC_EFI_DATA)
 	/*
 	 * We need to call this much earlier in the boot process when static EFI data
 	 * is read from: /Extra/EFI[MacModelNN.bin]. Otherwise LoadFile (load.c) fails.
