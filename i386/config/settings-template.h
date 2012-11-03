@@ -197,6 +197,9 @@
 
 #define SAFE_MALLOC						0	// Set to 0 by default. Change this to 1 when booting halts with a memory allocation error.
 
+#define LION_RECOVERY_SUPPORT			0	// Set to 0 by default. Change this to 1 to make RevoBoot search for the 'Recovery HD'
+										// partition and, when available, boot from it.
+
 #define DEBUG_BOOT						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
 
@@ -256,8 +259,13 @@
 
 #define LEGACY_BIOS_READ_SUPPORT		0	// Set to 0 by default. Change this to 1 for crappy old BIOSes.
 
-#define LION_FILEVAULT_SUPPORT			0	// Set to 0 by default.  Setting this to 1 will make RevoBoot skip encrypted boot partitions
-											// and boot from the Recovery HD partition instead (when available).
+#if LION_RECOVERY_SUPPORT
+	#define CORE_STORAGE_SUPPORT		1	// Set to 0 by default since booting from a 'Recovery HD' partition may requires us to skip
+											// (encrypted) CoreStorage partitions.
+#else
+	#define CORE_STORAGE_SUPPORT		0	// Set to 0 by default. Change this to 1 when you want RevoBoot to boot from the 'Boot OS X'
+											// (usually the third) partition on a Fusion Drive (requires Mountain Lion 10.8.2).
+#endif
 
 #define APPLE_RAID_SUPPORT				0	// Set to 0 by default. Change this to 1 for Apple Software RAID support.
 
@@ -314,17 +322,7 @@
 #define DEBUG_BOOT_GRAPHICS				0	// Set to 0 by default. Use 1 when to see debug info.
 
 
-//------------------------------------------------------------ STRINGDATA.H ----------------------------------------------------------------
-
-#define LION_FILEVAULT_SUPPORT			0	// Set to 0 by default.  Setting this to 1 will make RevoBoot skip encrypted boot partitions
-											// and boot from the Recovery HD partition instead (when available).
-
-#if LION_FILEVAULT_SUPPORT
-	#define LION_RECOVERY_SUPPORT		1	// Make RevoBoot search for the Recovery HD partition and boot from it (when available).
-#else
-	#define LION_RECOVERY_SUPPORT		0	// Set to 0 by default. Setting this to 1 will make RevoBoot search for the Recovery HD and
-											// try to boot from it, when it is properly setup and modified for RevoBoot.
-#endif
+//------------------------------------------------------------ STRINGTABLE.H ----------------------------------------------------------------
 
 #define LION_INSTALL_SUPPORT			0	// Set to 0 by default. Setting this to 1 will make RevoBoot search in specific directories
 											// for com.apple.Boot.plist – required for Mac like Lion OS X installations.
