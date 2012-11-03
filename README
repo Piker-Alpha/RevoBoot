@@ -7,11 +7,10 @@ Mountain Lion Server:
 RevoBoot has been confirmed to work with the Server app for Mountain Lion (12C60).
 
 Fusion Drive Support:
-Apple's new Fusion Drive* is a software implementation to speedup the boot and load process for frequently used applications, without limiting the storage capacity in a bad way.
-See also: http://support.apple.com/kb/HT5446
+Apple's new Fusion Drive* is a software implementation to speedup the boot and load process for frequently used applications, without limiting the storage capacity in a bad way. See also: http://support.apple.com/kb/HT5446
 
-The new Mac's that come with a Fusion Drive boot from the third (Recovery HD like) partition on the SSD. This partition in 134.2 MB in size and is called "Boot OS X".
-The Recovery HD partition can be found as third partition on the HDD. Setting up a Fusion Drive on a Mac needs to be done with Internet Recovery.
+The new Mac's that come with a Fusion Drive boot from the third (Recovery HD like) partition on the SSD. This partition is 134.2 MB in size and is called "Boot OS X".
+The Recovery HD partition can be found as third partition on the HDD. Setting up a Fusion Drive on a Mac need to be done with Internet Recovery.
 
 RevoBoot detects CoreStorage partitions and will boot from the boot helper partition on the SDD.
 
