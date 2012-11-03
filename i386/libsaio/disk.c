@@ -49,9 +49,13 @@
     GPT support added by David Elliott.  Based on IOGUIDPartitionScheme.cpp.
  */
 
-/***
-  * Cleanups and refactoring by DHP in 2010 and 2011.
-  */
+/*
+ * Updates:
+ *		- Cleanups and refactoring by DHP in 2010 and 2011.
+ *		- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
+ *		- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
+ *		- Renamed encryptedBootPartition to coreStoragePartition (PikerAlpha, November 2012).
+ */
 
 
 #include "bootstruct.h"
@@ -117,7 +121,7 @@ static struct disk_blk0 * gBootSector = NULL;
 // Apple_HFS
 EFI_GUID const GPT_HFS_GUID					= { 0x48465300, 0x0000, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 
-#if LION_RECOVERY_SUPPORT || APPLE_RAID_SUPPORT
+#if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT
 	// Apple_Boot (RAID helper partition and the 650 MB 'Recovery HD' partition).
 	EFI_GUID const GPT_BOOT_GUID			= { 0x426F6F74, 0x0000, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 #endif
@@ -140,8 +144,8 @@ EFI_GUID const GPT_HFS_GUID					= { 0x48465300, 0x0000, 0x11AA, { 0xAA, 0x11, 0x
     EFI_GUID const GPT_EFISYS_GUID			= { 0xC12A7328, 0xF81F, 0x11D2, { 0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B } };
 #endif
 
-#if LION_FILEVAULT_SUPPORT
-	// Apple_CoreStorage (FileVault 2)
+#if CORE_STORAGE_SUPPORT
+	// Apple_CoreStorage (FileVault 2 and Fusion Drive)
 	EFI_GUID const GPT_CORESTORAGE_GUID		= { 0x53746F72, 0x6167, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 #endif
 
@@ -560,8 +564,8 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 								map->next		= gDiskBVMap;
 								gDiskBVMap		= map;
 
-#if LION_FILEVAULT_SUPPORT
-								bool encryptedBootPartition = false;
+#if CORE_STORAGE_SUPPORT
+								bool codeStoragePartition = false;
 #endif
 
 								for (; gptID <= gptCount; gptID++)
@@ -615,16 +619,16 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										else
 #endif
 
-#if LION_FILEVAULT_SUPPORT				// Is this an encrypted boot partition?
+#if CORE_STORAGE_SUPPORT							// Is this a CoreStorage partition?
 										if (efi_guid_compare(&GPT_CORESTORAGE_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: CoreStorage GUID\n");
 
-											encryptedBootPartition = true;
+											coreStoragePartition = true;
 											
 											continue; // Start searching for the Recovery HD partition.
 										}
-										else if (!encryptedBootPartition && 
+										else if (!coreStoragePartition && 
 #else
 										// Check for HFS+ partitions.
 										if (
@@ -644,7 +648,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										}
 #endif
 
-#if LION_RECOVERY_SUPPORT || APPLE_RAID_SUPPORT
+#if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT
 										else if (efi_guid_compare(&GPT_BOOT_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: GPT_BOOT_GUID\n");
