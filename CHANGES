@@ -1,3 +1,13 @@
+RevoBoot v1.5.32
+================
+- Optionally include Recovery HD support code in boot.c (PikerAlpha, October 2012).
+- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT in disk.c (PikerAlpha, October 2012).
+- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT in disk.c (PikerAlpha, November 2012).
+- Renamed encryptedBootPartition to coreStoragePartition in disk.c (PikerAlpha, October 2012).
+- Cleaned up settings-template.h (PikerAlpha, October 2012).
+- VERSION updated to v1.5.32
+
+
 RevoBoot v1.5.31
 ================
 - STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
