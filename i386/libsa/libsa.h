@@ -73,16 +73,8 @@ extern char * strdup(const char *s1);
 	extern int    strncasecmp(const char * s1, const char * s2, size_t n);
 #endif
 
-extern uint8_t checksum8( void * start, unsigned int length );
-
-#if CHAMELEON
-	/*
-	 * error.c
-	 */
-
-	extern int    errno;
-	extern char * strerror(int errnum);
-#endif
+extern uint8_t checksum8( void * start, unsigned int length);
+char * removeChar(char *aSourceString, char aTargetChar);
 
 /*
  * strtol.c
