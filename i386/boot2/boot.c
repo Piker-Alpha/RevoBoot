@@ -46,7 +46,7 @@
  * Reworked again by Curtis Galloway (galloway@NeXT.com)
  */
 
-/* 
+/*
  * Updates:
  *		- Refactorized by DHP in 2010 and 2011.
  *		- Optionally include Recovery HD support code (PikerAlpha, November 2012).
@@ -208,7 +208,7 @@ void boot(int biosdev)
 	}
 #endif
 
-#if (LOAD_STATIC_EFI_DATA_FROM_EXTRA == 0)
+#if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0)
 	/*
 	 * We can only make this call here when static EFI is included from
 	 * RevoBoot/i386/config/EFI/[MacModelNN.h] Not when the data is read
