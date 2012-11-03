@@ -8,10 +8,11 @@
  *			- A complete new implementation written for RevoBoot by DHP in 2011.
  *			- Automatic SSDT_PR creation added by DHP in June 2011.
  *			- Call loadBinaryData from loadACPITable (PikerAlpha, October 2012).
+ *			- Moved extern declarations to saio_internal.h (PikerAlpha, October 2012).
+ *			- Now using gPlatform.CommaLessModelID instead of gPlatform.ModelID (PikerAlpha, October 2012).
+ *			- Fall back to non-model specific file when model specific file is unavailable (PikerAlpha, October 2012).
  */
 
-
-extern ACPI_RSDP * getACPIBaseAddress();
 
 #if PATCH_ACPI_TABLE_DATA
 
@@ -23,36 +24,53 @@ extern ACPI_RSDP * getACPIBaseAddress();
 #if (LOAD_EXTRA_ACPI_TABLES && (LOAD_DSDT_TABLE_FROM_EXTRA_ACPI || LOAD_SSDT_TABLE_FROM_EXTRA_ACPI))
 //==============================================================================
 
-extern long loadBinaryData(char *aFilePath, void **aMemoryAddress);
-
 int loadACPITable(int tableIndex)
 {
-	_ACPI_DEBUG_DUMP("loadACPITable(%s / ", customTables[tableIndex].name);
-
-	char dirSpec[32] = "";
-	sprintf(dirSpec, "/Extra/ACPI/%s.aml", customTables[tableIndex].name);
-
+	char dirSpec[48] = "";
+	long fileSize = 0;
 	void * tableAddress = (void *)kLoadAddr;
+
+#if LOAD_MODEL_SPECIFIC_ACPI_DATA
+	// Example: /Extra/ACPI/DSDT-MacBookPro101.aml
+	//          0123456789 0123456789 0123456789 1
+	sprintf(dirSpec, "/Extra/ACPI/%s-%s.aml", customTables[tableIndex].name, gPlatform.CommaLessModelID);
 
 	/*
 	 * loadBinaryData calls LoadFile (both in sys.c) to load table data into a
 	 * load buffer at kLoadAddr (defined in memory.h) and copies it into a new
 	 * allocated memory block (kLoadAddr gets overwritten by the next call).
 	 */
-	long fileSize = loadBinaryData(dirSpec, &tableAddress);
+	fileSize = loadBinaryData(dirSpec, &tableAddress);
 
-	if (fileSize)
+	if (fileSize == -1)
 	{
-		_ACPI_DEBUG_DUMP("%d bytes).\n", fileSize);
+#endif
+		// File: /Extra/ACPI/DSDT-MacBookPro101.aml not found. Try: /Extra/ACPI/dsdt.aml
+		sprintf(dirSpec, "/Extra/ACPI/%s.aml", customTables[tableIndex].name);
+		fileSize = loadBinaryData(dirSpec, &tableAddress);
+#if LOAD_MODEL_SPECIFIC_ACPI_DATA
+	}
+#endif
+
+	if (fileSize > 0)
+	{
+		_ACPI_DEBUG_DUMP("Loading: %s (%d bytes).\n", dirSpec, fileSize);
+		_ACPI_DEBUG_SLEEP(1);
 
 		// 'tableAddress' is copied into kernel memory later on (see setupACPI).
 		customTables[tableIndex].table			= tableAddress;
 		customTables[tableIndex].tableLength	= fileSize;
 
+#if (DEBUG_ACPI && LOAD_MODEL_SPECIFIC_ACPI_DATA)
+		// Update table name from DSDT.aml to DSDT-Macmini51.aml (DSDT example).
+		sprintf(customTables[tableIndex].fileName, gPlatform.CommaLessModelID);
+#endif
+
 		return 0;
 	}
 
-	_ACPI_DEBUG_DUMP("Error: File not found.)\n");
+	_ACPI_DEBUG_DUMP("Error: File %s not found.)\n", dirSpec);
+	_ACPI_DEBUG_SLEEP(5);
 
 	return -1;
 }
@@ -246,7 +264,7 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 #if STATIC_DSDT_TABLE_INJECTION
 		_ACPI_DEBUG_DUMP("static DSDT data");
 #else	// STATIC_DSDT_TABLE_INJECTION
-		_ACPI_DEBUG_DUMP("loaded DSDT.aml");
+		_ACPI_DEBUG_DUMP("%s", customTables[DSDT].fileName);
 #endif	// STATIC_DSDT_TABLE_INJECTION
 		_ACPI_DEBUG_DUMP(" @ 0x%x\n", customTables[DSDT].tableAddress);
 
