@@ -10,7 +10,34 @@
 
 #include "platform.h"
 
+
 #if USE_STATIC_SMBIOS_DATA
+
+#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
+//==============================================================================
+
+int useStaticSMBIOSData(void * aMemoryAddress)
+{
+	// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+	#include STRING(SMBIOS_DATA_FILE)
+
+	static uint32_t SMBIOS_Table[] =
+	{
+		// Replaced with data from: RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].h
+		STATIC_SMBIOS_DATA
+	};
+
+	_SMBIOS_DEBUG_DUMP("Using statically linked SMBIOS data\n");
+
+	int tableLength = sizeof(SMBIOS_Table);
+
+	// Copy the static SMBIOS data into the newly allocated memory page. Right after the new EPS.
+	memcpy(aMemoryAddress, SMBIOS_Table, tableLength);
+	
+	return tableLength;
+}
+#endif /* #if INJECT_EFI_DEVICE_PROPERTIES */
+
 //==============================================================================
 
 void setupSMBIOS(void)
@@ -34,7 +61,7 @@ void setupSMBIOS(void)
     newEPS->entryPointLength	= 0x1f;		// sizeof(* newEPS)
     newEPS->majorVersion		= 2;
     newEPS->minorVersion		= 4;
-    newEPS->maxStructureSize	= STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE; // Defined in: config/smbios/data.h
+	newEPS->maxStructureSize	= STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE;	// Defined in RevoBoot/i386/config/SMBIOS/data-template.h
     newEPS->entryPointRevision	= 0;
     
     newEPS->formattedArea[0]	= 0;
@@ -51,9 +78,25 @@ void setupSMBIOS(void)
     newEPS->dmi.checksum		= 0;
     newEPS->dmi.tableLength		= tableLength; 
     newEPS->dmi.tableAddress	= (uint32_t) (kernelMemory + sizeof(struct SMBEntryPoint)); 
-    newEPS->dmi.structureCount	= STATIC_SMBIOS_DMI_STRUCTURE_COUNT; // Defined in: config/smbios/data.h
     newEPS->dmi.bcdRevision		= 0x24;
-    
+	newEPS->dmi.structureCount	= STATIC_SMBIOS_DMI_STRUCTURE_COUNT;	// Defined in RevoBoot/i386/config/SMBIOS/data-template.h
+
+#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
+	/*
+	 * This is nothing more than a mere stop gap solution, since using the factory values here, instead of walking over 
+	 * staticSMBIOSData to get them, may hang the kernel at boot time (will be fixed in a next update of RevoBoot).
+	 */
+	if (fileSize > 0)
+	{
+		newEPS->maxStructureSize	= factoryEPS->maxStructureSize;		// Defined in RevoBoot/i386/libsaio/SMBIOS/static_data.h
+		newEPS->dmi.structureCount	= factoryEPS->dmi.structureCount;	// Defined in RevoBoot/i386/libsaio/SMBIOS/static_data.h
+		
+		_SMBIOS_DEBUG_DUMP("factoryEPS->maxStructureSize  : %d\n", factoryEPS->maxStructureSize);
+		_SMBIOS_DEBUG_DUMP("factoryEPS->dmi.structureCount: %d\n", factoryEPS->dmi.structureCount);
+		_SMBIOS_DEBUG_SLEEP(1);
+	}
+#endif
+
     // Take care of possible checksum errors
     newEPS->dmi.checksum		= 256 - checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
     newEPS->checksum			= 256 - checksum8(newEPS, sizeof(* newEPS));
