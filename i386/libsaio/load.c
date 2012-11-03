@@ -439,8 +439,6 @@ long loadBinaryData(char *aFilePath, void **aMemoryAddress)
 {
 	long fileSize = LoadFile(aFilePath);
 
-	printf("fileSize is: %ld", fileSize);
-
 	if (fileSize > 0)
 	{
 		*aMemoryAddress = (void *)malloc(fileSize);
