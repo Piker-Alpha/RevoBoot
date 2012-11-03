@@ -23,8 +23,8 @@
  *
  * Updates:
  *
- *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
- *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
+ *      - loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
+ *      - Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
  *
  */
 
