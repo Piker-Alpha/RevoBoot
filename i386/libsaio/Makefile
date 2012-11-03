@@ -26,7 +26,7 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost \
     -DSTATIC_DATA_FILENAME=$(MAKE_TARGET_MODEL).bin \
     -DACPI_DATA_FILE=../../config/$(MAKE_ACPI_DATA_FILE) \
     -DEFI_DATA_FILE=../config/$(MAKE_EFI_DATA_FILE) \
-    -DSMBIOS_DATA_FILE=../../config/$(MAKE_SMBIOS_DATA_FILE) \
+    -DSMBIOS_DATA_FILE=../config/$(MAKE_SMBIOS_DATA_FILE) \
     -fno-builtin -static $(OMIT_FRAME_POINTER_CFLAG) \
     -mpreferred-stack-boundary=2 -fno-align-functions -fno-stack-protector \
     -march=pentium4 -msse2 -mfpmath=sse -msoft-float
