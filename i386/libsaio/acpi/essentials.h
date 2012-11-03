@@ -53,30 +53,55 @@ typedef struct static_acpi_2_table
 	int		tableLength;
 	bool	loaded;
 	void	* tableAddress;
+#if LOAD_MODEL_SPECIFIC_ACPI_DATA
+	char	fileName[32];
+#endif
 } __attribute__((packed)) ACPITable;
 
 
 static ACPITable customTables[] =
 {
+#if LOAD_MODEL_SPECIFIC_ACPI_DATA
 	// Essential tables.
-	{ "APIC",		APIC_Table,			sizeof(APIC_Table),			false,	0 },
-	{ "ECDT",		ECDT_Table,			sizeof(ECDT_Table),			false,	0 },
-	{ "HPET",		HPET_Table,			sizeof(HPET_Table),			false,	0 },
-	{ "MCFG",		MCFG_Table,			sizeof(MCFG_Table),			false,	0 },
-	{ "SBST",		SBST_Table,			sizeof(SBST_Table),			false,	0 },
-	{ "SSDT",		SSDT_Table,			sizeof(SSDT_Table),			false,	0 },
+	{ "APIC",		APIC_Table,			sizeof(APIC_Table),			false,	0,	""	},
+	{ "ECDT",		ECDT_Table,			sizeof(ECDT_Table),			false,	0,	""	},
+	{ "HPET",		HPET_Table,			sizeof(HPET_Table),			false,	0,	""	},
+	{ "MCFG",		MCFG_Table,			sizeof(MCFG_Table),			false,	0,	""	},
+	{ "SBST",		SBST_Table,			sizeof(SBST_Table),			false,	0,	""	},
+	{ "SSDT",		SSDT_Table,			sizeof(SSDT_Table),			false,	0,	""	},
 
 	// Special essential tables.
-	{ "DSDT",		DSDT_Table,			sizeof(DSDT_Table),			false,	0 },
-	{ "FACS",		FACS_Table,			sizeof(FACS_Table),			false,	0 },
+	{ "DSDT",		DSDT_Table,			sizeof(DSDT_Table),			false,	0,	""	},
+	{ "FACS",		FACS_Table,			sizeof(FACS_Table),			false,	0,	""	},
 
 	// Optional tables.
-	{ "APIC-1",		APIC2_Table,		sizeof(APIC2_Table),		false,	0 },
-	{ "SSDT_GPU",	SSDT_GPU_Table,		sizeof(SSDT_GPU_Table),		false,	0 },
-	{ "SSDT_PR",	SSDT_PR_Table,		sizeof(SSDT_PR_Table),		false,	0 },	
-	{ "SSDT_SATA",	SSDT_SATA_Table,	sizeof(SSDT_SATA_Table),	false,	0 },
-	{ "SSDT_USB",	SSDT_USB_Table,		sizeof(SSDT_USB_Table),		false,	0 },
-	{ "",			0,					0,							false,	0 }
+	{ "APIC-1",		APIC2_Table,		sizeof(APIC2_Table),		false,	0,	""	},
+	{ "SSDT_GPU",	SSDT_GPU_Table,		sizeof(SSDT_GPU_Table),		false,	0,	""	},
+	{ "SSDT_PR",	SSDT_PR_Table,		sizeof(SSDT_PR_Table),		false,	0,	""	},
+	{ "SSDT_SATA",	SSDT_SATA_Table,	sizeof(SSDT_SATA_Table),	false,	0,	""	},
+	{ "SSDT_USB",	SSDT_USB_Table,		sizeof(SSDT_USB_Table),		false,	0,	""	},
+	{ "",			0,					0,							false,	0,	""	}
+#else
+	// Essential tables.
+	{ "APIC",		APIC_Table,			sizeof(APIC_Table),			false,	0	},
+	{ "ECDT",		ECDT_Table,			sizeof(ECDT_Table),			false,	0	},
+	{ "HPET",		HPET_Table,			sizeof(HPET_Table),			false,	0	},
+	{ "MCFG",		MCFG_Table,			sizeof(MCFG_Table),			false,	0	},
+	{ "SBST",		SBST_Table,			sizeof(SBST_Table),			false,	0	},
+	{ "SSDT",		SSDT_Table,			sizeof(SSDT_Table),			false,	0	},
+	
+	// Special essential tables.
+	{ "DSDT",		DSDT_Table,			sizeof(DSDT_Table),			false,	0	},
+	{ "FACS",		FACS_Table,			sizeof(FACS_Table),			false,	0	},
+	
+	// Optional tables.
+	{ "APIC-1",		APIC2_Table,		sizeof(APIC2_Table),		false,	0	},
+	{ "SSDT_GPU",	SSDT_GPU_Table,		sizeof(SSDT_GPU_Table),		false,	0	},
+	{ "SSDT_PR",	SSDT_PR_Table,		sizeof(SSDT_PR_Table),		false,	0	},
+	{ "SSDT_SATA",	SSDT_SATA_Table,	sizeof(SSDT_SATA_Table),	false,	0	},
+	{ "SSDT_USB",	SSDT_USB_Table,		sizeof(SSDT_USB_Table),		false,	0	},
+	{ "",			0,					0,							false,	0	}
+#endif
 };
 
 
