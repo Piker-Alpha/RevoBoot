@@ -13,7 +13,6 @@
 
 #if USE_STATIC_SMBIOS_DATA
 
-#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
 //==============================================================================
 
 int useStaticSMBIOSData(void * aMemoryAddress)
@@ -36,7 +35,7 @@ int useStaticSMBIOSData(void * aMemoryAddress)
 	
 	return tableLength;
 }
-#endif /* #if INJECT_EFI_DEVICE_PROPERTIES */
+
 
 //==============================================================================
 
