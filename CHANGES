@@ -1,9 +1,16 @@
+RevoBoot v1.5.35
+================
+- SMBIOS related enhancements for RevoBoot v1.5.35 (PikerAlpha, November 2012).
+- VERSION updated to v1.5.35
+
+
 RevoBoot v1.5.34
 ================
 - LOAD_STATIC_EFI_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (PikerAlpha, October 2012).
 - LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (PikerAlpha, October 2012).
 - New LOAD_MODEL_SPECIFIC_ACPI_DATA setting in settings-template.h (PikerAlpha, October 2012).
 - New LOAD_MODEL_SPECIFIC_STATIC_DATA setting in settings-template.h (PikerAlpha, October 2012).
+- VERSION updated to v1.5.34
 
 Notes:
 
@@ -15,6 +22,7 @@ You <i>must</i> use the latest version of RevoBoot/i386/config/settings-template
 RevoBoot v1.5.33
 ================
 - Restored lost lines in RevoBoot/i386/libsaio/SMBIOS/static_data.h (PikerAlpha, November 2012).
+- VERSION updated to v1.5.33
 
 
 RevoBoot v1.5.32
