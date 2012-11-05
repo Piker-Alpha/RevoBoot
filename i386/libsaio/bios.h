@@ -32,7 +32,7 @@
 
 typedef union
 {
-	unsigned int		rx;
+	unsigned int	rx;
 	unsigned short	rr;
 
 	struct
@@ -87,13 +87,13 @@ typedef struct
 #define EBIOS_LOCKING_ACCESS		0x02
 #define EBIOS_ENHANCED_DRIVE_INFO	0x04
 
-#define BASE_HD_DRIVE			0x80
+#define BASE_HD_DRIVE				0x80
 
 /* 
  * Used in saio_types.h and in StringTable.c (function loadSystemConfig).
  */
 
-#define IO_CONFIG_DATA_SIZE		4096
+#define IO_CONFIG_DATA_SIZE			4096
 
 
 /*
