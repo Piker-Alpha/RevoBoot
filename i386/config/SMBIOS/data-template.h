@@ -21,9 +21,9 @@
 
 //--------------------------------------------------------------- SMBIOS -------------------------------------------------------------------
 
-#define	STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE		NNN
+#define	STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE 0
 
-#define	STATIC_SMBIOS_DMI_STRUCTURE_COUNT		NN
+#define	STATIC_SMBIOS_DMI_STRUCTURE_COUNT 0
 
 #define STATIC_SMBIOS_DATA \
 /* 0x0000 */	// Insert your SMBIOS data here.
