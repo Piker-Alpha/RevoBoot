@@ -58,4 +58,11 @@ struct SMBEntryPoint
 	struct DMIEntryPoint dmi;
 } __attribute__((packed));
 
+typedef struct SMBStructHeader
+{
+    SMBByte    type;
+    SMBByte    length;
+    SMBWord    handle;
+} __attribute__((packed)) SMBStructHeader;
+
 #endif /* !__LIBSAIO_SMBIOS_ESSENTIALS_H */
