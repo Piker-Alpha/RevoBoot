@@ -36,10 +36,7 @@
 
 long AllocateMemoryRange(char * rangeName, long start, long length, long type)
 {
-	char *nameBuf;
-	uint32_t *buffer;
-    
-	nameBuf = malloc(strlen(rangeName) + 1);
+	char *nameBuf = malloc(strlen(rangeName) + 1);
 
 	if (nameBuf == 0)
 	{
@@ -48,10 +45,12 @@ long AllocateMemoryRange(char * rangeName, long start, long length, long type)
 
 	strcpy(nameBuf, rangeName);
 
-	buffer = malloc(2 * sizeof(uint32_t));
+	uint32_t *buffer = malloc(2 * sizeof(uint32_t));
 
 	if (buffer == 0)
 	{
+		free(nameBuf);
+
 		return -1;
 	}
     
