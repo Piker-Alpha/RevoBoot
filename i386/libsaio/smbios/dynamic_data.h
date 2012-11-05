@@ -12,7 +12,10 @@
  *			- SMBProperties changed for speed and simplicity (PikerAlpha, October 2012).
  *			- Calls with SMBProperties.keyString cleaned up (PikerAlpha, October 2012).
  *			- Fixed requiredStructures.start/stop values (PikerAlpha, October 2012).
- *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER(PikerAlpha, October 2012).
+ *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
+ *			- Removed some unused experimental code snippets (PikerAlpha, November 2012).
+ *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (PikerAlpha, November 2012).
+ *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (PikerAlpha, November 2012).
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -21,7 +24,7 @@
  * Tip:		The idea is to use dynamic SMBIOS generation in RevoBoot only to 
  *			let it strip your factory table, after which you should do this:
  *
- *			1.) Extract the new OS X compatible SMBIOS table with: tools/smbios2struct
+ *			1.) Extract the new OS X compatible SMBIOS table with: tools/smbios2struct3
  *			2.) Add the data structure to: RevoBoot/i386/config/SMBIOS/data.h
  *			3.) Recompile RevoBoot, and be happy with your quicker boot time.
  *
@@ -203,15 +206,15 @@ void setupSMBIOS(void)
 	// Clear the first K bytes (new table will be even shorter).
 	bzero(kernelMemory, 1024);
 
-	newEPS->anchor[0]			= 0x5f;		// _
-	newEPS->anchor[1]			= 0x53;		// S
-	newEPS->anchor[2]			= 0x4d;		// M
-	newEPS->anchor[3]			= 0x5f;		// _
-	newEPS->checksum			= 0;		// Updated at the end of this run.
-	newEPS->entryPointLength	= 0x1f;		// sizeof(* newEPS)
-	newEPS->majorVersion		= 2;		// SMBIOS version 2.4
+	newEPS->anchor[0]			= 0x5f;							// _
+	newEPS->anchor[1]			= 0x53;							// S
+	newEPS->anchor[2]			= 0x4d;							// M
+	newEPS->anchor[3]			= 0x5f;							// _
+	newEPS->checksum			= 0;							// Updated at the end of this run.
+	newEPS->entryPointLength	= 0x1f;							// sizeof(* newEPS)
+	newEPS->majorVersion		= 2;							// SMBIOS version 2.4
 	newEPS->minorVersion		= 4;
-	newEPS->maxStructureSize	= 0;		// Updated during this run.
+	newEPS->maxStructureSize	= factoryEPS->maxStructureSize;	// Optionally checked and updated later on.
 	newEPS->entryPointRevision	= 0;
 
 	newEPS->formattedArea[0]	= 0;
@@ -220,25 +223,23 @@ void setupSMBIOS(void)
 	newEPS->formattedArea[3]	= 0;
 	newEPS->formattedArea[4]	= 0;
 
-	newEPS->dmi.anchor[0]		= 0x5f;		// _
-	newEPS->dmi.anchor[1]		= 0x44;		// D
-	newEPS->dmi.anchor[2]		= 0x4d;		// M
-	newEPS->dmi.anchor[3]		= 0x49;		// I
-	newEPS->dmi.anchor[4]		= 0x5f;		// _
-	newEPS->dmi.checksum		= 0;		// Updated at the end of this run.
-	newEPS->dmi.tableLength		= 0;		// Updated at the end of this run.
+	newEPS->dmi.anchor[0]		= 0x5f;							// _
+	newEPS->dmi.anchor[1]		= 0x44;							// D
+	newEPS->dmi.anchor[2]		= 0x4d;							// M
+	newEPS->dmi.anchor[3]		= 0x49;							// I
+	newEPS->dmi.anchor[4]		= 0x5f;							// _
+	newEPS->dmi.checksum		= 0;							// Updated at the end of this run.
+	newEPS->dmi.tableLength		= 0;							// Updated at the end of this run.
 	newEPS->dmi.tableAddress	= (uint32_t) (kernelMemory + sizeof(struct SMBEntryPoint));
-	newEPS->dmi.structureCount	= 0;		// Updated during this run.
-	newEPS->dmi.bcdRevision		= 0x24;		// SMBIOS version 2.4
+	newEPS->dmi.structureCount	= 0;							// Updated during this run.
+	newEPS->dmi.bcdRevision		= 0x24;							// SMBIOS version 2.4
 
 	char * stringsPtr			= NULL;
 	char * newtablesPtr			= (char *)newEPS->dmi.tableAddress;
 	char * structurePtr			= (char *)factoryEPS->dmi.tableAddress;
-	char * structureStartPtr	= NULL;
 
-	int i, j;
-	int numberOfStrings	= 0;
-	int structureCount	= factoryEPS->dmi.structureCount;
+	int i, j, numberOfStrings	= 0;
+	int structureCount			= factoryEPS->dmi.structureCount;
 
 	SMBWord handle = 1;
 
@@ -305,13 +306,13 @@ void setupSMBIOS(void)
 			// Adjust pointer after locating the double 0 terminator.
 			structurePtr += 2;
 
-#if DEBUG_SMBIOS
-			// printf("currentStructureType: %d (length: %d)\n", currentStructureType, factoryHeader->length);
-			// sleep(1); // Silent sleep (for debug only).
+#if (DEBUG_SMBIOS & 2)
+			_SMBIOS_DEBUG_DUMP("currentStructureType: %d (length: %d)\n", currentStructureType, factoryHeader->length);
+			_SMBIOS_DEBUG_SLEEP(1);
 #endif
 			continue;
 		}
-			
+
 		newHeader = (struct SMBStructHeader *) newtablesPtr;
 
 		// Copy structure data from factory table to new table (not the strings).
@@ -322,8 +323,6 @@ void setupSMBIOS(void)
 
 		// Update structure counter.
 		newEPS->dmi.structureCount++;
-
-		structureStartPtr = newtablesPtr;
 
 		// Update pointers (pointing to the end of the formatted area).
 		structurePtr	+= factoryHeader->length;
@@ -352,7 +351,30 @@ void setupSMBIOS(void)
 		}
 
 		structurePtr += 2;
-		
+
+#if SET_MAX_STRUCTURE_LENGTH
+		/*
+		 * Size of the longest factory SMBIOS structure, in bytes, encompasses the structure’s formatted area
+		 * and text strings. In our case a kSMBTypeProcessorInformation structure, because we strip out all
+		 * unwanted data. And safe to check it at this point, because we don't add anything this long ourself.
+		 *
+		 * Note: The maximum structure length is only checked when SET_MAX_STRUCTURE_LENGTH is set to 1 but 
+		 *		 is not required, because it is only available since RevoBoot v1.5.35. Never checked before.
+		 */
+
+		UInt16 maxStructureSize = (structurePtr - (stringsPtr - factoryHeader->length));
+
+		if (newEPS->maxStructureSize < maxStructureSize)
+		{
+			newEPS->maxStructureSize = maxStructureSize;
+		}
+
+	#if (DEBUG_SMBIOS & 2)
+		_SMBIOS_DEBUG_DUMP("Structure (%d) length: %3d bytes.\n", currentStructureType, maxStructureSize);
+		_SMBIOS_DEBUG_SLEEP(1);
+	#endif
+#endif // if SET_MAX_STRUCTURE_LENGTH
+
 		// Do we need to copy the string data?
 		if (requiredStructures[currentStructureType].copyStrings)
 		{
@@ -364,23 +386,6 @@ void setupSMBIOS(void)
 
 			// Point to the next possible position for a string (deducting the second 0 char at the end).
 			newtablesPtr += stringDataLength;
-
-			/* ----------------------------------------------------------------------
-			// Start of experimental code.
-
-			if (currentStructureType == kSMBTypeProcessorInformation)
-			{
-				int c = 0;
-
-				for (; c < 3; c++)
-				{
-					memcpy(newtablesPtr + 1, structureStartPtr, factoryHeader->length + stringDataLength + 2);
-					newtablesPtr += factoryHeader->length + stringDataLength + 2;
-				}
-			}
-
-			//----------------------------------------------------------------------
-			// End of experimental code. */
 		}
 		else
 		{
@@ -403,7 +408,7 @@ void setupSMBIOS(void)
 		{
 			const char * str = "";
 
-#if DEBUG_SMBIOS
+#if (DEBUG_SMBIOS & 2)
 			if (SMBProperties[j].type != currentStructureType)
 			{
 				printf("SMBIOS Patcher Error: Turbo Index [%d != %d] Mismatch!\n", SMBProperties[j].type, currentStructureType);
