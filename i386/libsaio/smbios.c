@@ -6,37 +6,16 @@
  *			- Dynamic and static SMBIOS data gathering added by DHP in 2010.
  *			- Refactorized by DHP in 2011.
  *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
+ *			- Set newEPS->dmi.tableLength to fileSize when model specific data is loaded (PikerAlpha, November 2012).
+ *			- Get number of table structures from loaded model specific SMBIOS data (PikerAlpha, November 2012).
+ *			- Set newEPS->maxStructureSize when SET_MAX_STRUCTURE_LENGTH is set (PikerAlpha, November 2012).
+ *			- Check/correct errors in RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].h (PikerAlpha, November 2012).
  */
 
 #include "platform.h"
 
 
 #if USE_STATIC_SMBIOS_DATA
-
-//==============================================================================
-
-int useStaticSMBIOSData(void * aMemoryAddress)
-{
-	// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
-	#include STRING(SMBIOS_DATA_FILE)
-
-	static uint32_t SMBIOS_Table[] =
-	{
-		// Replaced with data from: RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].h
-		STATIC_SMBIOS_DATA
-	};
-
-	_SMBIOS_DEBUG_DUMP("Using statically linked SMBIOS data\n");
-
-	int tableLength = sizeof(SMBIOS_Table);
-
-	// Copy the static SMBIOS data into the newly allocated memory page. Right after the new EPS.
-	memcpy(aMemoryAddress, SMBIOS_Table, tableLength);
-	
-	return tableLength;
-}
-
-
 //==============================================================================
 
 void setupSMBIOS(void)
@@ -75,41 +54,88 @@ void setupSMBIOS(void)
     newEPS->dmi.anchor[3]		= 0x49;		// I
     newEPS->dmi.anchor[4]		= 0x5f;		// _
     newEPS->dmi.checksum		= 0;
-    newEPS->dmi.tableLength		= tableLength; 
+    newEPS->dmi.tableLength		= tableLength;
     newEPS->dmi.tableAddress	= (uint32_t) (kernelMemory + sizeof(struct SMBEntryPoint)); 
     newEPS->dmi.bcdRevision		= 0x24;
-	newEPS->dmi.structureCount	= STATIC_SMBIOS_DMI_STRUCTURE_COUNT;	// Defined in RevoBoot/i386/config/SMBIOS/data-template.h
+	newEPS->dmi.structureCount	= STATIC_SMBIOS_DMI_STRUCTURE_COUNT;	// Defined in RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].h
 
-#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
+	// Safety measure to protect people from doing something that breaks the boot process.
+	// #define FORCED_CHECK ((STATIC_SMBIOS_DMI_STRUCTURE_COUNT == 0) || (SET_MAX_STRUCTURE_LENGTH && (STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE == 0)))
+	#define FORCED_CHECK	((STATIC_SMBIOS_DMI_STRUCTURE_COUNT == 0) || SET_MAX_STRUCTURE_LENGTH)
+
+#if (LOAD_MODEL_SPECIFIC_SMBIOS_DATA || FORCED_CHECK)
 	/*
-	 * This is nothing more than a mere stop gap solution, since using the factory values here, instead of walking over 
-	 * staticSMBIOSData to get them, may hang the kernel at boot time (will be fixed in a next update of RevoBoot).
+	 * Get number of SMBIOS table structures from the loaded model specific SMBIOS data, or
+	 * when we have 0 values in: RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].bin
 	 */
-	if (fileSize > 0)
+	if ((fileSize > 0) || FORCED_CHECK)
 	{
-		newEPS->maxStructureSize	= factoryEPS->maxStructureSize;		// Defined in RevoBoot/i386/libsaio/SMBIOS/static_data.h
-		newEPS->dmi.structureCount	= factoryEPS->dmi.structureCount;	// Defined in RevoBoot/i386/libsaio/SMBIOS/static_data.h
-		
-		_SMBIOS_DEBUG_DUMP("factoryEPS->maxStructureSize  : %d\n", factoryEPS->maxStructureSize);
-		_SMBIOS_DEBUG_DUMP("factoryEPS->dmi.structureCount: %d\n", factoryEPS->dmi.structureCount);
-		_SMBIOS_DEBUG_SLEEP(1);
-	}
+		UInt16 structureCount = 0;
+
+		char * structurePtr = (char *)newEPS->dmi.tableAddress;
+		char * structureEnd = (structurePtr + newEPS->dmi.tableLength);
+	
+		while (structureEnd > (structurePtr + sizeof(SMBStructHeader)))
+		{
+			struct SMBStructHeader * header = (struct SMBStructHeader *) structurePtr;
+
+#if SET_MAX_STRUCTURE_LENGTH
+			char * stringsPtr = structurePtr;
+		#if DEBUG_SMBIOS
+			SMBByte currentStructureType = header->type;
+		#endif
 #endif
+			// Skip the formatted area of the structure.
+			structurePtr += header->length;
+
+			/*
+			 * Skip the unformatted structure area at the end (strings).
+			 * Using word comparison instead of checking two bytes (thanks to Kabyl).
+			 */
+			for (; ((uint16_t *)structurePtr)[0] != 0; structurePtr++);
+
+			// Adjust pointer after locating the double 0 terminator.
+			structurePtr += 2;
+
+			// Update structure counter.
+			structureCount++;
+	
+			_SMBIOS_DEBUG_DUMP("structureCount: %d\n", structureCount);
+
+#if SET_MAX_STRUCTURE_LENGTH
+			UInt16 maxStructureSize = (structurePtr - stringsPtr);
+
+			if (newEPS->maxStructureSize < maxStructureSize)
+			{
+				newEPS->maxStructureSize = maxStructureSize;
+			}
+			
+			_SMBIOS_DEBUG_DUMP("Structure (%d) length: %3d bytes.\n", currentStructureType, maxStructureSize);
+			_SMBIOS_DEBUG_SLEEP(1);
+#endif	// #if SET_MAX_STRUCTURE_LENGTH
+		}
+		// Uodate number of structures (boot hang without the correct value).
+		newEPS->dmi.structureCount = structureCount;
+	}
+#endif	// #if (LOAD_MODEL_SPECIFIC_SMBIOS_DATA || FORCED_CHECK)
+	/*
+	 * newEPS->dmi.tableLength represents the length of the static data, or the size
+	 * of the model specific SMBIOS data file from: /Extra/SMBIOS/MacModelNN.bin
+	 */
+	_SMBIOS_DEBUG_DUMP("newEPS->dmi.structureCount: %d\nnewEPS.dmi.tableLength: %d\n", newEPS->dmi.structureCount, newEPS->dmi.tableLength);
 
     // Take care of possible checksum errors
     newEPS->dmi.checksum		= 256 - checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
     newEPS->checksum			= 256 - checksum8(newEPS, sizeof(* newEPS));
 
-	_SMBIOS_DEBUG_DUMP("newEPS->dmi.structureCount: %d - tableLength: %d\n", newEPS->dmi.structureCount, newEPS->dmi.tableLength);
-
-	// Used to update the EFI Configuration Table (in efi.c) which is 
+	// Used to update the EFI Configuration Table (in efi.c) which is
 	// what AppleSMBIOS.kext reads to setup the SMBIOS table for OS X.
 	gPlatform.SMBIOS.BaseAddress = (uint32_t) newEPS;
 
 	_SMBIOS_DEBUG_DUMP("New SMBIOS replacement setup.\n");
 	_SMBIOS_DEBUG_SLEEP(5);
 }
-#else
+#else // #if USE_STATIC_SMBIOS_DATA
 
 #include "smbios/dynamic_data.h"
 
