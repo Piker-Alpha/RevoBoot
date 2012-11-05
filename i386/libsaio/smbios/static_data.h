@@ -14,73 +14,65 @@
 #ifndef __LIBSAIO_SMBIOS_STATIC_DATA_H
 #define __LIBSAIO_SMBIOS_STATIC_DATA_H
 
-#include "essentials.h"
+	#include "essentials.h"
 
-int tableLength = 0;
+	int tableLength = 0;
+	long fileSize = 0;
 
-#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
+	#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
+		char dirSpec[32] = "";
+		void * staticSMBIOSData = (void *)kLoadAddr;
 
-	#define SMBIOS_SEARCH_BASE		0x000F0000
-	#define SMBIOS_SEARCH_END		0x000FFFFF
-	#define SMBIOS_ANCHOR			0x5f4d535f	// '_SM_' in Little Endian.
-	#define SMBIOS_MPS_ANCHOR		0x5f504d5f	// '_MP_' in Little Endian.
+		sprintf(dirSpec, "/Extra/SMBIOS/%s.bin", COMMA_STRIPPED_MODEL_ID);
 
-	_SMBIOS_DEBUG_DUMP("in getEPSAddress()\n");
+		_SMBIOS_DEBUG_DUMP("Loading: %s", dirSpec);
 
-	void *baseAddress = (void *)SMBIOS_SEARCH_BASE;
+		fileSize = loadBinaryData(dirSpec, &staticSMBIOSData);
 
-	for(; baseAddress <= (void *)SMBIOS_SEARCH_END; baseAddress += 16)
-	{
-		if (*(uint32_t *)baseAddress == SMBIOS_ANCHOR) // _SM_
+		if (fileSize > 0)
 		{
-			if (checksum8(baseAddress, sizeof(struct SMBEntryPoint)) == 0)
-			{
-	#if INCLUDE_MP_TABLE
-				// SMBIOS table located. Use this address as starting point.
-				void * mpsAddress = baseAddress;
-			
-				// Now search for the Multi Processor table.
-				for(; mpsAddress <= (void *)SMBIOS_SEARCH_END; mpsAddress += 16)
-				{
-					if (*(uint32_t *)mpsAddress == SMBIOS_MPS_ANCHOR)
-					{
-						gPlatform.MP.BaseAddress = (uint32_t)mpsAddress;
-						break;
-					}
-				}
-	#endif // INCLUDE_MP_TABLE
+			memcpy((kernelMemory + sizeof(* newEPS)), staticSMBIOSData, fileSize);
 
-				break;
+			// factoryEPS = (struct SMBEntryPoint *) baseAddress;
+		
+			tableLength = fileSize;
 
-				_SMBIOS_DEBUG_DUMP("SMBIOS baseAddress: 0x%08x\n", baseAddress);
-			}
+			_SMBIOS_DEBUG_DUMP("\n");
 		}
-	}
+		else // File not found. Use static data defined in RevoBoot/i386/config/SMBIOS/
+		{
+			// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+			#include STRING(SMBIOS_DATA_FILE)
+		
+			static uint32_t SMBIOS_Table[] =
+			{
+				// Replaced with data from: RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].h
+				STATIC_SMBIOS_DATA
+			};
 
-	char dirSpec[32] = "";
+			tableLength = sizeof(SMBIOS_Table);
 
-	void * staticSMBIOSData = (void *)kLoadAddr;
+			_SMBIOS_DEBUG_DUMP("Error: File not found!\nNow trying statically linked SMBIOS data: %d bytes\n", tableLength);
 
-	struct SMBEntryPoint *factoryEPS;
-
-	sprintf(dirSpec, "/Extra/SMBIOS/%s.bin", COMMA_STRIPPED_MODEL_ID);
-
-	_SMBIOS_DEBUG_DUMP("Loading: %s\n", dirSpec);
-
-	long fileSize = loadBinaryData(dirSpec, &staticSMBIOSData);
-
-	if (fileSize > 0)
-	{
-		memcpy((kernelMemory + sizeof(* newEPS)), staticSMBIOSData, fileSize);
-
-		factoryEPS = (struct SMBEntryPoint *) baseAddress;
-	}
-	else // File not found. Use static data defined in RevoBoot/i386/config/SMBIOS/
-	{
-		tableLength = useStaticSMBIOSData((kernelMemory + sizeof(* newEPS)));
-	}
-#else
-		tableLength = useStaticSMBIOSData((kernelMemory + sizeof(* newEPS)));
-#endif /* LOAD_MODEL_SPECIFIC_SMBIOS_DATA */
+			// Copy the static SMBIOS data into the newly allocated memory page. Right after the new EPS.
+			memcpy((kernelMemory + sizeof(* newEPS)), SMBIOS_Table, tableLength);
+		}
+	#else
+		// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
+		#include STRING(SMBIOS_DATA_FILE)
+		
+		static uint32_t SMBIOS_Table[] =
+		{
+			// Replaced with data from: RevoBoot/i386/config/SMBIOS/[data-template/MacModelNN].h
+			STATIC_SMBIOS_DATA
+		};
+		
+		_SMBIOS_DEBUG_DUMP("Using statically linked SMBIOS data\n");
+		
+		tableLength = sizeof(SMBIOS_Table);
+		
+		// Copy the static SMBIOS data into the newly allocated memory page. Right after the new EPS.
+		memcpy((kernelMemory + sizeof(* newEPS)), SMBIOS_Table, tableLength);
+	#endif /* LOAD_MODEL_SPECIFIC_SMBIOS_DATA */
 
 #endif /* !__LIBSAIO_SMBIOS_STATIC_DATA_H */
