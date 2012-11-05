@@ -51,8 +51,8 @@ static biosBuf_t bb;
 
 int fastEnableA20(void)
 {
-	bb.intno = 0x15;	
-	bb.eax.rx = 0x2401;
+	bb.intno	= 0x15;
+	bb.eax.rx	= 0x2401;
 	bios(&bb);
 
 	// If successful: CF clear, AH = 00h. On error: CF set, AH = status
@@ -72,8 +72,8 @@ int bgetc(void)
      */
 	while(!readKeyboardStatus());
 
-	bb.intno = 0x16;
-	bb.eax.r.h = 0x00;
+	bb.intno	= 0x16;
+	bb.eax.r.h	= 0x00;
 	bios(&bb);
 
 	return bb.eax.rr;
@@ -150,7 +150,9 @@ unsigned long getMemoryMap(MemoryRange * rangeArray, unsigned long maxRangeCount
     // printf("Get memory map 0x%x, %d\n", rangeArray);
 	// getchar();
     if (maxRangeCount > (BIOS_LEN / sizeof(MemoryRange)))
+	{
         maxRangeCount = (BIOS_LEN / sizeof(MemoryRange));
+	}
 
     bb.ebx.rx = 0;  // Initial continuation value must be zero.
 
@@ -160,14 +162,13 @@ unsigned long getMemoryMap(MemoryRange * rangeArray, unsigned long maxRangeCount
         bb.eax.rx = 0xe820;
         bb.ecx.rx = kDescriptorSizeMin;
         bb.edx.rx = kMemoryMapSignature;
-        bb.edi.rr = NORMALIZED_OFFSET(  (unsigned long) range );
-        bb.es     = NORMALIZED_SEGMENT( (unsigned long) range );
+        bb.edi.rr = NORMALIZED_OFFSET(  (unsigned long) range);
+        bb.es     = NORMALIZED_SEGMENT( (unsigned long) range);
         bios(&bb);
 
         // Check for errors.
 
-        if ( bb.flags.cf ||   bb.eax.rx != kMemoryMapSignature
-            || bb.ecx.rx != kDescriptorSizeMin )
+        if (bb.flags.cf || bb.eax.rx != kMemoryMapSignature || bb.ecx.rx != kDescriptorSizeMin)
         {
             //printf("Got an error %x %x %x\n", bb.flags.cf,
             //       bb.eax.rx, bb.ecx.rx);
@@ -176,16 +177,19 @@ unsigned long getMemoryMap(MemoryRange * rangeArray, unsigned long maxRangeCount
 
         // Tally up the conventional/extended memory sizes.
 
-        if (range->type == kMemoryRangeUsable || range->type == kMemoryRangeACPI   ||
-            range->type == kMemoryRangeNVS )
+        if (range->type == kMemoryRangeUsable || range->type == kMemoryRangeACPI || range->type == kMemoryRangeNVS)
         {
             // Tally the conventional memory ranges.
             if (range->base + range->length <= 0xa0000)
+			{
                 conMemSize += range->length;
+			}
 
             // Record the top of extended memory.
             if (range->base >= EXTENDED_ADDR)
+			{
                 extMemSize += range->length;
+			}
         }
 
         range++;
@@ -193,13 +197,15 @@ unsigned long getMemoryMap(MemoryRange * rangeArray, unsigned long maxRangeCount
 
         // Is this the last address range?
 
-        if ( bb.ebx.rx == 0 ) {
+        if (bb.ebx.rx == 0)
+		{
             //printf("last range\n");
             break;
         }
     }
-    *conMemSizePtr = conMemSize / 1024;  // size in KB
-    *extMemSizePtr = extMemSize / 1024;  // size in KB
+
+    *conMemSizePtr = (conMemSize / 1024);  // size in KB
+    *extMemSizePtr = (extMemSize / 1024);  // size in KB
 
     // Copy out data
     bcopy((char *)BIOS_ADDR, rangeArray, ((char *)range - (char *)BIOS_ADDR));
@@ -339,7 +345,7 @@ int biosread(int dev, int cyl, int head, int sec, int num)
 	bb.intno = 0x13;
 	sec += 1;  // sector numbers start at 1.
     
-	for (i=0;;)
+	for (i = 0; ;)
 	{
 		bb.ecx.r.h = cyl;
 		bb.ecx.r.l = ((cyl & 0x300) >> 2) | (sec & 0x3F);
@@ -430,11 +436,11 @@ int ebiosread(int dev, unsigned long long sec, int count)
 
 void putc(int ch)
 {
-	bb.intno = 0x10;
-	bb.ebx.r.h = 0x00;  /* background black */
-	bb.ebx.r.l = 0x0F;  /* foreground white */
-	bb.eax.r.h = 0x0e;
-	bb.eax.r.l = ch;
+	bb.intno	= 0x10;
+	bb.ebx.r.h	= 0x00;  /* background black */
+	bb.ebx.r.l	= 0x0F;  /* foreground white */
+	bb.eax.r.h	= 0x0e;
+	bb.eax.r.l	= ch;
 	bios(&bb);
 }
 
@@ -516,8 +522,9 @@ int is_no_emulation(int drive)
 
 int get_drive_info(int drive, struct driveInfo *dp)
 {
-    boot_drive_info_t *di = &dp->di;
     int ret = 0;
+
+    boot_drive_info_t *di = &dp->di;
 
 #if UNUSED
     if (maxhd == 0)
@@ -528,11 +535,15 @@ int get_drive_info(int drive, struct driveInfo *dp)
         bios(&bb);
 
         if (bb.flags.cf == 0)
+		{
             maxhd = 0x7f + bb.edx.r.l;
+		}
     };
 
     if (drive > maxhd)
+	{
         return 0;
+	}
 #endif
 
     bzero(dp, sizeof(struct driveInfo));
@@ -549,18 +560,21 @@ int get_drive_info(int drive, struct driveInfo *dp)
     bios(&bb);
 
     if ((bb.ebx.rr == 0xaa55) && (bb.flags.cf == 0))
+	{
         dp->uses_ebios = bb.ecx.r.l; // Get flags for supported operations.
+	}
 
     if (dp->uses_ebios & (EBIOS_ENHANCED_DRIVE_INFO | EBIOS_LOCKING_ACCESS | EBIOS_FIXED_DISK_ACCESS))
     {
         // Get EBIOS drive info.
         static struct drive_params params;
         params.buf_size = sizeof(params);
-        bb.intno = 0x13;
-        bb.eax.r.h = 0x48;
-        bb.edx.r.l = drive;
-        bb.esi.rr = NORMALIZED_OFFSET((unsigned)&params);
-        bb.ds     = NORMALIZED_SEGMENT((unsigned)&params);
+
+        bb.intno	= 0x13;
+        bb.eax.r.h	= 0x48;
+        bb.edx.r.l	= drive;
+        bb.esi.rr	= NORMALIZED_OFFSET((unsigned)&params);
+        bb.ds		= NORMALIZED_SEGMENT((unsigned)&params);
         bios(&bb);
 
         if (bb.flags.cf != 0 /* || params.phys_sectors < 2097152 */)
@@ -600,7 +614,9 @@ int get_drive_info(int drive, struct driveInfo *dp)
 #endif
 
     if (ret == 0)
+	{
         dp->valid = 1;
+	}
 
     return ret;
 }
@@ -610,8 +626,11 @@ int get_drive_info(int drive, struct driveInfo *dp)
 
 void sleep(int n)
 {
-    unsigned int endtime = (time18() + 18*n);
-    while (time18() < endtime);
+	if (n < 60)
+	{
+		unsigned int endtime = (time18() + (18*n));
+		while (time18() < endtime);
+	}
 }
 
 
@@ -619,10 +638,9 @@ void sleep(int n)
 
 void delay(int ms)
 {
-    bb.intno = 0x15;
-    bb.eax.r.h = 0x86;
-    bb.ecx.rr = ms >> 16;
-    bb.edx.rr = ms & 0xFFFF;
+    bb.intno	= 0x15;
+    bb.eax.r.h	= 0x86;
+    bb.ecx.rr	= ms >> 16;
+    bb.edx.rr	= ms & 0xFFFF;
     bios(&bb);
 }
-
