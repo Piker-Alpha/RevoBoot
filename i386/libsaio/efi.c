@@ -253,9 +253,9 @@ void *convertHexStr2Binary(const char *hexStr, int *outLength)
 {
 	int len;
 	char hexNibble;
-	char hexByte[2];
+	char hexByte[2] = "";
 	uint8_t binChar;
-	uint8_t *binStr;
+	uint8_t *binStr = NULL;
 	int hexStrIdx, binStrIdx, hexNibbleIdx;
 	
 	len = strlen(hexStr);
@@ -331,22 +331,31 @@ static EFI_UINT32* getUUIDFromString(const char * givenUUID) // Patch by: rekurs
 			char szUUID[37]; // 0-35 (36) + 1
 			char *p = szUUID;
 			
-			while (*givenUUID) {
+			while (*givenUUID)
+			{
 				if (*givenUUID != '-')
+				{
 					*p++ = *givenUUID++;
+				}
 				else
+				{
 					givenUUID++;
+				}
 			}
 			*p = '\0';
 			void* binaryString = convertHexStr2Binary(szUUID, &size);
 			
 			if (binaryString && size == 16)
+			{
 				return (EFI_UINT32*) binaryString;
+			}
 			
 			verbose("%swrong format maybe?\n", errStr);
 		}
 		else
+		{
 			verbose("%slength should be 36.\n", errStr);
+		}
 	}
 	return (EFI_UINT32*) 0;
 }
