@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Master Chief. All rights reserved.
  *
- * Note: This is an essential part of the build process for RevoBoot v1.5.34 and greater.
+ * Note: This is an essential part of the build process for RevoBoot v1.5.35 and greater.
  *
  * Updates:
  *
@@ -26,6 +26,7 @@
  *			- LOAD_STATIC_EFI_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (PikerAlpha, October 2012).
  *			- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (PikerAlpha, October 2012).
  *			- LOAD_MODEL_SPECIFIC_STATIC_DATA added (PikerAlpha, October 2012).
+ *			- Option SET_MAX_STRUCTURE_LENGTH added (PikerAlpha, November 2012).
  */
 
 
@@ -372,6 +373,10 @@
 #if (TARGET_MODEL & MACPRO)
 	#define SMB_BOARD_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
 #endif
+
+#define SET_MAX_STRUCTURE_LENGTH			0	// Set to 0 by default. Only change this to 1 when boot hangs without it.
+												//
+												// Note: Safe to keep at 0 since it is only available since RevoBoot v1.5.35
 
 #define DEBUG_SMBIOS						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
