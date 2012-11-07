@@ -1,26 +1,34 @@
-/***
-  *
-  * Name        : smbios2struct3 (pipe output to file)
-  * Version     : 1.0.5
-  * Type        : Command line tool
-  * Description : SMBIOS extractor / converter (resulting in a smaller and more Apple like table).
-  *
-  * Copyright   : DutchHockeyPro (c) 2011
-  *
-  * Compile with: cc -I . smbios2struct3.c -o smbios2struct3 -Wall -framework IOKit -framework CoreFoundation
-  *
-  */
+/*
+ *
+ * Name			: smbios2struct4
+ * Version		: 1.1.0
+ * Type			: Command line tool
+ * Copyright	: Sam aka RevoGirl (c) 2011
+ * Description	: SMBIOS extractor / converter (resulting in a smaller and more Apple like table).
+ *
+ * Usage		: sudo ./smbios2struct4											(output to terminal window)
+ *				: sudo ./smbios2struct4 > ../../../config/SMBIOS/MacModelNN.h	(writes to [path]MacModelNN.h)
+ *				: sudo ./smbios2struct4 MacModelNN								(writes to: /Extra/SMBIOS/MacModel.bin)
+ *
+ * Compile with	: cc smbios2struct4.c -o smbios2struct4 -Wall -framework IOKit -framework CoreFoundation
+ *
+ * Updates		: Interim solution for writing stripped SMBIOS table data to MacModelNN.bin (PikerAlpha, November 2012)
+ *				: Check root priveledges for writing to: /Extra/SMBIOS/MacModelNN.bin (PikerAlpha, November 2012)
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/file.h>
+#include <sys/stat.h>
 
 #include <IOKit/IOKitLib.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "SMBIOS.h"
+#include "../smbios.h"
 
 #define DEBUG		0	// Set to 1 for additional (debug) output
-#define VERBOSE		1
+#define VERBOSE		0
 
 #if VERBOSE
 	#define VERBOSE_DUMP(x...) printf(x)
@@ -102,12 +110,12 @@ void dumpStaticTableData(const UInt8 * tableBuffer, int maxStructureSize, int st
 {
 	int index = 0;
 
-	printf("\n\t#define	STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE\t%d\n", maxStructureSize);
-	printf("\n\t#define	STATIC_SMBIOS_DMI_STRUCTURE_COUNT\t%d\n", structureCount);
+	printf("\n#define STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE\t%d\n", maxStructureSize);
+	printf("\n#define STATIC_SMBIOS_DMI_STRUCTURE_COUNT\t%d\n", structureCount);
 	printf("\n");
-	printf("\t#define STATIC_SMBIOS_DATA \\\n");
-	printf("\t/* SMBIOS data (0x%04x / %d bytes) converted with smbios2struct2 into little endian format. */ \\\n", tableLength, tableLength);
-	printf("\t/* 0x0000 */\t");
+	printf("#define STATIC_SMBIOS_DATA \\\n");
+	printf("/* SMBIOS data (0x%04x / %d bytes) converted with smbios2struct2 into little endian format. */ \\\n", tableLength, tableLength);
+	printf("/* 0x0000 */\t");
 	
 	UInt16 length = round2(tableLength, 4);
 	UInt32 * newTableData = malloc(tableLength);
@@ -123,7 +131,7 @@ void dumpStaticTableData(const UInt8 * tableBuffer, int maxStructureSize, int st
 			
 			if ((index % 8) == 0)
 			{
-				printf("\\\n\t/* 0x%04x */\t", (index * 4));
+				printf("\\\n/* 0x%04x */\t", (index * 4));
 			}
 		}
 	} while((index * 4) <= length);
@@ -138,6 +146,23 @@ void dumpStaticTableData(const UInt8 * tableBuffer, int maxStructureSize, int st
 
 int main(int argc, char * argv[])
 {
+	if (argc == 2)
+	{
+		uid_t real_uid	= getuid();
+		uid_t euid		= geteuid();
+
+#if DEBUG
+		printf("UID: %u EUID: %u\n", real_uid, euid);
+#endif
+		// Under sudo, getuid and geteuid return 0.
+		if (real_uid != 0 || euid != 0)
+		{
+			printf("Error: Not root. Use sudo ./smbios2struct4 [filename without extension]\n");
+
+			exit (-1);
+		}
+	}
+
 	mach_port_t		masterPort;
     io_service_t	service = MACH_PORT_NULL;
 	CFDataRef		dataRef;
@@ -321,7 +346,52 @@ int main(int argc, char * argv[])
 			
 			VERBOSE_DUMP("\nDropped tables: %2d.\n", droppedTables);
 
-			dumpStaticTableData(tableBuffer, maxStructureSize, newStructureCount, newTableLength);
+			if (argc == 2) // Write to file?
+			{
+				struct stat my_sb;
+				// Sanity check for required directory.
+				if (stat("/Extra", &my_sb) != 0)
+				{
+					mkdir("/Extra", (S_IRWXU | S_IRWXG | S_IRWXO));
+				}
+				// Sanity check for required directory.
+				if (stat("/Extra/SMBIOS", &my_sb) != 0)
+				{
+					mkdir("/Extra/SMBIOS", (S_IRWXU | S_IRWXG | S_IRWXO));
+				}
+
+				char dirspec[128];
+				sprintf (dirspec, "/Extra/SMBIOS/%s.bin", argv[1]);
+				int filedesc = open(dirspec, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+
+				if (filedesc == -1)
+				{
+					printf("Error: Unable to open file!\n");
+				}
+				else
+				{
+					newTableLength = round2((newTableLength + 2), 4);
+
+					VERBOSE_DUMP("newTableLength: %d\n", newTableLength);
+
+					int status = write(filedesc, tableBuffer, newTableLength);
+
+					if (status != newTableLength)
+					{
+						printf("status %d, saved %d bytes\n", status, newTableLength);
+					}
+					else
+					{
+						printf("%d bytes written to: %s\n", newTableLength, dirspec);
+					}
+				}
+
+				close (filedesc);
+			}
+			else
+			{
+				dumpStaticTableData(tableBuffer, maxStructureSize, newStructureCount, newTableLength);
+			}
 
 			free((void *)tableBuffer);
 
