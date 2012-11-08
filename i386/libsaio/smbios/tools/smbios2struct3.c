@@ -1,7 +1,7 @@
 /*
  *
  * Name			: smbios2struct4
- * Version		: 1.1.0
+ * Version		: 1.1.1
  * Type			: Command line tool
  * Copyright	: Sam aka RevoGirl (c) 2011
  * Description	: SMBIOS extractor / converter (resulting in a smaller and more Apple like table).
@@ -14,6 +14,7 @@
  *
  * Updates		: Interim solution for writing stripped SMBIOS table data to MacModelNN.bin (PikerAlpha, November 2012)
  *				: Check root priveledges for writing to: /Extra/SMBIOS/MacModelNN.bin (PikerAlpha, November 2012)
+ *				: Now also saves /EFI-device-properties (PikerAlpha, November 2012)
  *
  */
 
@@ -146,6 +147,10 @@ void dumpStaticTableData(const UInt8 * tableBuffer, int maxStructureSize, int st
 
 int main(int argc, char * argv[])
 {
+	char dirspec[128];
+	int filedesc = 0;
+	struct stat my_sb;
+
 	if (argc == 2)
 	{
 		uid_t real_uid	= getuid();
@@ -171,20 +176,88 @@ int main(int argc, char * argv[])
 	UInt16 tableLength = 0, droppedTables = 0;
 	UInt16 newTableLength = 0;
 
-	// UInt32 * shadowTableData = NULL;
-
 	IOMasterPort(MACH_PORT_NULL, &masterPort);
+
+	//==================================================================================
+
+	io_registry_entry_t efi = IORegistryEntryFromPath(kIOMasterPortDefault, kIODeviceTreePlane ":/efi");
+
+	if (efi == IO_OBJECT_NULL)
+	{
+#if DEBUG
+		printf("FAILURE: Unable to locate EFI registry entry.\n");
+#endif
+		exit(-1);
+	}
+	else
+	{
+#if DEBUG
+		printf("OK\n");
+#endif
+		dataRef = (CFDataRef) IORegistryEntryCreateCFProperty(efi, CFSTR("device-properties"), kCFAllocatorDefault, kNilOptions);
+
+		if (dataRef)
+		{
+			UInt32 * deviceProperties = (UInt32 *) CFDataGetBytePtr(dataRef);
+			UInt16 devicePropertiesBytes = (int) CFDataGetLength(dataRef);
+#if DEBUG
+			printf("Property 'device-properties' %d bytes found.", numBytes);
+#endif
+			if ((argc == 2) && (devicePropertiesBytes)) // Write to file?
+			{
+				// Sanity check for required directory.
+				if (stat("/Extra", &my_sb) != 0)
+				{
+					mkdir("/Extra", (S_IRWXU | S_IRWXG | S_IRWXO));
+				}
+				// Sanity check for required directory.
+				if (stat("/Extra/EFI", &my_sb) != 0)
+				{
+					mkdir("/Extra/EFI", (S_IRWXU | S_IRWXG | S_IRWXO));
+				}
+				
+				sprintf (dirspec, "/Extra/EFI/%s.bin", argv[1]);
+				filedesc = open(dirspec, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+				
+				if (filedesc == -1)
+				{
+					printf("Error: Unable to open file!\n");
+				}
+				else
+				{
+					int status = write(filedesc, deviceProperties, devicePropertiesBytes);
+					
+					if (status != devicePropertiesBytes)
+					{
+						printf("status %d, saved %d bytes\n", status, devicePropertiesBytes);
+					}
+					else
+					{
+						printf("%d bytes written to: %s\n", devicePropertiesBytes, dirspec);
+					}
+				}
+				
+				close (filedesc);
+			}
+		}
+#if DEBUG
+		else
+		{
+			printf("FAILURE: Unable to locate ':/efi/device-properties'\n");
+		}
+#endif
+	}
+
+	//==================================================================================
+
 	service = IOServiceGetMatchingService(masterPort, IOServiceMatching("AppleSMBIOS"));
 
     if (service)
 	{
 #if DEBUG
-		printf("\nHave AppleSMBIOS\n");
+		printf("\nAppleSMBIOS found\n");
 #endif
-		dataRef = (CFDataRef) IORegistryEntryCreateCFProperty(service, 
-															  CFSTR("SMBIOS-EPS"), 
-															  kCFAllocatorDefault, 
-															  kNilOptions);
+		dataRef = (CFDataRef) IORegistryEntryCreateCFProperty(service, CFSTR("SMBIOS-EPS"), kCFAllocatorDefault, kNilOptions);
 
 		if (dataRef)
 		{
@@ -233,10 +306,7 @@ int main(int argc, char * argv[])
 		printf("\n");
 #endif
 
-		dataRef = (CFDataRef) IORegistryEntryCreateCFProperty(service, 
-															  CFSTR("SMBIOS"), 
-															  kCFAllocatorDefault, 
-															  kNilOptions);
+		dataRef = (CFDataRef) IORegistryEntryCreateCFProperty(service, CFSTR("SMBIOS"), kCFAllocatorDefault, kNilOptions);
 
 		if (dataRef)
 		{
@@ -348,21 +418,14 @@ int main(int argc, char * argv[])
 
 			if (argc == 2) // Write to file?
 			{
-				struct stat my_sb;
-				// Sanity check for required directory.
-				if (stat("/Extra", &my_sb) != 0)
-				{
-					mkdir("/Extra", (S_IRWXU | S_IRWXG | S_IRWXO));
-				}
 				// Sanity check for required directory.
 				if (stat("/Extra/SMBIOS", &my_sb) != 0)
 				{
 					mkdir("/Extra/SMBIOS", (S_IRWXU | S_IRWXG | S_IRWXO));
 				}
 
-				char dirspec[128];
 				sprintf (dirspec, "/Extra/SMBIOS/%s.bin", argv[1]);
-				int filedesc = open(dirspec, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+				filedesc = open(dirspec, O_WRONLY|O_CREAT|O_TRUNC, 0644);
 
 				if (filedesc == -1)
 				{
