@@ -7,6 +7,7 @@
 #			- DMAKE_TARGET_MODEL added (PikerAlpha, October 2012).
 #			- Static data selectors added (PikerAlpha, October 2012).
 #			- STATIC_DATA_FILENAME added (PikerAlpha, October 2012).
+#			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
 #
 
 include ../MakePaths.dir
@@ -41,18 +42,20 @@ SAIO_OBJS = table.o asm.o bios.o biosfn.o \
 	vbe.o hfs.o hfs_compare.o \
 	xml.o md5c.o device_tree.o \
 	cpu.o platform.o acpi.o \
-	smbios.o efi.o
-
-SAIO_EXTERN_OBJS = console.o
+	smbios.o efi.o console.o
 
 LIBS = libsaio.a
+
 DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
 
 $(MAKEGOAL): $(DIRS_NEEDED) libsaio.h $(LIBS)
 
-libsaio.a: $(SAIO_EXTERN_OBJS) $(SAIO_OBJS)
-	rm -f $(SYMROOT)/$(@F)
-	ar q $(SYMROOT)/$(@F) $^
-	ranlib $(SYMROOT)/$(@F)
+$(LIBS): $(SAIO_OBJS)
+	@echo "\t[RM] $(SYMROOT)/$@"
+	@rm -f $@
+	@echo "\t[AR] $@"
+	@ar q $(SYMROOT)/$@ $^ &> /dev/null
+	@echo "\t[RANLIB] $@"
+	@ranlib $(SYMROOT)/$@
 
 include ../MakeInc.dir
