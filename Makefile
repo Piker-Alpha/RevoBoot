@@ -11,6 +11,8 @@
 #			- Copies settings-template.h to SETTINGS/ModelnameNN.h when missing (PikerAlpha, October 2012).
 #			- Automatic ACPI/EFI/SMBIOS data selection (PikerAlpha, October 2012).
 #			- Copies ACPI/EFI/SMBIOS/data-template.h for new conigurations (PikerAlpha, October 2012).
+#			- Output added for cp/mkdir/rm actions (PikerAlpha, November 2012).
+#			- New build target 'help' added (PikerAlpha, November 2012).
 #
 
 #
@@ -134,22 +136,27 @@ SETTINGS_FILE=$(SETTINGS_DIR)/$(MAKE_TARGET_MODEL).h
 
 $(MAKEGOAL): $(SYMROOT) $(OBJROOT)
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE) ]; then \
+		echo "\t[CP] $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE)"; \
 		cp -n $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE); \
 	fi;
 
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_EFI_DATA_FILE) ]; then \
+		echo "\t[CP] $(CONFIG_DIR)/EFI/data-template.h $(CONFIG_DIR)/$(MAKE_EFI_DATA_FILE)"; \
 		cp -n $(CONFIG_DIR)/EFI/data-template.h $(CONFIG_DIR)/$(MAKE_EFI_DATA_FILE); \
 	fi;
 
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_SMBIOS_DATA_FILE) ]; then \
+		echo "\t[CP] $(CONFIG_DIR)/SMBIOS/data-template.h $(CONFIG_DIR)/$(MAKE_SMBIOS_DATA_FILE)"; \
 		cp -n $(CONFIG_DIR)/SMBIOS/data-template.h $(CONFIG_DIR)/$(MAKE_SMBIOS_DATA_FILE); \
 	fi;
 
 	@if [ ! -d $(SETTINGS_DIR) ]; then \
+		echo "\t[MKDIR] $(SETTINGS_DIR)"; \
 		/bin/mkdir -p $(SETTINGS_DIR); \
 	fi;
 
 	@if [ ! -f $(SETTINGS_FILE) ]; then \
+		echo "\t[CP] $(CONFIG_DIR)/settings-template.h $(SETTINGS_FILE)"; \
 		cp -n $(CONFIG_DIR)/settings-template.h $(SETTINGS_FILE); \
 	fi;
 
@@ -169,7 +176,17 @@ $(MAKEGOAL): $(SYMROOT) $(OBJROOT)
 	fi;
 
 clean:
+	@if [ -d "$(OBJROOT)" ];then echo "\t[RMDIR] $(OBJROOT)"; fi
+	@if [ -d "$(SYMROOT)" ];then echo "\t[RMDIR] $(SYMROOT)"; fi
 	rm -rf sym obj dst out.log
+
+help:
+	@echo
+	@echo   'Build targets:'
+	@echo   '		- Build all targets [DEFAULT]'
+	@echo
+	@echo   'Cleaning targets:'
+	@echo   '  clean	- Remove generated files'
 
 $(SYMROOT) $(OBJROOT):
 	@/bin/mkdir -p $@
