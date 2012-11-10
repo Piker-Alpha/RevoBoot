@@ -4,6 +4,7 @@
 # Updates:
 #
 #			- Major cleanup (PikerAlpha, October 2012).
+#			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
 #
 
 
@@ -26,13 +27,17 @@ VPATH = $(OBJROOT):$(SYMROOT)
 SA_OBJS = prf.o printf.o zalloc.o string.o strtol.o setjmp.o efi_tables.o
 
 LIBS = libsa.a
+
 DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
 
 $(MAKEGOAL): $(DIRS_NEEDED) $(LIBS)
 
-libsa.a: $(SA_OBJS)
-	rm -f $(SYMROOT)/$(@F)
-	ar q $(SYMROOT)/$(@F) $^
-	ranlib $(SYMROOT)/$(@F)
+$(LIBS): $(SA_OBJS)
+	@echo "\t[RM] $(SYMROOT)/$@"
+	@rm -f $(SYMROOT)/$@
+	@echo "\t[AR] $@"
+	@ar q $(SYMROOT)/$@ $^ &> /dev/null
+	@echo "\t[RANLIB] $@"
+	@ranlib $(SYMROOT)/$@
 
 include ../MakeInc.dir
