@@ -24,8 +24,8 @@ DIRS_NEEDED = $(OBJROOT) $(SYMROOT) $(LANGDIR)
 $(MAKEGOAL): $(DIRS_NEEDED) $(PROGRAMS)
 
 machOconv: machOconv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(DEFINES) -o $(SYMROOT)/$(@F) machOconv.o
+	@$(CC) $(CFLAGS) $(LDFLAGS) $(DEFINES) -o $(SYMROOT)/$(@F) machOconv.o
 md:
-	$(CC) -mdynamic-no-pic -Wall -dead_strip -arch i386 -mmacosx-version-min=10.5 md.c -o $(SYMROOT)/md
+	@$(CC) -mdynamic-no-pic -Wall -dead_strip -arch i386 -mmacosx-version-min=10.5 md.c -o $(SYMROOT)/md
 
 include ../MakeInc.dir
