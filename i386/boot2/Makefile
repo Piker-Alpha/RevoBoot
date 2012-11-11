@@ -48,14 +48,18 @@ MAXBOOTSIZE = 131072
 $(MAKEGOAL): $(DIRS_NEEDED) boot
 
 boot: machOconv $(OBJS) $(LIBDEP)
-	@$(CC) -Wl,-preload -Wl,-alias,boot2,start \
-		-nostdlib -arch i386  -Wl,-pie \
+	@$(CC)	-nostdlib -arch i386 \
+		-Wl,-preload \
+		-Wl,-pie \
+		-Wl,-segalign,20 \
 		-Wl,-read_only_relocs,suppress \
 		-lcc_kext \
 		$(filter %.o,$^) $(LIBS) \
 		-o ${SYMROOT}/$@.sys
+
 	@echo "\t[LD] boot.sys"
-	@$(CC) -Wl,-preload -Wl,-alias,boot2,start \
+	@$(CC)	-Wl,static \
+		-Wl,-preload \
 		-nostdlib -arch i386  -Wl,-pie \
 		-Wl,-segalign,20 \
 		-Wl,-segaddr,__INIT,`echo obase=16\; $$((0x${BOOT2ADDR})) | bc` \
@@ -65,8 +69,10 @@ boot: machOconv $(OBJS) $(LIBDEP)
 		-lcc_kext \
 		$(filter %.o,$^) $(LIBS) \
 		-o ${SYMROOT}/$@.sys
+
 	@echo "\t[MACHOCONV] boot"
 	@$(SYMROOT)/machOconv $(SYMROOT)/boot.sys $(SYMROOT)/boot
+
 	@( size=`ls -l $(SYMROOT)/boot | awk '{ print $$5}'` ; \
 	  if expr "$$size" ">" "$(MAXBOOTSIZE)" > /dev/null ;\
 	  then \
