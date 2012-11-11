@@ -50,6 +50,7 @@
  * Updates:
  *		- Refactorized by DHP in 2010 and 2011.
  *		- Optionally include Recovery HD support code (PikerAlpha, November 2012).
+ *      - Fixed clang compilation (PikerAlpha, November 2012).
  */
 
 
@@ -119,11 +120,13 @@ unsigned long Adler32(unsigned char *buf, long len)
 
 static void zeroBSS()
 {
-    extern char _DATA__bss__begin, _DATA__bss__end;
-    extern char _DATA__common__begin, _DATA__common__end;
-
-    bzero( &_DATA__bss__begin, (&_DATA__bss__end - &_DATA__bss__begin) );
-    bzero( &_DATA__common__begin, (&_DATA__common__end - &_DATA__common__begin) );
+	extern int  _DATA_bss__start	__asm("section$start$__DATA$__bss");
+	extern int  _DATA_bss__end	__asm("section$end$__DATA$__bss");
+	extern int  _DATA_common__start	__asm("section$start$__DATA$__common");
+	extern int  _DATA_common__end	__asm("section$end$__DATA$__common");
+    
+	bzero(&_DATA_bss__start, (&_DATA_bss__end - &_DATA_bss__start));
+	bzero(&_DATA_common__start, (&_DATA_common__end - &_DATA_common__start));
 }
 
 /*
@@ -256,9 +259,9 @@ void boot(int biosdev)
 				
 				if (gVerboseMode)
 				{
-#if DEBUG_BOOT == false
+/*#if DEBUG_BOOT == false
 					setVideoMode(VGA_TEXT_MODE);
-#endif
+#endif*/
 				}
 
 				// Check for -x (safe) and -f (flush cache) flags.

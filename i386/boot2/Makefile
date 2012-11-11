@@ -5,6 +5,7 @@
 #
 #			- Support for self compiled libcc_kext.a added (PikerAlpha, October 2012).
 #			- Major cleanup (PikerAlpha, October 2012).
+#			- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
 #
 
 
@@ -14,36 +15,19 @@ OPTIM = -Os -Oz
 CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost -Werror \
 	-fno-builtin -DSAIO_INTERNAL_USER -static $(OMIT_FRAME_POINTER_CFLAG) \
 	-DMAKE_TARGET_OS=$(PRODUCT_OS_TARGET) \
-    -DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
-	-mpreferred-stack-boundary=2 -fno-align-functions -fno-stack-protector \
-	-march=pentium4 -msse2 -mfpmath=sse -msoft-float
+    	-DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
+	-fno-stack-protector \
+	-march=pentium4 -msse2 -msoft-float -nostdinc
 
 LIBSADIR = ../libsa
 LIBSAIODIR = ../libsaio
 UTILDIR = ../util
+SRCROOT = $(abspath $(CURDIR)/../..)
 
-INC = -I. -I.. -I$(SYMROOT) -I$(LIBSADIR) -I$(LIBSAIODIR) -I$(UTILDIR)
+INC = -I. -I.. -I$(SYMROOT) -I$(LIBSADIR) -I$(LIBSAIODIR) -I$(UTILDIR) -I${SRCROOT}/i386/include
 
 LIBS = -L$(SYMROOT) -lsaio -lsa
 LIBDEP = $(SYMROOT)/libsaio.a $(SYMROOT)/libsa.a
-
-#
-# build_gcc no longer builds libgcc.a and libcc_kext.a with 'all' target  
-# and thus we have to provide it, or people will have to build gcc.
-#
-
-LIBCC= $(UTILDIR)/libcc_kext.a
-
-#
-# Check ../util/ for a self compiled copy of libcc_kext.a
-#
-
-ifeq ($(wildcard $(LIBCC)),)
-  #
-  # Not found: Use Xcode supplied file.
-  #
-  LIBCC= `find /usr/llvm-gcc-*/lib/gcc/*/*/ -name \libcc_kext.a`
-endif
 
 VPATH = $(OBJROOT):$(SYMROOT)
 
@@ -64,18 +48,34 @@ MAXBOOTSIZE = 131072
 $(MAKEGOAL): $(DIRS_NEEDED) boot
 
 boot: machOconv $(OBJS) $(LIBDEP)
-	$(UTILDIR)/ld_classic -static -preload -segaddr __INIT $(BOOT2ADDR) \
-	    -arch i386 -segalign 20 \
-		-o $(SYMROOT)/boot.sys $(filter %.o,$^) $(LIBS) $(LIBCC)
-	machOconv $(SYMROOT)/boot.sys $(SYMROOT)/boot
-	size $(SYMROOT)/boot.sys
-	ls -l $(SYMROOT)/boot
+	@$(CC) -Wl,-preload -Wl,-alias,boot2,start \
+		-nostdlib -arch i386  -Wl,-pie \
+		-Wl,-read_only_relocs,suppress \
+		-lcc_kext \
+		$(filter %.o,$^) $(LIBS) \
+		-o ${SYMROOT}/$@.sys
+	@echo "\t[LD] boot.sys"
+	@$(CC) -Wl,-preload -Wl,-alias,boot2,start \
+		-nostdlib -arch i386  -Wl,-pie \
+		-Wl,-segalign,20 \
+		-Wl,-segaddr,__INIT,`echo obase=16\; $$((0x${BOOT2ADDR})) | bc` \
+		-Wl,-segaddr,__TEXT,`echo obase=16\; $$((0x${BOOT2ADDR})) + \`${SYMROOT}/segsize ${SYMROOT}/$@.sys __INIT\` | bc` \
+		-Wl,-segaddr,__DATA,`echo obase=16\; $$((0x${BOOT2ADDR})) + \`${SYMROOT}/segsize ${SYMROOT}/$@.sys __INIT\` + \`${SYMROOT}/segsize ${SYMROOT}/$@.sys __TEXT\` | bc` \
+		-Wl,-read_only_relocs,suppress \
+		-lcc_kext \
+		$(filter %.o,$^) $(LIBS) \
+		-o ${SYMROOT}/$@.sys
+	@echo "\t[MACHOCONV] boot"
+	@$(SYMROOT)/machOconv $(SYMROOT)/boot.sys $(SYMROOT)/boot
 	@( size=`ls -l $(SYMROOT)/boot | awk '{ print $$5}'` ; \
-	  if expr "$$size" ">" "$(MAXBOOTSIZE)" > /dev/null ; \
+	  if expr "$$size" ">" "$(MAXBOOTSIZE)" > /dev/null ;\
 	  then \
-	    echo "Error: Booter executable larger than $(MAXBOOTSIZE) bytes" ; \
-	    rm $(SYMROOT)/boot ; \
-	    exit 1 ; \
+	   	echo "\t******* boot is $$size bytes *******"; \
+	    echo "Booter executable larger than $(MAXBOOTSIZE) bytes" ;\
+	    rm $(SYMROOT)/boot ;\
+	    exit 1;\
+	  else \
+	  	echo "\t******* boot is $$size bytes *******"; \
 	  fi)
 
 include ../MakeInc.dir

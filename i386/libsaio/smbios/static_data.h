@@ -17,7 +17,7 @@
 	#include "essentials.h"
 
 	int tableLength = 0;
-	long fileSize = 0;
+	//long fileSize = 0; ***unused variable
 
 	#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
 		char dirSpec[32] = "";

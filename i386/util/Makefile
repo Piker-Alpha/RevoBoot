@@ -4,6 +4,7 @@
 # Updates:
 #
 #			- Major cleanup (PikerAlpha, October 2012).
+#			- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
 #
 
 
@@ -17,15 +18,15 @@ CFLAGS = $(RC_CFLAGS) $(OPTIM) -Wmost -Werror -g
 LDFLAGS =
 DEFINES=
 
-PROGRAMS = md machOconv
+PROGRAMS = machOconv segsize
+OBJS = machOconv.o segsize.o
 
 DIRS_NEEDED = $(OBJROOT) $(SYMROOT) $(LANGDIR)
 
 $(MAKEGOAL): $(DIRS_NEEDED) $(PROGRAMS)
 
-machOconv: machOconv.o
-	@$(CC) $(CFLAGS) $(LDFLAGS) $(DEFINES) -o $(SYMROOT)/$(@F) machOconv.o
-md:
-	@$(CC) -mdynamic-no-pic -Wall -dead_strip -arch i386 -mmacosx-version-min=10.5 md.c -o $(SYMROOT)/md
+$(PROGRAMS): $(OBJS)
+	@echo "\t[CC] $(@F)"
+	@$(CC) $(CFLAGS) $(LDFLAGS) $(DEFINES) -o $(SYMROOT)/$(@F) $(OBJROOT)/$(@F).o
 
 include ../MakeInc.dir

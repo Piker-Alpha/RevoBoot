@@ -24,9 +24,7 @@ code snippets for it have been stripped out (by Master Chief in 2009) but we wil
 
 Xcode Support for Mountain Lion:
 --------------------------------
-RevoBoot can be built on Snow Leopard, Lion and Mountain Lion. The latter requires Xcode 4.5.1 (and greater) and libcc_kext.a from an older version of Xcode. See change log for instructions.
-
-Note: The latest release of Xcode (4.5.2) also works with fine with an older copy libcc_kext.a.
+RevoBoot can be built on Snow Leopard, Lion and Mountain Lion. The latter requires Xcode 4.5.1 (and greater) and the latest 'command line tools' need to be installed. See change log for instructions.
 
 Configuration:
 --------------

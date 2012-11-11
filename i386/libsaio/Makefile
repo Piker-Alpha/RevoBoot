@@ -8,6 +8,7 @@
 #			- Static data selectors added (PikerAlpha, October 2012).
 #			- STATIC_DATA_FILENAME added (PikerAlpha, October 2012).
 #			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
+#			- Enabled clang compilation (dgsga, PikerAlpha, November 2012. Credits to Evan Lojewski for original work).
 #
 
 include ../MakePaths.dir
@@ -29,8 +30,8 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost \
     -DEFI_DATA_FILE=../config/$(MAKE_EFI_DATA_FILE) \
     -DSMBIOS_DATA_FILE=../config/$(MAKE_SMBIOS_DATA_FILE) \
     -fno-builtin -static $(OMIT_FRAME_POINTER_CFLAG) \
-    -mpreferred-stack-boundary=2 -fno-align-functions -fno-stack-protector \
-    -march=pentium4 -msse2 -mfpmath=sse -msoft-float
+    -fno-stack-protector \
+    -march=pentium4 -msse2 -msoft-float
 
 INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSADIR)
 
@@ -51,10 +52,10 @@ DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
 $(MAKEGOAL): $(DIRS_NEEDED) libsaio.h $(LIBS)
 
 $(LIBS): $(SAIO_OBJS)
-	@echo "\t[RM] $(SYMROOT)/$@"
+	@echo "\t[RM] $@"
 	@rm -f $@
 	@echo "\t[AR] $@"
-	@ar q $(SYMROOT)/$@ $^ &> /dev/null
+	@ar qc $(SYMROOT)/$@ $^ &> /dev/null
 	@echo "\t[RANLIB] $@"
 	@ranlib $(SYMROOT)/$@
 

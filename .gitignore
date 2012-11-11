@@ -16,3 +16,4 @@ i386/config/SMBIOS/default.h
 i386/config/SMBIOS/*Mac*.h
 
 i386/util/libcc_kext.a
+MODEL

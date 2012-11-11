@@ -4,14 +4,10 @@
 # Updates:
 #
 #		- Major cleanup (PikerAlpha, October 2012).
+#		- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski
+#         for original work).
 #
 
-
-#
-# Use /usr/bin/gcc instead of /usr/bin/cc (symbolic link to clang in Xcode 4.3.2 and greater).
-#
-
-CC = gcc
 
 # Toggle this as to whether you want a frame pointer (%ebp) to be used. It is
 # invaluable for debugging the booter. For example using GDB attached to VMware.
@@ -25,28 +21,34 @@ OMIT_FRAME_POINTER_CFLAG=
 .SUFFIXES: .s .i .c .o
 
 .c.o .m.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(DEFINES) -c $(INC) $< -o $(OBJROOT)/$*.o \
-	    -MD -dependency-file $(OBJROOT)/$*.d
-	$(SYMROOT)/md -u $(OBJROOT)/Makedep -f -d $(OBJROOT)/$*.d
-
+	@echo "\t[CC] $<"
+	@$(CC) $(CFLAGS) $(DEFINES) -c $(INC) $< -MM -M -o $(OBJROOT)/$@.Makedep
+	@$(CC) $(CFLAGS) $(DEFINES) -c $(INC) $< -o $(OBJROOT)/$@
+    
 $(OBJROOT)/%.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(DEFINES) -c $(INC) $< -o $(OBJROOT)/$*.o \
-	    -MD -dependency-file $(OBJROOT)/$*.d
-	$(SYMROOT)/md -u $(OBJROOT)/Makedep -f -d $(OBJROOT)/$*.d
+	@echo "\t[CC] $<"
+	@$(CC) $(CFLAGS) $(DEFINES) -c $(INC) $< -MM -M -o $(OBJROOT)/$@.Makedep
+	@$(CC) $(CFLAGS) $(DEFINES) -c $(INC) $< -o $(OBJROOT)/$@
 
 $(OBJROOT)/%.o: %.m
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(DEFINES) -c $(INC) $< -o $(OBJROOT)/$*.o \
-	    -MD -dependency-file $(OBJROOT)/$*.d
-	$(SYMROOT)/md -u $(OBJROOT)/Makedep -f -d $(OBJROOT)/$*.d
+	@echo "\t[M] $<"
+	@$(CC) $(CFLAGS) $(DEFINES) -c $(INC) $< -MM -M -o $(OBJROOT)/$@.Makedep
+	@$(CC) $(CFLAGS) $(DEFINES) -c $(INC) $< -o $(OBJROOT)/$@
 
 .s.o:
-	$(CC) $(CPPFLAGS) -c $(INC) -arch i386 -o $(OBJROOT)/$(@F) $<
+	@echo "\t[AS] $<"
+	@$(CC) $(CPPFLAGS) -c $(INC) -arch i386 $< -MM -M -o $(OBJROOT)/$@.Makedep
+	@$(CC) $(CPPFLAGS) -c $(INC) -arch i386 $< -o $(OBJROOT)/$(@F)
 
-boot2.o:
-	$(CC) $(CPPFLAGS) -Wa,-n -c $(INC) -arch i386 -o $(OBJROOT)/$(@F) boot2.s
+$(OBJROOT)/boot2.o:
+	@echo "\t[AS] boot2.s"
+	@$(CC) -Wa,-n -c $(INC) -arch i386 boot2.s -MM -M -o $(OBJROOT)/$@.Makedep
+	@$(CC) -Wa,-n -c $(INC) -arch i386 boot2.s -o $(OBJROOT)/$(@F)
 	
 $(OBJROOT)/%.o: %.s
-	$(CC) $(CPPFLAGS) -c $(INC) -arch i386 -o $(OBJROOT)/$(@F) $<
+	@echo "\t[AS] $<"
+	@$(CC) $(CPPFLAGS) -c $(INC) -arch i386 $< -MM -M -o $(OBJROOT)/$@.Makedep
+	@$(CC) $(CPPFLAGS) -c $(INC) -arch i386 $< -o $(OBJROOT)/$(@F)
 
 $(DIRS_NEEDED): # $(INSTALLDIR) $(SRCROOT):
 	@/bin/mkdir -p $@

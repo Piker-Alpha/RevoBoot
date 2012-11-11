@@ -5,8 +5,8 @@
 #
 #			- Major cleanup (PikerAlpha, October 2012).
 #			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
+#			- Enabled clang compilation (dgsga,PikerAlpha, November 2012. Credits to Evan Lojewski for original work).
 #
-
 
 include ../MakePaths.dir
 
@@ -17,8 +17,8 @@ OPTIM = -Os -Oz
 CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost -Werror \
 		-fno-builtin -static $(OMIT_FRAME_POINTER_CFLAG) \
 		-DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
-		-mpreferred-stack-boundary=2 -fno-align-functions -fno-stack-protector \
-		-march=pentium4 -msse2 -mfpmath=sse -msoft-float
+		-fno-stack-protector \
+		-march=pentium4 -msse2 -msoft-float
 
 INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSAIODIR)
 
@@ -33,10 +33,10 @@ DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
 $(MAKEGOAL): $(DIRS_NEEDED) $(LIBS)
 
 $(LIBS): $(SA_OBJS)
-	@echo "\t[RM] $(SYMROOT)/$@"
+	@echo "\t[RM] $@"
 	@rm -f $(SYMROOT)/$@
 	@echo "\t[AR] $@"
-	@ar q $(SYMROOT)/$@ $^ &> /dev/null
+	@ar qc $(SYMROOT)/$@ $^ &> /dev/null
 	@echo "\t[RANLIB] $@"
 	@ranlib $(SYMROOT)/$@
 

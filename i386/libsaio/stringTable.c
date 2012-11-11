@@ -316,23 +316,23 @@ long ParseXMLFile(char * buffer, TagPtr * dict)
 
 int loadSystemConfig(config_file_t *config)
 {
-	char path[80] = ""; // Long enough for the longest (default) path.
+	char *path = malloc(80); // Long enough for the longest (default) path.
 	static char * dirspec[] = {
-
+        
 #if LION_RECOVERY_SUPPORT
 		"com.apple.recovery.boot",
 #endif
-
+        
 #if LION_INSTALL_SUPPORT
-		".IABootFiles", 
+		".IABootFiles",
 		"OS X Install Data",
 		"Mac OS X Install Data",
 #endif
 		"Library/Preferences/SystemConfiguration" // The default.
-
+        
 #if APPLE_RAID_SUPPORT
 		/*
-		 * This is a temporarily change to test RAID support, but it 
+		 * This is a temporarily change to test RAID support, but it
 		 * will be rewritten right after Bryan confirms that it works.
 		 */
 		,
@@ -341,27 +341,27 @@ int loadSystemConfig(config_file_t *config)
 		"com.apple.boot.S/Library/Preferences/SystemConfiguration"
 #endif
 	};
-
+    
 	int i, fd;
-
+    
 	for (i = 0; i < sizeof(dirspec) / sizeof(dirspec[0]); i++)
 	{
 		sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
-
+        
 		if ((fd = open(path, 0)) >= 0)
 		{
-			// IO_CONFIG_DATA_SIZE is defined as 4096 in bios.h and which should 
+			// IO_CONFIG_DATA_SIZE is defined as 4096 in bios.h and which should
 			// be sufficient enough for RevoBoot (size was 4K for years already).
 			read(fd, config->plist, IO_CONFIG_DATA_SIZE);
 			close(fd);
-
+            
 			// Build XML dictionary.
 			ParseXMLFile(config->plist, &config->dictionary);
-
+            
 			return 0;
 		}
 	}
-
+    
 	return -1;
 }
 

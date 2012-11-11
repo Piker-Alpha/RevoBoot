@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2
+END
+IOFireWireSBP2UserClient.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2UserClient.h
+END
+IOFireWireSBP2LUN.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2LUN.h
+END
+IOFireWireSBP2ManagementORB.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2ManagementORB.h
+END
+IOFireWireSerialBusProtocolTransport.h
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSerialBusProtocolTransport.h
+END
+IOFireWireSBP2LSIWorkaroundDescriptor.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2LSIWorkaroundDescriptor.h
+END
+IOFireWireSBP2ORB.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2ORB.h
+END
+IOFireWireSBP2Target.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2Target.h
+END
+IOFireWireSBP2UserClientCommon.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2UserClientCommon.h
+END
+IOFireWireSBP2Login.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/sbp2/IOFireWireSBP2Login.h
+END

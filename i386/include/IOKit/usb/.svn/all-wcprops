@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb
+END
+USB.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/USB.h
+END
+IOUSBControllerListElement.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBControllerListElement.h
+END
+IOUSBBus.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBBus.h
+END
+IOUSBControllerV2.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBControllerV2.h
+END
+IOUSBMassStorageUFISubclass.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBMassStorageUFISubclass.h
+END
+IOUSBControllerV3.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBControllerV3.h
+END
+IOUSBPipe.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBPipe.h
+END
+IOUSBHubDevice.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBHubDevice.h
+END
+IOUSBDevice.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBDevice.h
+END
+IOUSBInterface.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBInterface.h
+END
+IOUFIStorageServices.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUFIStorageServices.h
+END
+IOUSBRootHubDevice.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBRootHubDevice.h
+END
+USBSpec.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/USBSpec.h
+END
+USBTracepoints.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/USBTracepoints.h
+END
+IOUSBWorkLoop.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBWorkLoop.h
+END
+IOUSBUserClient.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBUserClient.h
+END
+IOUSBMassStorageClass.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBMassStorageClass.h
+END
+IOUSBHubPolicyMaker.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBHubPolicyMaker.h
+END
+IOUSBCompositeDriver.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBCompositeDriver.h
+END
+IOUSBCommand.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBCommand.h
+END
+IOUSBHIDDriver.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBHIDDriver.h
+END
+IOUSBLog.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBLog.h
+END
+IOUSBController.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBController.h
+END
+IOUSBNub.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/IOUSBNub.h
+END
+USBHub.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/usb/USBHub.h
+END

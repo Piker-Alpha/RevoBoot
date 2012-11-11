@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/stream
+END
+IOStreamShared.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/stream/IOStreamShared.h
+END
+IOStreamUserClient.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/stream/IOStreamUserClient.h
+END
+IOStream.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/stream/IOStream.h
+END
+IOStreamFamily.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/chameleon/!svn/ver/881/trunk/i386/include/IOKit/stream/IOStreamFamily.h
+END
