@@ -20,7 +20,16 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *			- Reformated and cleanups (PikerAlpha, November 2012)
+  *			- Single pass runs for all target segment names (PikerAlpha, November 2012)
+ *
+ *
+ * Note:	RevoBoot/i386/boot2/Makefile calls this tool to calculate segment sizes, example:
+ *			-segaddr __INIT 20200 -segaddr __TEXT 20480 -segaddr __DATA 2C6E0
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -31,98 +40,136 @@
 #include <libkern/OSByteOrder.h>
 #include <unistd.h>
 
-int	infile;
+int infile;
 
 struct mach_header	mh;
-void *		cmds;
+
+void * cmds;
 
 static bool	swap_ends;
 
-static unsigned long swap(
-						  unsigned long x
-						  )
+//==========================================================================
+
+static unsigned long swap(unsigned long x)
 {
-    if (swap_ends)
+	if (swap_ends)
+	{
 		return OSSwapInt32(x);
-    else
+	}
+	else
+	{
 		return x;
+	}
 }
 
-int
-main(int argc, char *argv[])
+//==========================================================================
+
+int main(int argc, char *argv[])
 {
-    int			nc, ncmds;
-    char *		cp;
-    
-    if (argc == 3) {
-		infile = open(argv[1], O_RDONLY);
-		if (infile < 0)
-			goto usage;
-    }
-    else {
-	usage:
-    	fprintf(stderr, "usage: segsize segment\n");
+	int nc, ncmds;
+	char *cp;
+	long boot2Address = 0x20200L;
+
+	if (argc != 2)
+	{
+		fprintf(stderr, "Usage: ./segsize [__INIT/__TEXT/__DATA]\n");
 		exit(1);
-    }
-    
-    nc = read(infile, &mh, sizeof (mh));
-    if (nc < 0) {
+	}
+	else if (strcmp(argv[1], "__INIT") == 0)
+	{
+		printf("%lX\n", boot2Address);
+		exit(0);
+	}
+
+	infile = open("../../sym/i386/boot.sys", O_RDONLY);
+
+	if (infile < 0)
+	{
+		fprintf(stderr, "Error: boot.sys Not Found\n");
+		exit(1);
+	}
+
+	nc = read(infile, &mh, sizeof (mh));
+
+	if (nc < 0)
+	{
 		perror("read mach header");
 		exit(1);
-    }
-    if (nc < (int)sizeof (mh)) {
+	}
+
+	if (nc < (int)sizeof (mh))
+	{
 		fprintf(stderr, "read mach header: premature EOF %d\n", nc);
 		exit(1);
-    }
-    if (mh.magic == MH_MAGIC)
+	}
+
+	if (mh.magic == MH_MAGIC)
+	{
 		swap_ends = false;
-    else if (mh.magic == MH_CIGAM)
+	}
+	else if (mh.magic == MH_CIGAM)
+	{
 		swap_ends = true;
-    else {
-    	fprintf(stderr, "bad magic number %lx\n", (unsigned long)mh.magic);
+	}
+	else
+	{
+		fprintf(stderr, "bad magic number %lx\n", (unsigned long)mh.magic);
 		exit(1);
-    }
+	}
 	
-    cmds = calloc(swap(mh.sizeofcmds), sizeof (char));
-    if (cmds == 0) {
+	cmds = calloc(swap(mh.sizeofcmds), sizeof (char));
+
+	if (cmds == 0)
+	{
 		fprintf(stderr, "alloc load commands: no memory\n");
 		exit(1);
-    }
-    nc = read(infile, cmds, swap(mh.sizeofcmds));
-    if (nc < 0) {
+	}
+
+	nc = read(infile, cmds, swap(mh.sizeofcmds));
+
+	if (nc < 0)
+	{
 		perror("read load commands");
 		exit(1);
-    }
-    if (nc < (int)swap(mh.sizeofcmds)) {
+	}
+
+	if (nc < (int)swap(mh.sizeofcmds))
+	{
 		fprintf(stderr, "read load commands: premature EOF %d\n", nc);
 		exit(1);
-    }
-	
-    for (	ncmds = swap(mh.ncmds), cp = cmds;
-		 ncmds > 0; ncmds--) {
-//	    bool	isDATA;
-//	    unsigned	vmsize;
-		
-#define lcp	((struct load_command *)cp)    
-		switch(swap(lcp->cmd)) {
-				
+	}
+
+	long text = 0L;
+
+	#define lcp	((struct load_command *)cp)
+	#define scp	((struct segment_command *)cp)
+
+	for (ncmds = swap(mh.ncmds), cp = cmds; ncmds > 0; ncmds--)
+	{
+		switch(swap(lcp->cmd))
+		{
 			case LC_SEGMENT:
-#define scp	((struct segment_command *)cp)
-				if(strcmp(scp->segname, argv[2]) == 0)
+				if (strcmp(scp->segname, "__TEXT") == 0)
 				{
-					printf("%ld\n", swap(scp->vmsize));
-#if 0
-				if (isDATA)
-					vmsize = swap(scp->filesize);
-				else
-					vmsize = swap(scp->vmsize);
-#endif
+					text = swap(scp->vmsize);
 				}
+				else if (strcmp(scp->segname, "__INIT") == 0)
+				{
+					if (strcmp(argv[1], "__TEXT") == 0)
+					{
+						printf("%lX\n", boot2Address + swap(scp->vmsize));
+					}
+					else // __DATA
+					{
+						printf("%lX\n", boot2Address + swap(scp->vmsize) + text);
+					}
+				}
+
 				break;
 		}
-		
+
 		cp += swap(lcp->cmdsize);
-    }
+	}
 	
-    exit(0);
+	exit(0);
 }
