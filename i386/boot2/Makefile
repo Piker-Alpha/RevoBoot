@@ -8,6 +8,7 @@
 #		- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
 #		- BOOT2ADDR moved to RevoBoot/i386/util/segsize.c (PikerAlpha, November 2012).
 #		- Simplified calls to RevoBoot/i386/util/segsize (PikerAlpha, November 2012).
+#		- Reformatted output, include directory dependency lifted (PikerAlpha, November 2012).
 #
 
 
@@ -19,14 +20,13 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) $(MORECPP) -arch i386 -g -Wmost -Werror \
 	-DMAKE_TARGET_OS=$(PRODUCT_OS_TARGET) \
     	-DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
 	-fno-stack-protector \
-	-march=pentium4 -msse2 -msoft-float -nostdinc
+	-march=pentium4 -msse2 -msoft-float
 
 LIBSADIR = ../libsa
 LIBSAIODIR = ../libsaio
 UTILDIR = ../util
-SRCROOT = $(abspath $(CURDIR)/../..)
 
-INC = -I. -I.. -I$(SYMROOT) -I$(LIBSADIR) -I$(LIBSAIODIR) -I$(UTILDIR) -I${SRCROOT}/i386/include
+INC = -I. -I.. -I$(SYMROOT) -I$(LIBSADIR) -I$(LIBSAIODIR) -I$(UTILDIR)
 
 LIBS = -L$(SYMROOT) -lsaio -lsa
 LIBDEP = $(SYMROOT)/libsaio.a $(SYMROOT)/libsa.a
@@ -75,15 +75,17 @@ boot: machOconv $(OBJS) $(LIBDEP)
 	@echo "\t[MACHOCONV] boot"
 	@$(SYMROOT)/machOconv $(SYMROOT)/boot.sys $(SYMROOT)/boot
 
+	@echo "============================================"
+	@size $(SYMROOT)/boot.sys
+
 	@( size=`ls -l $(SYMROOT)/boot | awk '{ print $$5}'` ; \
-	  if expr "$$size" ">" "$(MAXBOOTSIZE)" > /dev/null ;\
-	  then \
-	   	echo "\t******* boot is $$size bytes *******"; \
-	    echo "Booter executable larger than $(MAXBOOTSIZE) bytes" ;\
-	    rm $(SYMROOT)/boot ;\
-	    exit 1;\
-	  else \
-	  	echo "\t******* boot is $$size bytes *******"; \
-	  fi)
+	if expr "$$size" ">" "$(MAXBOOTSIZE)" > /dev/null ;\
+	then \
+		echo "Boot ($$size) larger than $(MAXBOOTSIZE) bytes" ;\
+		rm $(SYMROOT)/boot ;\
+		exit 1;\
+	else \
+		echo "=========== boot is $$size bytes ============"; \
+	fi)
 
 include ../MakeInc.dir
