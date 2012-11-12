@@ -3,9 +3,11 @@
 #
 # Updates:
 #
-#			- Support for self compiled libcc_kext.a added (PikerAlpha, October 2012).
-#			- Major cleanup (PikerAlpha, October 2012).
-#			- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
+#		- Support for self compiled libcc_kext.a added (PikerAlpha, October 2012).
+#		- Major cleanup (PikerAlpha, October 2012).
+#		- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
+#		- BOOT2ADDR moved to RevoBoot/i386/util/segsize.c (PikerAlpha, November 2012).
+#		- Simplified calls to RevoBoot/i386/util/segsize (PikerAlpha, November 2012).
 #
 
 
@@ -62,9 +64,9 @@ boot: machOconv $(OBJS) $(LIBDEP)
 		-Wl,-preload \
 		-nostdlib -arch i386  -Wl,-pie \
 		-Wl,-segalign,20 \
-		-Wl,-segaddr,__INIT,`echo obase=16\; $$((0x${BOOT2ADDR})) | bc` \
-		-Wl,-segaddr,__TEXT,`echo obase=16\; $$((0x${BOOT2ADDR})) + \`${SYMROOT}/segsize ${SYMROOT}/$@.sys __INIT\` | bc` \
-		-Wl,-segaddr,__DATA,`echo obase=16\; $$((0x${BOOT2ADDR})) + \`${SYMROOT}/segsize ${SYMROOT}/$@.sys __INIT\` + \`${SYMROOT}/segsize ${SYMROOT}/$@.sys __TEXT\` | bc` \
+		-Wl,-segaddr,__INIT,`${SYMROOT}/segsize __INIT` \
+		-Wl,-segaddr,__TEXT,`${SYMROOT}/segsize __TEXT` \
+		-Wl,-segaddr,__DATA,`${SYMROOT}/segsize __DATA` \
 		-Wl,-read_only_relocs,suppress \
 		-lcc_kext \
 		$(filter %.o,$^) $(LIBS) \
