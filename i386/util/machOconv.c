@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 			case LC_SEGMENT:
 				if (strcmp(scp->segname, "__INIT") == 0)
 				{
-					initSegment = swap(scp->vmsize);
+					initSegmentSize = swap(scp->vmsize);
 				}
 		}
 
