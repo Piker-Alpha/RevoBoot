@@ -20,7 +20,11 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *		Reformatted and elimination of -Wl,-segaddr (PikerAlpha, November 2012)
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -33,90 +37,131 @@
 
 int	infile, outfile;
 
+void * cmds;
+
 struct mach_header	mh;
-void *		cmds;
 
 static bool	swap_ends;
 
+//==============================================================================
+
 static unsigned long swap(unsigned long x)
 {
-    if (swap_ends)	return OSSwapInt32(x);
-    else			return x;
+	if (swap_ends)
+	{
+		return OSSwapInt32(x);
+	}
+	else
+	{
+		return x;
+	}
 }
 
-int
-main(int argc, char *argv[])
+
+//==============================================================================
+
+int main(int argc, char *argv[])
 {
-    kern_return_t	result;
-    vm_address_t	data;
-    int			nc, ncmds;
-    char *		cp;
-    
-    if (argc == 2)
+	kern_return_t	result;
+	vm_address_t	data;
+	int			nc, ncmds;
+	char *		cp;
+
+	if (argc == 2)
 	{
 		infile = open(argv[1], O_RDONLY);
-		if (infile < 0)		goto usage;
+
+		if (infile < 0)
+		{
+			goto filenotfound;
+		}
+
 		outfile = fileno(stdout);
-    }
-    else if (argc == 3)
+	}
+	else if (argc == 3)
 	{
-    	infile = open(argv[1], O_RDONLY);
-		if (infile < 0)		goto usage;
-		outfile = open(argv[2], O_WRONLY|O_CREAT|O_TRUNC, 0644);
-		if (outfile < 0)	goto usage;
-    }
-    else 
+		infile = open(argv[1], O_RDONLY);
+
+		if (infile < 0)
+		{
+			goto filenotfound;
+		}
+
+		outfile = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+		if (outfile < 0)
+		{
+			goto openerror;
+		}
+	}
+	else
 	{
-	usage:
-    	fprintf(stderr, "usage: machOconv inputfile [outputfile]\n");
+		fprintf(stderr, "Usage: machOconv inputfile [outputfile]\n");
 		exit(1);
-    }
-    
-    nc = read(infile, &mh, sizeof (mh));
-    if (nc < 0)
+
+		filenotfound:
+			fprintf(stderr, "Error: File Not Found\n");
+			exit(1);
+
+		openerror:
+			fprintf(stderr, "Error: Open Failed\n");
+			exit(1);
+	}
+
+	nc = read(infile, &mh, sizeof (mh));
+
+	if (nc < 0)
 	{
 		perror("read mach header");
 		exit(1);
-    }
-	
-    if (nc < (int)sizeof (mh))
+	}
+
+	if (nc < (int)sizeof (mh))
 	{
-		fprintf(stderr, "read mach header: premature EOF %d\n", nc);
+		fprintf(stderr, "Error: read mach header: premature EOF %d\n", nc);
 		exit(1);
-    }
-	
-	
-    if (mh.magic == MH_MAGIC)		swap_ends = false;
-    else if (mh.magic == MH_CIGAM)	swap_ends = true;
-    else
+	}
+
+	if (mh.magic == MH_MAGIC)
 	{
-    	fprintf(stderr, "bad magic number %lx\n", (unsigned long)mh.magic);
-		exit(1);
-    }
-	
-    cmds = calloc(swap(mh.sizeofcmds), sizeof (char));
-    if (cmds == 0)
+		swap_ends = false;
+	}
+	else if (mh.magic == MH_CIGAM)
 	{
-		fprintf(stderr, "alloc load commands: no memory\n");
+		swap_ends = true;
+	}
+	else
+	{
+		fprintf(stderr, "Error: bad magic number %lx\n", (unsigned long)mh.magic);
 		exit(1);
-    }
-    nc = read(infile, cmds, swap(mh.sizeofcmds));
-    if (nc < 0) 
+	}
+	
+	cmds = calloc(swap(mh.sizeofcmds), sizeof (char));
+
+	if (cmds == 0)
+	{
+		fprintf(stderr, "Error: alloc load commands: no memory\n");
+		exit(1);
+	}
+
+	nc = read(infile, cmds, swap(mh.sizeofcmds));
+
+	if (nc < 0)
 	{
 		perror("read load commands");
 		exit(1);
-    }
-    if (nc < (int)swap(mh.sizeofcmds))
-	{
-		fprintf(stderr, "read load commands: premature EOF %d\n", nc);
-		exit(1);
-    }
+	}
 
-	unsigned long vmstart = (unsigned long)-1;
+	if (nc < (int)swap(mh.sizeofcmds))
+	{
+		fprintf(stderr, "Error: read load commands: premature EOF %d\n", nc);
+		exit(1);
+	}
+
+	long initSegmentSize = 0L;
 
 	// First pass: determine actual load address
-	for (ncmds = swap(mh.ncmds), cp = cmds;
-		 ncmds > 0; ncmds--)
+	for (ncmds = swap(mh.ncmds), cp = cmds; ncmds > 0; ncmds--)
 	{
 #define lcp	((struct load_command *)cp)    
 #define scp	((struct segment_command *)cp)
@@ -124,29 +169,29 @@ main(int argc, char *argv[])
 		switch(swap(lcp->cmd))
 		{
 			case LC_SEGMENT:
-				if(vmstart > swap(scp->vmaddr)) 
+				if (strcmp(scp->segname, "__INIT") == 0)
 				{
-					vmstart = swap(scp->vmaddr);
+					initSegment = swap(scp->vmsize);
 				}
 		}
-		cp += swap(lcp->cmdsize);
 
+		cp += swap(lcp->cmdsize);
 	}
-	
+
 	// Second pass: output to file.
-    for (ncmds = swap(mh.ncmds), cp = cmds;
-		 ncmds > 0; ncmds--)
+	for (ncmds = swap(mh.ncmds), cp = cmds; ncmds > 0; ncmds--)
 	{
 #define lcp	((struct load_command *)cp)    
 #define scp	((struct segment_command *)cp)
 
-	    bool	isDATA;
-	    unsigned	vmsize;
+		bool	isDATA;
+		unsigned	vmsize;
 		
 		switch(swap(lcp->cmd))
 		{
 			case LC_SEGMENT:
 				isDATA = (strcmp(scp->segname, "__DATA") == 0);
+
 				if (isDATA)
 				{
 					vmsize = swap(scp->filesize);
@@ -157,25 +202,43 @@ main(int argc, char *argv[])
 				}
 				
 				result = vm_allocate(mach_task_self(), &data, vmsize, true);
-				if (result != KERN_SUCCESS) {
+
+				if (result != KERN_SUCCESS)
+				{
 					mach_error("vm_allocate segment data", result);
 					exit(1);
 				}
 				
 				lseek(infile, swap(scp->fileoff), L_SET);
 				nc = read(infile, (void *)data, swap(scp->filesize));
-				if (nc < 0) {
+
+				if (nc < 0)
+				{
 					perror("read segment data");
 					exit(1);
 				}
-				if (nc < (int)swap(scp->filesize)) {
+
+				if (nc < (int)swap(scp->filesize))
+				{
 					fprintf(stderr, "read segment data: premature EOF %d\n", nc);
 					exit(1);
 				}
-				
-				lseek(outfile, swap(scp->vmaddr) - vmstart, L_SET);
+
+				if (strcmp(scp->segname, "__INIT") == 0)
+				{
+					// Start of file
+					lseek(outfile, 0, L_SET);
+				}
+				else
+				{
+					// Address + size of __INIT segment
+					lseek(outfile, swap(scp->vmaddr) + initSegmentSize, L_SET);
+				}
+
 				nc = write(outfile, (void *)data, vmsize);
-				if (nc < (int)vmsize) {
+
+				if (nc < (int)vmsize)
+				{
 					perror("write segment data");
 					exit(1);
 				}
@@ -185,7 +248,7 @@ main(int argc, char *argv[])
 		}
 		
 		cp += swap(lcp->cmdsize);
-    }
+	}
 	
-    exit(0);
+	exit(0);
 }
