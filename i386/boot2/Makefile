@@ -9,6 +9,7 @@
 #		- BOOT2ADDR moved to RevoBoot/i386/util/segsize.c (PikerAlpha, November 2012).
 #		- Simplified calls to RevoBoot/i386/util/segsize (PikerAlpha, November 2012).
 #		- Reformatted output, include directory dependency lifted (PikerAlpha, November 2012).
+#		- Single pass linking and elimination of -Wl,-segaddr (PikerAlpha, November 2012).
 #
 
 
@@ -49,28 +50,16 @@ MAXBOOTSIZE = 131072
 
 $(MAKEGOAL): $(DIRS_NEEDED) boot
 
-boot: machOconv $(OBJS) $(LIBDEP)
+boot: $(OBJS)
+
+	@echo "\t[LD] boot.sys"
 	@$(CC)	-nostdlib -arch i386 \
 		-Wl,-preload \
 		-Wl,-pie \
 		-Wl,-segalign,20 \
 		-Wl,-read_only_relocs,suppress \
 		-lcc_kext \
-		$(filter %.o,$^) $(LIBS) \
-		-o ${SYMROOT}/$@.sys
-
-	@echo "\t[LD] boot.sys"
-	@$(CC)	-Wl,static \
-		-Wl,-preload \
-		-nostdlib -arch i386  -Wl,-pie \
-		-Wl,-segalign,20 \
-		-Wl,-segaddr,__INIT,`${SYMROOT}/segsize __INIT` \
-		-Wl,-segaddr,__TEXT,`${SYMROOT}/segsize __TEXT` \
-		-Wl,-segaddr,__DATA,`${SYMROOT}/segsize __DATA` \
-		-Wl,-read_only_relocs,suppress \
-		-lcc_kext \
-		$(filter %.o,$^) $(LIBS) \
-		-o ${SYMROOT}/$@.sys
+		$(filter %.o,$^) $(LIBS) -o ${SYMROOT}/$@.sys
 
 	@echo "\t[MACHOCONV] boot"
 	@$(SYMROOT)/machOconv $(SYMROOT)/boot.sys $(SYMROOT)/boot
