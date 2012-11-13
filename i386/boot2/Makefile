@@ -9,7 +9,6 @@
 #		- BOOT2ADDR moved to RevoBoot/i386/util/segsize.c (PikerAlpha, November 2012).
 #		- Simplified calls to RevoBoot/i386/util/segsize (PikerAlpha, November 2012).
 #		- Reformatted output, include directory dependency lifted (PikerAlpha, November 2012).
-#		- Single pass linking and elimination of -Wl,-segaddr (PikerAlpha, November 2012).
 #
 
 
@@ -57,6 +56,18 @@ boot: $(OBJS)
 		-Wl,-preload \
 		-Wl,-pie \
 		-Wl,-segalign,20 \
+		-Wl,-read_only_relocs,suppress \
+		-lcc_kext \
+		$(filter %.o,$^) $(LIBS) -o ${SYMROOT}/$@.sys
+
+	@echo "\t[LD] boot.sys"
+	@$(CC)	-nostdlib -arch i386 -static -v \
+		-Wl,-preload \
+		-Wl,-pie \
+		-Wl,-segalign,20 \
+		-Wl,-segaddr,__INIT,`$(UTILDIR)/segaddr __INIT` \
+		-Wl,-segaddr,__TEXT,`$(UTILDIR)/segaddr __TEXT` \
+		-Wl,-segaddr,__DATA,`$(UTILDIR)/segaddr __DATA` \
 		-Wl,-read_only_relocs,suppress \
 		-lcc_kext \
 		$(filter %.o,$^) $(LIBS) -o ${SYMROOT}/$@.sys
