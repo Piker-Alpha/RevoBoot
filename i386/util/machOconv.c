@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  * Updates:
- *		Reformatted and elimination of -Wl,-segaddr (PikerAlpha, November 2012)
+ *		Reformatted (PikerAlpha, November 2012)
  */
 
 #include <stdio.h>
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	long initSegmentSize = 0L;
+	unsigned long vmstart = (unsigned long) -1;
 
 	// First pass: determine actual load address
 	for (ncmds = swap(mh.ncmds), cp = cmds; ncmds > 0; ncmds--)
@@ -169,9 +169,9 @@ int main(int argc, char *argv[])
 		switch(swap(lcp->cmd))
 		{
 			case LC_SEGMENT:
-				if (strcmp(scp->segname, "__INIT") == 0)
+				if (vmstart > swap(scp->vmaddr)) 
 				{
-					initSegmentSize = swap(scp->vmsize);
+					vmstart = swap(scp->vmaddr);
 				}
 		}
 
@@ -224,17 +224,7 @@ int main(int argc, char *argv[])
 					exit(1);
 				}
 
-				if (strcmp(scp->segname, "__INIT") == 0)
-				{
-					// Start of file
-					lseek(outfile, 0, L_SET);
-				}
-				else
-				{
-					// Address + size of __INIT segment
-					lseek(outfile, swap(scp->vmaddr) + initSegmentSize, L_SET);
-				}
-
+				lseek(outfile, swap(scp->vmaddr) - vmstart, L_SET);
 				nc = write(outfile, (void *)data, vmsize);
 
 				if (nc < (int)vmsize)
