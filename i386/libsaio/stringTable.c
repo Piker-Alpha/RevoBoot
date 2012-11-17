@@ -22,6 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  * Copyright 1993 NeXT, Inc. All rights reserved.
+ *
+ * Updates:
+ *			- White space changes (PikerAlpha, November 2012)
+ *			- Check malloc returns (PikerAlpha, November 2012)
+ *
  */
 
 #include "bootstruct.h"
@@ -29,17 +34,14 @@
 #include "xml.h"
 #include "stdbool.h"
 
-extern char *Language;
-extern char *LoadableFamilies;
-
-int sysConfigValid;
+#define DEBUG_XML_PARSER	0
 
 
 //==============================================================================
 
 static inline int isspace(char c)
 {
-    return (c == ' ' || c == '\t');
+	return (c == ' ' || c == '\t');
 }
 
 
@@ -47,25 +49,29 @@ static inline int isspace(char c)
 
 bool getValueForConfigTableKey(config_file_t *config, const char *key, const char **val, int *size)
 {
-    if (config->dictionary != 0)
-    {
-        // Look up key in XML dictionary
-        TagPtr value;
-        value = XMLGetProperty(config->dictionary, key);
+	if (config->dictionary != 0)
+	{
+		// Look up key in XML dictionary
+		TagPtr value;
+		value = XMLGetProperty(config->dictionary, key);
 
-        if (value != 0)
-        {
-            if (value->type != kTagTypeString)
-            {
-                error("Non-string tag '%s' found in config file\n", key);
-                return false;
-            }
-            *val = value->string;
-            *size = strlen(value->string);
-            return true;
-        }
-    }
-    // else {} for legacy plist-style table, which is not implemented!
+		if (value != 0)
+		{
+			if (value->type != kTagTypeString)
+			{
+#if DEBUG_XML_PARSER
+				error("Non-string tag '%s' found in config file\n", key);
+#endif
+				
+				return false;
+			}
+			*val = value->string;
+			*size = strlen(value->string);
+
+			return true;
+		}
+	}
+	// else {} for legacy plist-style table, which is not implemented!
 
 	return false;
 }
@@ -75,26 +81,22 @@ bool getValueForConfigTableKey(config_file_t *config, const char *key, const cha
 
 char * newStringForKey(char *key, config_file_t *config)
 {
-    const char *val;
-    char *newstr;
-    int size;
-    
-    if (getValueForKey(key, &val, &size, config) && size)
-    {
-        newstr = (char *)malloc(size + 1);
-        strlcpy(newstr, val, size + 1);
-        return newstr;
-    }
+	const char *val;
+	int size;
 
-    return 0;
+	if (getValueForKey(key, &val, &size, config) && size)
+	{
+		return strdup(val);	// string.c
+	}
+
+	return 0;
 }
 
 
 //==============================================================================
-/* parse a command line
- * in the form: [<argument> ...]  [<option>=<value> ...]
- * both <option> and <value> must be either composed of
- * non-whitespace characters, or enclosed in quotes.
+/* parse command line in the form: [<argument> ...]  [<option>=<value> ...]
+ * both <option> and <value> must be either composed of non-whitespace 
+ * characters, or enclosed in quotes.
  */
 
 static const char *getToken(const char *line, const char **begin, int *len)
@@ -135,7 +137,6 @@ bool getValueForBootKey(const char *line, const char *target, const char **match
 	int key_len, value_len;
 	int targetLength = strlen(target);
 
-    
 	while (*line)
 	{
 		// Check for keyword or argument.
@@ -178,24 +179,24 @@ bool getValueForBootKey(const char *line, const char *target, const char **match
 
 bool getBoolForKey(const char *key, bool *result_val, config_file_t *config)
 {
-    const char *key_val;
-    int size;
-    
-    if (getValueForKey(key, &key_val, &size, config))
-    {
-        if ((size >= 1) && (key_val[0] == 'Y' || key_val[0] == 'y'))
+	const char *key_val;
+	int size;
+
+	if (getValueForKey(key, &key_val, &size, config))
+	{
+		if ((size >= 1) && (key_val[0] == 'Y' || key_val[0] == 'y'))
 		{
-            *result_val = true;
+			*result_val = true;
 		}
-        else
+		else
 		{
-            *result_val = false;
+			*result_val = false;
 		}
 
-        return true; // Key found.
-    }
+		return true; // Key found.
+	}
 
-    return false; // Key not found.
+	return false; // Key not found.
 }
 
 
@@ -203,11 +204,11 @@ bool getBoolForKey(const char *key, bool *result_val, config_file_t *config)
 
 bool getIntForKey(const char *key, int *value, config_file_t *config)
 {
-    const char *val;
-    int size, sum;
-    bool negative = false;
-    
-    if (getValueForKey(key, &val, &size, config))
+	const char *val;
+	int size, sum;
+	bool negative = false;
+
+	if (getValueForKey(key, &val, &size, config))
 	{
 		if (size)
 		{
@@ -239,74 +240,101 @@ bool getIntForKey(const char *key, int *value, config_file_t *config)
 		}
 	}
 
-    return false; // Key not found
+	return false; // Key not found
 }
 
 
 //==============================================================================
 
 bool getValueForKey(const char *key, const char **val, int *size, config_file_t *config)
-{  
-    if (getValueForBootKey(bootArgs->CommandLine, key, val, size))
+{
+	if (getValueForBootKey(bootArgs->CommandLine, key, val, size))
 	{
-        return true;
+		return true;
 	}
 
-    bool ret = getValueForConfigTableKey(config, key, val, size);
+	bool ret = getValueForConfigTableKey(config, key, val, size);
 
-    return ret;
+	return ret;
 }
 
 
-//==============================================================================
-// ParseXMLFile modifies the input buffer and expects one dictionary in the 
-// XML file. Puts the first dictionary it finds in the tag pointer and 
-// returns 0, or -1 if not found (and does not modify the dict pointer).
-// Prints an error message if there is a parsing error.
+/*==============================================================================
+ * ParseXMLFile modifies the input buffer and expects one dictionary in the
+ * XML file. Puts the first dictionary it finds in the tag pointer and returns
+ * the length on success or 0 on error, in which case it will not modify the
+ * dictionary pointer).
+ */
 
-long ParseXMLFile(char * buffer, TagPtr * dict)
+long ParseXMLFile(char * buffer, TagPtr * dictionaryPtr)
 {
-    long	length;
+	long	length = -1;
 	long	pos = 0;
-    TagPtr	tag;
-    char	*configBuffer;
-  
-    configBuffer = malloc(strlen(buffer)+1);
-    strcpy(configBuffer, buffer);
+	TagPtr	tag;
+	char	*configBuffer = NULL;
 
-    while (1)
-    {
-        length = XMLParseNextTag(configBuffer + pos, &tag);
-
-        if (length == -1)
-            break;
-    
-        pos += length;
-    
-        if (tag == 0)
+	if (buffer)
+	{
+		configBuffer = malloc(strlen(buffer) + 1);
+	
+		if (configBuffer)
 		{
-            continue;
-		}
+			strcpy(configBuffer, buffer);
 
-        if (tag->type == kTagTypeDict)
+			while (1)
+			{
+				length = XMLParseNextTag(configBuffer + pos, &tag);
+
+				if (length == -1)
+				{
+					break;
+				}
+
+				pos += length;
+
+				if (tag == 0)
+				{
+					continue;
+				}
+
+				if (tag->type == kTagTypeDict)
+				{
+					break;
+				}
+
+				XMLFreeTag(tag);
+			}
+
+			free(configBuffer);
+
+			if (length)
+			{
+				*dictionaryPtr = tag;
+
+				return length;
+			}
+#if DEBUG_XML_PARSER
+			else
+			{
+				error ("ParseXMLFile: Error parsing plist file\n");
+			}
+#endif
+		}
+#if DEBUG_XML_PARSER
+		else
 		{
-            break;
+			error ("ParseXMLFile: configBuffer == NULL\n");
 		}
-    
-        XMLFreeTag(tag);
-    }
+#endif
+	}
+#if DEBUG_XML_PARSER
+	else
+	{
+		error ("ParseXMLFile: buffer == NULL\n");
+	}
+#endif
 
-    free(configBuffer);
-
-    if (length < 0)
-    {
-        error ("Error parsing plist file\n");
-        return -1;
-    }
-
-    *dict = tag;
-
-    return 0;
+	return 0;
 }
 
 
@@ -316,20 +344,19 @@ long ParseXMLFile(char * buffer, TagPtr * dict)
 
 int loadSystemConfig(config_file_t *config)
 {
-	char *path = malloc(80); // Long enough for the longest (default) path.
-	static char * dirspec[] = {
-        
+	static char * dirspec[] =
+	{
 #if LION_RECOVERY_SUPPORT
 		"com.apple.recovery.boot",
 #endif
-        
+
 #if LION_INSTALL_SUPPORT
 		".IABootFiles",
 		"OS X Install Data",
 		"Mac OS X Install Data",
 #endif
 		"Library/Preferences/SystemConfiguration" // The default.
-        
+
 #if APPLE_RAID_SUPPORT
 		/*
 		 * This is a temporarily change to test RAID support, but it
@@ -341,40 +368,34 @@ int loadSystemConfig(config_file_t *config)
 		"com.apple.boot.S/Library/Preferences/SystemConfiguration"
 #endif
 	};
-    
-	int i, fd;
-    
-	for (i = 0; i < sizeof(dirspec) / sizeof(dirspec[0]); i++)
+
+	char *path = (char *)malloc(80); // Long enough for the longest (default) path.
+
+	if (path)
 	{
-		sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
-        
-		if ((fd = open(path, 0)) >= 0)
+		int i = 0;
+		int fd = 0;
+		int len = (sizeof(dirspec) / sizeof(dirspec[0]));
+
+		for (; i < len; i++)
 		{
-			// IO_CONFIG_DATA_SIZE is defined as 4096 in bios.h and which should
-			// be sufficient enough for RevoBoot (size was 4K for years already).
-			read(fd, config->plist, IO_CONFIG_DATA_SIZE);
-			close(fd);
-            
-			// Build XML dictionary.
-			ParseXMLFile(config->plist, &config->dictionary);
-            
-			return 0;
+			sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
+
+			if ((fd = open(path, 0)) >= 0)
+			{
+				// IO_CONFIG_DATA_SIZE is defined as 4096 in bios.h and which should
+				// be sufficient enough for RevoBoot (size was 4K for years already).
+				read(fd, config->plist, IO_CONFIG_DATA_SIZE);
+				close(fd);
+
+				// Build XML dictionary.
+				ParseXMLFile(config->plist, &config->dictionary);
+
+				free (path);
+				return 0;
+			}
 		}
 	}
-    
+
 	return -1;
 }
-
-
-//==============================================================================
-
-char * newString(const char * oldString)
-{
-	if (oldString)
-	{
-		return strcpy(malloc(strlen(oldString) + 1), oldString);
-	}
-
-	return NULL;
-}
-
