@@ -20,6 +20,11 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *			- White space changes (PikerAlpha, November 2012)
+ *			- Unused Little Endian macro's removed (PikerAlpha, November 2012)
+ *
  */
 
 #ifndef __LIBSAIO_SL_H
@@ -31,35 +36,32 @@
 #include "libsaio.h"
 
 #define SWAP_BE16(x)  OSSwapBigToHostInt16(x)
-#define SWAP_LE16(x)  OSSwapLittleToHostInt16(x)
 #define SWAP_BE32(x)  OSSwapBigToHostInt32(x)
-#define SWAP_LE32(x)  OSSwapLittleToHostInt32(x)
 #define SWAP_BE64(x)  OSSwapBigToHostInt64(x)
-#define SWAP_LE64(x)  OSSwapLittleToHostInt64(x)
 
 // File Permissions and Types
 enum
 {
-	kPermOtherExecute  = 1 << 0,
-	kPermOtherWrite    = 1 << 1,
-	kPermOtherRead     = 1 << 2,
-	kPermGroupExecute  = 1 << 3,
-	kPermGroupWrite    = 1 << 4,
-	kPermGroupRead     = 1 << 5,
-	kPermOwnerExecute  = 1 << 6,
-	kPermOwnerWrite    = 1 << 7,
-	kPermOwnerRead     = 1 << 8,
-	kPermMask          = 0x1FF,
-	kOwnerNotRoot      = 1 << 9,
-	kFileTypeUnknown   = 0x0 << 16,
-	kFileTypeFlat      = 0x1 << 16,
-	kFileTypeDirectory = 0x2 << 16,
-	kFileTypeLink      = 0x3 << 16,
-	kFileTypeMask      = 0x3 << 16
+	kPermOtherExecute	= 1 << 0,
+	kPermOtherWrite		= 1 << 1,
+	kPermOtherRead		= 1 << 2,
+	kPermGroupExecute	= 1 << 3,
+	kPermGroupWrite		= 1 << 4,
+	kPermGroupRead		= 1 << 5,
+	kPermOwnerExecute	= 1 << 6,
+	kPermOwnerWrite		= 1 << 7,
+	kPermOwnerRead		= 1 << 8,
+	kPermMask			= 0x1FF,
+	kOwnerNotRoot		= 1 << 9,
+	kFileTypeUnknown	= 0x0 << 16,
+	kFileTypeFlat		= 0x1 << 16,
+	kFileTypeDirectory	= 0x2 << 16,
+	kFileTypeLink		= 0x3 << 16,
+	kFileTypeMask		= 0x3 << 16
 };
 
-#define Seek(c, p)     diskSeek(c, p);
-#define Read(c, a, l)  diskRead(c, a, l);
+#define Seek(c, p)		diskSeek(c, p);
+#define Read(c, a, l)	diskRead(c, a, l);
 
 extern void * gFSLoadAddress;
 
