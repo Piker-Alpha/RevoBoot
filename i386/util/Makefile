@@ -5,6 +5,7 @@
 #
 #			- Major cleanup (PikerAlpha, October 2012).
 #			- Fixed clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
+#			- Output improved (PikerAlpha, October 2012).
 #
 
 
