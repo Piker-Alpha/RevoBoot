@@ -13,6 +13,7 @@
 #			- Copies ACPI/EFI/SMBIOS/data-template.h for new conigurations (PikerAlpha, October 2012).
 #			- Output added for cp/mkdir/rm actions (PikerAlpha, November 2012).
 #			- New build target 'help' added (PikerAlpha, November 2012).
+#			- Cleanups and output changed (PikerAlpha, November 2012).
 #
 
 #
@@ -134,7 +135,7 @@ CONFIG_DIR=$(ARCH_DIR)/config
 SETTINGS_DIR=$(CONFIG_DIR)/SETTINGS
 SETTINGS_FILE=$(SETTINGS_DIR)/$(MAKE_TARGET_MODEL).h
 
-$(MAKEGOAL): $(SYMROOT) $(OBJROOT)
+$(MAKEGOAL):
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE) ]; then \
 		echo "\t[CP] $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE)"; \
 		cp -n $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE); \
@@ -160,33 +161,34 @@ $(MAKEGOAL): $(SYMROOT) $(OBJROOT)
 		cp -n $(CONFIG_DIR)/settings-template.h $(SETTINGS_FILE); \
 	fi;
 
-	@if [ -d $(ARCH_DIR) ]; then \
-		echo ================= make MODEL=$(MAKE_TARGET_MODEL) $@ for: RevoBoot/$(ARCH_DIR) =================; \
-		( OBJROOT=$(OBJROOT)/$(ARCH_DIR); \
-		  SYMROOT=$(SYMROOT)/$(ARCH_DIR); \
-              XCFLAGS="$(RC_CFLAGS)"; \
-		  echo "$$OBJROOT $$SYMROOT"; \
-		    cd $(ARCH_DIR); ${MAKE}	\
-			"OBJROOT=$$OBJROOT" \
-		  	"SYMROOT=$$SYMROOT" \
-			"RC_ARCHS=$(ARCH_DIR)" \
-			"TARGET=$(ARCH_DIR)" \
-			"RC_CFLAGS=$$XCFLAGS" $@ \
-		) || exit $$?; \
-	fi;
+	@echo "======================================================";
+	@echo "Running: make MODEL=$(MODEL) $@";
+
+	@(OBJROOT=$(OBJROOT)/$(ARCH_DIR); \
+	SYMROOT=$(SYMROOT)/$(ARCH_DIR); \
+	XCFLAGS="$(RC_CFLAGS)"; \
+	cd $(ARCH_DIR); \
+	${MAKE}	"OBJROOT=$$OBJROOT" "SYMROOT=$$SYMROOT" "RC_ARCHS=$(ARCH_DIR)" \
+	"TARGET=$(ARCH_DIR)" "RC_CFLAGS=$$XCFLAGS" $@ )
 
 clean:
-	@if [ -d "$(OBJROOT)" ];then echo "\t[RMDIR] $(OBJROOT)"; fi
-	@if [ -d "$(SYMROOT)" ];then echo "\t[RMDIR] $(SYMROOT)"; fi
-	rm -rf sym obj dst out.log
+	@if [ -d "$(OBJROOT)" ]; then \
+		echo "\t[RMDIR] $(OBJROOT)" > /dev/null; \
+	fi;
+
+	@if [ -d "$(SYMROOT)" ]; then \
+		echo "\t[RMDIR] $(SYMROOT)" > /dev/null; \
+	fi;
+
+	@rm -rf sym obj dst out.log
 
 help:
 	@echo
-	@echo   'Build targets:'
-	@echo   '		- Build all targets [DEFAULT]'
+	@echo	'Build targets:'
+	@echo	'		- Builds all targets [DEFAULT]'
 	@echo
-	@echo   'Cleaning targets:'
-	@echo   '  clean	- Remove generated files'
+	@echo	'Cleaning targets:'
+	@echo	' clean	- Removes generated files'
 
 $(SYMROOT) $(OBJROOT):
 	@/bin/mkdir -p $@
