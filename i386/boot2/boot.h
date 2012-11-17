@@ -24,7 +24,7 @@
  * Copyright 1994 NeXT Computer, Inc. All rights reserved.
  *
  * Updates:
- *		- Unused sysConfigValid removed (PikerAlpha, November 2012).
+ *			- Unused sysConfigValid removed (PikerAlpha, November 2012).
  *
  */
 
@@ -105,7 +105,6 @@
 // A global set by boot() to record the device that the booter was loaded from.
 
 extern long gBootMode;
-extern bool sysConfigValid;
 extern char bootPrompt[];
 
 // Kernel Boot Modes
