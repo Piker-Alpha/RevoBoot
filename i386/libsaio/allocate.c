@@ -20,6 +20,11 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ *
+ * Updates:
+ *			- Layout change only (PikerAlpha, November 2012)
+ *
  */
 
 #include "sl.h"
@@ -28,8 +33,8 @@
 #include "device_tree.h"
 #include "platform.h"
 
-#define kPageSize     4096
-#define RoundPage(x)  ((((unsigned)(x)) + kPageSize - 1) & ~(kPageSize - 1))
+#define kPageSize		4096
+#define RoundPage(x)	((((unsigned)(x)) + kPageSize - 1) & ~(kPageSize - 1))
 
 
 //==============================================================================
@@ -38,32 +43,30 @@ long AllocateMemoryRange(char * rangeName, long start, long length, long type)
 {
 	char *nameBuf = malloc(strlen(rangeName) + 1);
 
-	if (nameBuf == 0)
+	if (nameBuf)
 	{
-		return -1;
-	}
+		strcpy(nameBuf, rangeName);
 
-	strcpy(nameBuf, rangeName);
+		uint32_t *buffer = malloc(2 * sizeof(uint32_t));
 
-	uint32_t *buffer = malloc(2 * sizeof(uint32_t));
-
-	if (buffer == 0)
-	{
-		free(nameBuf);
-
-		return -1;
-	}
-    
-	buffer[0] = start;
-	buffer[1] = length;
+		if (buffer)
+		{
+			buffer[0] = start;
+			buffer[1] = length;
 
 #if DEBUG
-	printf("AllocateMemoryRange : %s - 0x%lx - 0x%lx\n", nameBuf, length, start);
+			printf("AllocateMemoryRange : %s - 0x%lx - 0x%lx\n", nameBuf, length, start);
 #endif
 
-	DT__AddProperty(gPlatform.EFI.Nodes.MemoryMap, nameBuf, 2 * sizeof(uint32_t), (char *)buffer);
-    
-	return 0;
+			DT__AddProperty(gPlatform.EFI.Nodes.MemoryMap, nameBuf, 2 * sizeof(uint32_t), (char *)buffer);
+
+			return 0;
+		}
+
+		free(nameBuf);
+	}
+
+	return -1;
 }
 
 
