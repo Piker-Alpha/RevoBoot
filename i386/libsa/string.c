@@ -20,8 +20,13 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *			- Layout and white space changes (PikerAlpha, November 2012)
+ *			- Use size_t instead of int when required (PikerAlpha, November 2012)
+ *
  */
-/* string operations */
+
 
 #include "libsa.h"
 
@@ -128,10 +133,15 @@ void bzero(void * dst, size_t len)
 
 //==========================================================================
 
-int strlen(const char * s)
+size_t strlen(const char * s)
 {
 	int n = 0;
-	while (*s++) n++;
+
+	while (*s++)
+	{
+		n++;
+	}
+
 	return(n);
 }
 /*#endif*/
@@ -140,12 +150,16 @@ int strlen(const char * s)
 //==========================================================================
 /* NOTE: Moved from ntfs.c */
 
-int memcmp(const void *p1, const void *p2, int len)
+int memcmp(const void *p1, const void *p2, size_t len)
 {
-    while (len--) {
+    while (len--)
+	{
         if (*(const char*)(p1++) != *(const char*)(p2++))
+		{
             return -1;
+		}
     }
+
     return 0;
 }
 
@@ -154,10 +168,12 @@ int memcmp(const void *p1, const void *p2, int len)
 
 int strcmp(const char * s1, const char * s2)
 {
-	while (*s1 && (*s1 == *s2)) {
+	while (*s1 && (*s1 == *s2))
+	{
 		s1++;
 		s2++;
 	}
+
 	return (*s1 - *s2);
 }
 
@@ -167,9 +183,15 @@ int strcmp(const char * s1, const char * s2)
 int strncmp(const char * s1, const char * s2, size_t len)
 {
 	register int n = len;
+
 	while (--n >= 0 && *s1 == *s2++)
+	{
 		if (*s1++ == '\0')
+		{
 			return(0);
+		}
+	}
+
 	return(n<0 ? 0 : *s1 - *--s2);
 }
 
@@ -179,8 +201,12 @@ int strncmp(const char * s1, const char * s2, size_t len)
 char * strcpy(char * s1, const char * s2)
 {
 	register char *ret = s1;
+
 	while ((*s1++ = *s2++))
+	{
 		continue;
+	}
+
 	return ret;
 }
 
@@ -190,21 +216,33 @@ char * strcpy(char * s1, const char * s2)
 char * strncpy(char * s1, const char * s2, size_t n)
 {
 	register char *ret = s1;
+
 	while (n && (*s1++ = *s2++))
+	{
 		n--;
+	}
+
 	return ret;
 }
 
 
 //==========================================================================
 
-char * strlcpy(char * s1, const char * s2, size_t n)
+size_t strlcpy(char * s1, const char * s2, size_t n)
 {
 	register char *ret = s1;
+
 	while (n && (*s1++ = *s2++))
+	{
 		n--;
-	if (!n) *--s1=0;
-	return ret;
+	}
+
+	if (!n)
+	{
+		*--s1=0;
+	}
+
+	return strlen(ret);
 }
 
 
@@ -216,10 +254,14 @@ char * strstr(const char *in, const char *str)
     size_t len;
 
     c = *str++;
+
     if (!c)
+	{
         return (char *) in;	// Trivial empty string case
+	}
 
     len = strlen(str);
+
     do {
         char sc;
 
@@ -241,10 +283,18 @@ int ptol(const char *str)
 	register int c = *str;
 
 	if (c <= '7' && c >= '0')
+	{
 		c -= '0';
+	}
 	else if (c <= 'h' && c >= 'a')
+	{
 		c -= 'a';
-	else c = 0;
+	}
+	else
+	{
+		c = 0;
+	}
+
 	return c;
 }
 
@@ -254,9 +304,14 @@ int ptol(const char *str)
 int atoi(const char *str)
 {
 	register int sum = 0;
+
 	while (*str == ' ' || *str == '\t')
+	{
 		str++;
-	while (*str >= '0' && *str <= '9') {
+	}
+
+	while (*str >= '0' && *str <= '9')
+	{
 		sum *= 10;
 		sum += *str++ - '0';
 	}
@@ -269,11 +324,19 @@ int atoi(const char *str)
 char *strncat(char *s1, const char *s2, size_t n)
 {
 	register char *ret = s1;
+
 	while (*s1)
+	{
 		s1++;
+	}
+
 	while (n-- && *s2)
+	{
 		*s1++ = *s2++;
+	}
+
 	*s1 = '\0';
+
 	return ret;
 }
 
@@ -288,9 +351,16 @@ char *strcat(char *s1, const char *s2)
 
 //==========================================================================
 
-char *strdup(const char *s1)
+char *strdup(const char *sourceString)
 {
-	return strcpy(malloc(strlen(s1) + 1), s1);
+	char * newString = (char *)malloc(strlen(sourceString) + 1);
+
+	if (newString)
+	{
+		return strcpy(newString, sourceString);
+	}
+
+	return NULL;
 }
 
 
@@ -299,9 +369,15 @@ char *strdup(const char *s1)
 int strncasecmp(const char *s1, const char *s2, size_t len)
 {
 	register int n = len;
+
 	while (--n >= 0 && tolower(*s1) == tolower(*s2++))
+	{
 		if (*s1++ == '\0')
+		{
 			return(0);
+		}
+	}
+
 	return(n<0 ? 0 : tolower(*s1) - tolower(*--s2));
 }
 #endif
@@ -316,8 +392,10 @@ uint8_t checksum8( void * start, unsigned int length )
     uint8_t * cp = (uint8_t *) start;
     unsigned int i;
 
-    for ( i = 0; i < length; i++)
+    for (i = 0; i < length; i++)
+	{
         csum += *cp++;
+	}
 
     return csum;
 }
