@@ -20,6 +20,10 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *			- Use size_t instead of int when required (PikerAlpha, November 2012)
+ *
  */
 
 #ifndef __BOOT_LIBSA_H
@@ -53,21 +57,26 @@ extern int fastEnableA20(void);
 	extern void   bzero(void * dst, size_t len);
 #endif
 
-extern void * memset(void * dst, int c, size_t n);
-extern void * memcpy(void * dst, const void * src, size_t len);
-extern int    memcmp(const void * p1, const void * p2, int len);
-extern int    strcmp(const char * s1, const char * s2);
-extern int    strncmp(const char * s1, const char * s2, size_t n);
 extern char * strcpy(char * s1, const char * s2);
 extern char * strncpy(char * s1, const char * s2, size_t n);
-extern char * strlcpy(char * s1, const char * s2, size_t n);
+
 extern char * strstr(const char *in, const char *str);
-extern int    atoi(const char * str);
-extern int    ptol(const char * str);
-extern int    strlen(const char * str);
 extern char * strcat(char * s1, const char * s2);
 extern char * strncat(char * s1, const char * s2, size_t n);
 extern char * strdup(const char *s1);
+
+extern void * memset(void * dst, int c, size_t n);
+extern void * memcpy(void * dst, const void * src, size_t len);
+
+extern int		strcmp(const char * s1, const char * s2);
+extern int		strncmp(const char * s1, const char * s2, size_t n);
+extern int		atoi(const char * str);
+extern int		ptol(const char * str);
+
+extern int	memcmp(const void * p1, const void * p2, size_t len);
+
+extern size_t	strlcpy(char * s1, const char * s2, size_t n);
+extern size_t	strlen(const char * str);
 
 #if STRNCASECMP
 	extern int    strncasecmp(const char * s1, const char * s2, size_t n);
