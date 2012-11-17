@@ -50,7 +50,8 @@
  * Updates:
  *		- Refactorized by DHP in 2010 and 2011.
  *		- Optionally include Recovery HD support code (PikerAlpha, November 2012).
- *      - Fixed clang compilation (PikerAlpha, November 2012).
+ *		- Fixed clang compilation (PikerAlpha, November 2012).
+ *		- Unused sysConfigValid removed and white space fix (PikerAlpha, November 2012).
  */
 
 
@@ -386,8 +387,6 @@ void boot(int biosdev)
     while (1)
     {
 		// Initialize globals.
-
-		sysConfigValid = 0;
 		gErrors        = 0;
 
 		int retStatus = -1;
