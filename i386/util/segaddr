@@ -1,0 +1,56 @@
+#
+# Name   : RevoBoot/i386/util/segaddr
+# Type   : Command line tool (script to replace segsize.c)
+# Author : PikerAlpha@yahoo.com (Copyright (c) 2012)
+# Version: 1.0
+# Release: Initial release on Monday 12 November 2012
+#
+# Updates:
+#
+
+# The following value is decimal for 0x20200 Used to simplify 
+# stripping unwanted data from the output of size -m boot.sys
+BOOT2ADDR=131584
+
+# Run for segment address of __INIT (start of /boot file)
+if [[ $1 =~ "__INIT" ]];
+  then
+    # Decimal values in, Hexadecimal value out
+    echo ibase=10\; obase=16\; $BOOT2ADDR | bc
+  # Check if boot.sys exists
+  else if [ -f ../../sym/i386/boot.sys ];
+    then
+      # Example output of: 'size boot.sys'
+      #
+      #__TEXT __DATA  __OBJC  others  dec     hex
+      #49376  4544    0       640     54560   d520
+
+      # Start by stripping all unwanted stuff (creates a list):
+      SIZE_INFO=`size ../../sym/i386/boot.sys | tr -cs "[:digit:]" " "`
+
+      # Giving us:
+      # 49376 4544 0 640 54560 520
+      #                        ^
+      #                        |
+      # Yes, the missing 'd' here is expected behaviour
+
+      # Now we assign values (49376, 4544 and 640) to our locals
+      TEXT=`echo $SIZE_INFO | awk '{ print $1 }'`
+      INIT=`echo $SIZE_INFO | awk '{ print $4 }'`
+
+      # Run for segment address of __TEXT (right after __INIT segment in /boot file)
+      if [[ $1 =~ "__TEXT" ]];
+        then
+          # Returns 20480 (131584/0x20200 + 640/0x280)
+          # Decimal values in, Hexadecimal value out
+          echo ibase=10\; obase=16\; $BOOT2ADDR + $INIT | bc
+        else 
+          # Run for segment address of __DATA (right after __TEXT segment in /boot file)
+          # Returns 2C560 (131584/0x20200 + 4544/0x11C0 + 640/0x280)
+          # Decimal values in, Hexadecimal value out
+          echo ibase=10\; obase=16\; $BOOT2ADDR + $INIT + $TEXT | bc
+      fi
+    else
+      echo "Error: boot.sys not found!\n"
+    fi
+fi
