@@ -30,31 +30,27 @@
  */
 
 /*
- *          INTEL CORPORATION PROPRIETARY INFORMATION
+ * INTEL CORPORATION PROPRIETARY INFORMATION
  *
- *  This software is supplied under the terms of a license  agreement or 
- *  nondisclosure agreement with Intel Corporation and may not be copied 
- *  nor disclosed except in accordance with the terms of that agreement.
+ * This software is supplied under the terms of a license  agreement or
+ * nondisclosure agreement with Intel Corporation and may not be copied
+ * nor disclosed except in accordance with the terms of that agreement.
  *
- *  Copyright 1988, 1989 Intel Corporation
- */
-
-/*
- * Copyright 1993 NeXT Computer, Inc.
- * All rights reserved.
- */
-
-/*  Copyright 2007 VMware Inc.
-    "Preboot" ramdisk support added by David Elliott
-    GPT support added by David Elliott.  Based on IOGUIDPartitionScheme.cpp.
- */
-
-/*
+ * Copyright 1988, 1989 Intel Corporation
+ *
+ * Copyright 1993 NeXT Computer, Inc. All rights reserved.
+ *
+ * Copyright 2007 VMware Inc.
+ *	"Preboot" ramdisk support added by David Elliott
+ *	GPT support added by David Elliott.  Based on IOGUIDPartitionScheme.cpp.
+ *
  * Updates:
- *		- Cleanups and refactoring by DHP in 2010 and 2011.
- *		- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
- *		- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
- *		- Renamed encryptedBootPartition to coreStoragePartition (PikerAlpha, November 2012).
+ *			- Cleanups and refactoring by DHP in 2010 and 2011.
+ *			- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
+ *			- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
+ *			- Renamed encryptedBootPartition to coreStoragePartition (PikerAlpha, November 2012).
+ *			- OSBigEndian removed and some minor style nits (PikerAlpha, November 2012).
+ *
  */
 
 
