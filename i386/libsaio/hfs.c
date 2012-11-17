@@ -18,13 +18,16 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- */
-/*
- *  hfs.c - File System Module for HFS and HFS+.
  *
- *  Copyright (c) 1999-2002 Apple Computer, Inc.
+ * hfs.c - File System Module for HFS and HFS+.
  *
- *  DRI: Josh de Cesare
+ * Copyright (c) 1999-2002 Apple Computer, Inc.
+ *
+ * DRI: Josh de Cesare
+ *
+ * Updates:
+ *			- OSBigEndian removed and white space changes (PikerAlpha, November 2012)
+ *
  */
 
 #include <sl.h>
@@ -131,7 +134,7 @@ bool HFSProbe (const void *buf)
     mdb = (const HFSMasterDirectoryBlock *)(((const char*)buf)+kMDBBaseOffset);
     header = (const HFSPlusVolumeHeader *)(((const char*)buf)+kMDBBaseOffset);
 	
-    if ( SWAP_BE16(mdb->drSigWord) == kHFSSigWord )
+    if (SWAP_BE16(mdb->drSigWord) == kHFSSigWord)
         return true;
 
     if (SWAP_BE16(header->signature) != kHFSPlusSigWord && SWAP_BE16(header->signature) != kHFSXSigWord)
@@ -257,11 +260,9 @@ long HFSInitPartition(CICell ih)
     extentSize = SWAP_BE64(gHFSPlus->catalogFile.logicalSize);
     extentFile = kHFSCatalogFileID;
 
-    ReadExtent(extent, extentSize, extentFile, 0, 256,
-               gBTreeHeaderBuffer + kBTreeCatalog * 256, 0);
+    ReadExtent(extent, extentSize, extentFile, 0, 256, gBTreeHeaderBuffer + kBTreeCatalog * 256, 0);
 
-    nodeSize = SWAP_BE16(((BTHeaderRec *)(gBTreeHeaderBuffer + kBTreeCatalog * 256 +
-                         sizeof(BTNodeDescriptor)))->nodeSize);
+    nodeSize = SWAP_BE16(((BTHeaderRec *)(gBTreeHeaderBuffer + kBTreeCatalog * 256 + sizeof(BTNodeDescriptor)))->nodeSize);
 
     // If the BTree node size is larger than the block size, reset the cache.
     if (nodeSize > gBlockSize)
@@ -772,7 +773,7 @@ static long GetCatalogEntry(long * dirIndex, char ** name, long * flags, long * 
 	{
 		utf_encodestr(((HFSPlusCatalogKey *)testKey)->nodeName.unicode,
                       SWAP_BE16(((HFSPlusCatalogKey *)testKey)->nodeName.length),
-                      (u_int8_t *)gTempStr, 256, OSBigEndian);
+                      (u_int8_t *)gTempStr, 256);
 	}
 	else
 	{
@@ -820,7 +821,7 @@ static long ReadCatalogEntry(char * fileName, long dirID, void * entry, long * d
 			length = 255;
 		}
 
-		utf_decodestr((u_int8_t *)fileName, hfsPlusKey->nodeName.unicode, &(hfsPlusKey->nodeName.length), 512, OSBigEndian);
+		utf_decodestr((u_int8_t *)fileName, hfsPlusKey->nodeName.unicode, &(hfsPlusKey->nodeName.length), 512);
 	}
 	else
 	{
@@ -1301,7 +1302,7 @@ static long CompareHFSPlusCatalogKeys(void * key, void * testKey)
             result = FastUnicodeCompare(&searchKey->nodeName.unicode[0],
                                         SWAP_BE16(searchKey->nodeName.length),
                                         &trialKey->nodeName.unicode[0],
-                                        SWAP_BE16(trialKey->nodeName.length), OSBigEndian);
+                                        SWAP_BE16(trialKey->nodeName.length));
         }
     }
 
@@ -1415,4 +1416,3 @@ static long CompareHFSPlusExtentsKeys(void * key, void * testKey)
 
     return result;
 }
-
