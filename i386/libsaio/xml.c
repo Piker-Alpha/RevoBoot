@@ -20,13 +20,17 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *			- Cleanups, white space and layout changes (PikerAlpha, November 2012)
+ *
  */
 
 #include "libsaio.h"
 #include "xml.h"
 
 typedef struct Module
-{  
+{
 	struct Module *nextModule;
 	long		willLoad;
 	TagPtr		dict;
@@ -64,19 +68,15 @@ enum
 	kCFBundleType3
 };
 
-
-#define USEMALLOC 1
-#define DOFREE 1
-
 #define kTagsPerBlock (0x1000)
 
 static TagPtr gTagsFree;
 
 typedef struct Symbol
 {
-	long          refCount;
-	struct Symbol *next;
-	char          string[];
+	long			refCount;
+	struct Symbol *	next;
+	char			string[];
 } Symbol, *SymbolPtr;
 
 static SymbolPtr FindSymbol(char * string, SymbolPtr * prevSymbol);
@@ -94,37 +94,31 @@ static long GetNextTag(char *buffer, char **tag, long *start);
 static long FixDataMatchingTag(char *buffer, char *tag);
 static TagPtr NewTag(void);
 static char *NewSymbol(char *string);
-
-#if DOFREE
-	static void FreeSymbol(char *string);
-#endif
+static void FreeSymbol(char *string);
 
 
 //==============================================================================
 
 TagPtr XMLGetProperty(TagPtr dict, const char * key)
 {
-	if (dict->type != kTagTypeDict)
+	if (dict->type == kTagTypeDict)
 	{
-		return 0;
-	}
+		TagPtr tag = 0;
+		TagPtr tagList = dict->tag;
 
-	TagPtr tag = 0;
-	TagPtr tagList = dict->tag;
-
-	while (tagList)
-	{
-		tag = tagList;
-		tagList = tag->tagNext;
-        
-		if ((tag->type != kTagTypeKey) || (tag->string == 0))
+		while (tagList)
 		{
-			continue;
-		}
+			tag = tagList;
+			tagList = tag->tagNext;
 
-		if (!strcmp(tag->string, key))
-		{
-			return tag->tag;
+			if ((tag->type != kTagTypeKey) || (tag->string == 0))
+			{
+				continue;
+			}
+			else if (!strcmp(tag->string, key))
+			{
+				return tag->tag;
+			}
 		}
 	}
 
@@ -138,13 +132,13 @@ TagPtr XMLGetProperty(TagPtr dict, const char * key)
 // Puts the first dictionary it finds in the
 // tag pointer and returns 0, or returns -1 if not found.
 //
-long XMLParseFile( char * buffer, TagPtr * dict )
+long XMLParseFile(char * buffer, TagPtr * dict)
 {
-	TagPtr tag;
+	TagPtr tag = NULL;
 
-	long length, pos = 0;
+	long length, pos = 0L;
 
-	while (1)
+	while (TRUE)
 	{
 		length = XMLParseNextTag(buffer + pos, &tag);
 
@@ -155,7 +149,7 @@ long XMLParseFile( char * buffer, TagPtr * dict )
 
 		pos += length;
 
-		if (tag == 0)
+		if (tag == NULL)
 		{
 			continue;
 		}
@@ -170,12 +164,12 @@ long XMLParseFile( char * buffer, TagPtr * dict )
 
 	if (length < 0)
 	{
-		return -1;
+		return -1L;
 	}
 
 	*dict = tag;
 
-	return 0;
+	return 0L;
 }
 #endif /* UNUSED */
 
@@ -185,73 +179,72 @@ long XMLParseFile( char * buffer, TagPtr * dict )
 long XMLParseNextTag(char * buffer, TagPtr * tag)
 {
 	char * tagName;
+	long pos	= 0L;
+	long length	= GetNextTag(buffer, &tagName, 0);
+	
+	if (length != -1L)
+	{
+		pos = length;
+		
+		if (!strncmp(tagName, kXMLTagPList, 6))
+		{
+			length = 0L;
+		}
+		else if (!strcmp(tagName, kXMLTagDict))
+		{
+			length = ParseTagList(buffer + pos, tag, kTagTypeDict, 0);
+		}
+		else if (!strcmp(tagName, kXMLTagDict "/"))
+		{
+			length = ParseTagList(buffer + pos, tag, kTagTypeDict, 1);
+		}
+		else if (!strcmp(tagName, kXMLTagKey))
+		{
+			length = ParseTagKey(buffer + pos, tag);
+		}
+		else if (!strcmp(tagName, kXMLTagString))
+		{
+			length = ParseTagString(buffer + pos, tag);
+		}
+		else if (!strcmp(tagName, kXMLTagInteger))
+		{
+			length = ParseTagInteger(buffer + pos, tag);
+		}
+		else if (!strcmp(tagName, kXMLTagData))
+		{
+			length = ParseTagData(buffer + pos, tag);
+		}
+		else if (!strcmp(tagName, kXMLTagDate))
+		{
+			length = ParseTagDate(buffer + pos, tag);
+		}
+		else if (!strcmp(tagName, kXMLTagFalse))
+		{
+			length = ParseTagBoolean(buffer + pos, tag, kTagTypeFalse);
+		}
+		else if (!strcmp(tagName, kXMLTagTrue))
+		{
+			length = ParseTagBoolean(buffer + pos, tag, kTagTypeTrue);
+		}
+		else if (!strcmp(tagName, kXMLTagArray))
+		{
+			length = ParseTagList(buffer + pos, tag, kTagTypeArray, 0);
+		}
+		else if (!strcmp(tagName, kXMLTagArray "/"))
+		{
+			length = ParseTagList(buffer + pos, tag, kTagTypeArray, 1);
+		}
+		else
+		{
+			*tag = 0;
+			length = 0L;
+		}
+		
+		if (length == -1)
+		{
+			pos = 0L;
+		}
 
-	long length = GetNextTag(buffer, &tagName, 0);
-
-	if (length == -1)
-	{
-		return -1;
-	}
-
-	long pos = length;
-
-	if (!strncmp(tagName, kXMLTagPList, 6))
-	{
-		length = 0;
-	}
-	else if (!strcmp(tagName, kXMLTagDict))
-	{
-		length = ParseTagList(buffer + pos, tag, kTagTypeDict, 0);
-	}
-	else if (!strcmp(tagName, kXMLTagDict "/"))
-	{
-		length = ParseTagList(buffer + pos, tag, kTagTypeDict, 1);
-	}
-	else if (!strcmp(tagName, kXMLTagKey))
-	{
-		length = ParseTagKey(buffer + pos, tag);
-	}
-	else if (!strcmp(tagName, kXMLTagString))
-	{
-		length = ParseTagString(buffer + pos, tag);
-	}
-	else if (!strcmp(tagName, kXMLTagInteger))
-	{
-		length = ParseTagInteger(buffer + pos, tag);
-	}
-	else if (!strcmp(tagName, kXMLTagData))
-	{
-		length = ParseTagData(buffer + pos, tag);
-	}
-	else if (!strcmp(tagName, kXMLTagDate))
-	{
-		length = ParseTagDate(buffer + pos, tag);
-	}
-	else if (!strcmp(tagName, kXMLTagFalse))
-	{
-		length = ParseTagBoolean(buffer + pos, tag, kTagTypeFalse);
-	}
-	else if (!strcmp(tagName, kXMLTagTrue))
-	{
-		length = ParseTagBoolean(buffer + pos, tag, kTagTypeTrue);
-	}
-	else if (!strcmp(tagName, kXMLTagArray))
-	{
-		length = ParseTagList(buffer + pos, tag, kTagTypeArray, 0);
-	}
-	else if (!strcmp(tagName, kXMLTagArray "/"))
-	{
-		length = ParseTagList(buffer + pos, tag, kTagTypeArray, 1);
-	}
-	else
-	{
-		*tag = 0;
-		length = 0;
-	}
-
-	if (length == -1)
-	{
-		return -1;
 	}
 
 	return pos + length;
@@ -262,7 +255,7 @@ long XMLParseNextTag(char * buffer, TagPtr * tag)
 
 static long ParseTagList(char * buffer, TagPtr * tag, long type, long empty)
 {
-	long length, pos = 0;
+	long length, pos = 0L;
 
 	TagPtr tmpTag, tagList = 0;
 
@@ -292,7 +285,7 @@ static long ParseTagList(char * buffer, TagPtr * tag, long type, long empty)
 		{
 			XMLFreeTag(tagList);
 
-			return -1;
+			return -1L;
 		}
 	}
 
@@ -302,7 +295,7 @@ static long ParseTagList(char * buffer, TagPtr * tag, long type, long empty)
 	{
 		XMLFreeTag(tagList);
 
-		return -1;
+		return -1L;
 	}
 
 	tmpTag->type	= type;
@@ -322,47 +315,45 @@ static long ParseTagKey(char * buffer, TagPtr * tag)
 {
 	long length = FixDataMatchingTag(buffer, kXMLTagKey);
 
-	if (length == -1)
+	if (length != -1L)
 	{
-		return -1;
+		TagPtr subTag;
+
+		long length2 = XMLParseNextTag(buffer + length, &subTag);
+
+		if (length2 != -1L)
+		{
+			TagPtr tmpTag = NewTag();
+
+			if (tmpTag)
+			{
+				char * string = NewSymbol(buffer);
+
+				if (string)
+				{
+					tmpTag->type	= kTagTypeKey;
+					tmpTag->string	= string;
+					tmpTag->tag		= subTag;
+					tmpTag->tagNext	= 0;
+
+					*tag = tmpTag;
+
+					return length + length2;
+				}
+				else
+				{
+					XMLFreeTag(subTag);
+					XMLFreeTag(tmpTag);
+				}
+			}
+			else
+			{
+				XMLFreeTag(subTag);
+			}
+		}
 	}
 
-	TagPtr subTag; 
-
-	long length2 = XMLParseNextTag(buffer + length, &subTag);
-
-	if (length2 == -1)
-	{
-		return -1;
-	}
-
-	TagPtr tmpTag = NewTag();
-
-	if (tmpTag == 0)
-	{
-		XMLFreeTag(subTag);
-
-		return -1;
-	}
-
-	char * string = NewSymbol(buffer);
-
-	if (string == 0)
-	{
-		XMLFreeTag(subTag);
-		XMLFreeTag(tmpTag);
-
-		return -1;
-	}
-
-	tmpTag->type	= kTagTypeKey;
-	tmpTag->string	= string;
-	tmpTag->tag		= subTag;
-	tmpTag->tagNext	= 0;
-
-	*tag = tmpTag;
-
-	return length + length2;
+	return length;	// -1;
 }
 
 
@@ -372,35 +363,31 @@ static long ParseTagString(char * buffer, TagPtr * tag)
 {
 	long length = FixDataMatchingTag(buffer, kXMLTagString);
 
-	if (length == -1)
+	if (length != -1L)
 	{
-		return -1;
+		TagPtr tmpTag = NewTag();
+
+		if (tmpTag)
+		{
+			char * string = NewSymbol(buffer);
+
+			if (string)
+			{
+				tmpTag->type	= kTagTypeString;
+				tmpTag->string	= string;
+				tmpTag->tag		= 0;
+				tmpTag->tagNext	= 0;
+				
+				*tag = tmpTag;
+			}
+			else
+			{
+				XMLFreeTag(tmpTag);
+			}
+		}
 	}
 
-	TagPtr tmpTag = NewTag();
-
-	if (tmpTag == 0)
-	{
-		return -1;
-	}
-
-    char * string = NewSymbol(buffer);
-
-	if (string == 0)
-	{
-		XMLFreeTag(tmpTag);
-
-		return -1;
-	}
-
-	tmpTag->type	= kTagTypeString;
-	tmpTag->string	= string;
-	tmpTag->tag		= 0;
-	tmpTag->tagNext	= 0;
-
-	*tag = tmpTag;
-
-	return length;
+	return length;	// -1;
 }
 
 
@@ -410,28 +397,24 @@ static long ParseTagInteger(char * buffer, TagPtr * tag)
 {
 	long length = FixDataMatchingTag(buffer, kXMLTagInteger);
 
-	if (length == -1)
+	if (length != -1L)
 	{
-		return -1;
+		TagPtr tmpTag = NewTag();
+
+		if (tmpTag)
+		{
+			long integer = 0L;
+
+			tmpTag->type	= kTagTypeInteger;
+			tmpTag->string	= (char *)integer;
+			tmpTag->tag		= 0;
+			tmpTag->tagNext	= 0;
+
+			*tag = tmpTag;
+		}
 	}
-    
-    TagPtr tmpTag = NewTag();
 
-	if (tmpTag == 0)
-	{
-		return -1;
-	}
-
-	long integer = 0;
-    
-	tmpTag->type	= kTagTypeInteger;
-	tmpTag->string	= (char *)integer;
-	tmpTag->tag		= 0;
-	tmpTag->tagNext	= 0;
-
-	*tag = tmpTag;
-
-	return length;
+	return length;	// -1
 }
 
 
@@ -441,26 +424,24 @@ static long ParseTagData(char * buffer, TagPtr * tag)
 {
 	long length = FixDataMatchingTag(buffer, kXMLTagData);
 
-	if (length == -1)
+	if (length != -1L)
 	{
-		return -1;
+		TagPtr tmpTag = NewTag();
+
+		if (tmpTag)
+		{
+			tmpTag->type	= kTagTypeData;
+			tmpTag->string	= 0;
+			tmpTag->tag		= 0;
+			tmpTag->tagNext	= 0;
+
+			*tag = tmpTag;
+
+			return length;
+		}
 	}
 
-    TagPtr tmpTag = NewTag();
-
-	if (tmpTag == 0)
-	{
-		return -1;
-	}
-
-	tmpTag->type	= kTagTypeData;
-	tmpTag->string	= 0;
-	tmpTag->tag		= 0;
-	tmpTag->tagNext	= 0;
-
-	*tag = tmpTag;
-
-	return length;
+	return length;	// -1
 }
 
 
@@ -470,26 +451,24 @@ static long ParseTagDate(char * buffer, TagPtr * tag)
 {
 	long length = FixDataMatchingTag(buffer, kXMLTagDate);
 
-	if (length == -1)
+	if (length != -1L)
 	{
-		return -1;
+		TagPtr tmpTag = NewTag();
+
+		if (tmpTag)
+		{
+			tmpTag->type	= kTagTypeDate;
+			tmpTag->string	= 0;
+			tmpTag->tag		= 0;
+			tmpTag->tagNext	= 0;
+
+			*tag = tmpTag;
+
+			return length;
+		}
 	}
 
-    TagPtr tmpTag = NewTag();
-
-	if (tmpTag == 0)
-	{
-		return -1;
-	}
-    
-	tmpTag->type	= kTagTypeDate;
-	tmpTag->string	= 0;
-	tmpTag->tag		= 0;
-	tmpTag->tagNext	= 0;
-
-	*tag = tmpTag;
-    
-	return length;
+	return -1;
 }
 
 
@@ -499,19 +478,19 @@ static long ParseTagBoolean(char * buffer, TagPtr * tag, long type)
 {
 	TagPtr tmpTag = NewTag();
 
-	if (tmpTag == 0)
+	if (tmpTag)
 	{
-		return -1;
+		tmpTag->type	= type;
+		tmpTag->string	= 0;
+		tmpTag->tag		= 0;
+		tmpTag->tagNext	= 0;
+
+		*tag = tmpTag;
+
+		return 0L;
 	}
-    
-	tmpTag->type	= type;
-	tmpTag->string	= 0;
-	tmpTag->tag		= 0;
-	tmpTag->tagNext	= 0;
 
-	*tag = tmpTag;
-
-	return 0;
+	return -1L;
 }
 
 
@@ -519,47 +498,43 @@ static long ParseTagBoolean(char * buffer, TagPtr * tag, long type)
 
 static long GetNextTag(char * buffer, char ** tag, long * start)
 {
-	if (tag == 0)
+	if (tag)
 	{
-		return -1;
+		// Find the start of the tag.
+		long cnt = 0L;
+		
+		while ((buffer[cnt] != '\0') && (buffer[cnt] != '<'))
+		{
+			cnt++;
+		}
+		
+		if (buffer[cnt] != '\0')
+		{
+			// Find the end of the tag.
+			long cnt2 = cnt + 1L;
+			
+			while ((buffer[cnt2] != '\0') && (buffer[cnt2] != '>'))
+			{
+				cnt2++;
+			}
+			
+			if (buffer[cnt2] != '\0')
+			{
+				// Fix the tag data.
+				*tag = buffer + cnt + 1;
+				buffer[cnt2] = '\0';
+				
+				if (start)
+				{
+					*start = cnt;
+				}
+				
+				return cnt2 + 1;
+			}
+		}
 	}
-
-	// Find the start of the tag.
-	long cnt = 0;
-
-	while ((buffer[cnt] != '\0') && (buffer[cnt] != '<'))
-	{
-		cnt++;
-	}
-
-	if (buffer[cnt] == '\0')
-	{
-		return -1;
-	}
-
-	// Find the end of the tag.
-	long cnt2 = cnt + 1;
-
-	while ((buffer[cnt2] != '\0') && (buffer[cnt2] != '>'))
-	{
-		cnt2++;
-	}
-
-	if (buffer[cnt2] == '\0')
-	{
-		return -1;
-	}
-
-	// Fix the tag data.
-	*tag = buffer + cnt + 1;
-	buffer[cnt2] = '\0';
-
-	if (start)
-	{
-		*start = cnt;
-	}
-
-	return cnt2 + 1;
+	
+	return -1L;
 }
 
 
@@ -582,8 +557,7 @@ static long FixDataMatchingTag(char * buffer, char * tag)
 		{
 			return -1;
 		}
-
-		if ((*endTag == '/') && !strcmp(endTag + 1, tag))
+		else if ((*endTag == '/') && !strcmp(endTag + 1, tag))
 		{
 			break;
 		}
@@ -601,34 +575,33 @@ static long FixDataMatchingTag(char * buffer, char * tag)
 
 static TagPtr NewTag(void)
 {
-	long   cnt;
+	long	cnt = 0L;
 
-	TagPtr tag;
+	TagPtr	tag = NULL;
 
-	if (gTagsFree == 0)
+	if (gTagsFree == NULL)
 	{
-#if USEMALLOC
 		tag = (TagPtr)malloc(kTagsPerBlock * sizeof(Tag));
-#else
-		tag = (TagPtr)AllocateBootXMemory(kTagsPerBlock * sizeof(Tag));
-#endif
-		if (tag == 0)
+
+		if (tag)
 		{
-			return 0;
-		}
+			// Initalize the new tags.
+			for (cnt = 0; cnt < kTagsPerBlock; cnt++)
+			{
+				tag[cnt].type		= kTagTypeNone;
+				tag[cnt].string		= 0;
+				tag[cnt].tag		= 0;
+				tag[cnt].tagNext	= tag + cnt + 1;
+			}
 
-		// Initalize the new tags.
-		for (cnt = 0; cnt < kTagsPerBlock; cnt++)
+			tag[kTagsPerBlock - 1].tagNext = 0;
+
+			gTagsFree = tag;
+		}
+		else
 		{
-			tag[cnt].type		= kTagTypeNone;
-			tag[cnt].string		= 0;
-			tag[cnt].tag		= 0;
-			tag[cnt].tagNext	= tag + cnt + 1;
+			return NULL;
 		}
-
-		tag[kTagsPerBlock - 1].tagNext = 0;
-
-		gTagsFree = tag;
 	}
 
 	tag = gTagsFree;
@@ -642,29 +615,23 @@ static TagPtr NewTag(void)
 
 void XMLFreeTag(TagPtr tag)
 {
-#if DOFREE
-	if (tag == 0)
+	if (tag)
 	{
-		return;
+		if (tag->string)
+		{
+			FreeSymbol(tag->string);
+		}
+
+		XMLFreeTag(tag->tag);
+		XMLFreeTag(tag->tagNext);
+
+		// Clear and free the tag.
+		tag->type		= kTagTypeNone;
+		tag->string		= 0;
+		tag->tag		= 0;
+		tag->tagNext	= gTagsFree;
+		gTagsFree		= tag;
 	}
-
-	if (tag->string)
-	{
-		FreeSymbol(tag->string);
-	}
-
-	XMLFreeTag(tag->tag);
-	XMLFreeTag(tag->tagNext);
-
-	// Clear and free the tag.
-	tag->type		= kTagTypeNone;
-	tag->string		= 0;
-	tag->tag		= 0;
-	tag->tagNext	= gTagsFree;
-	gTagsFree		= tag;
-#else
-	return;
-#endif
 }
 
 
@@ -674,31 +641,28 @@ static char * NewSymbol(char * string)
 {
 	static SymbolPtr lastGuy = 0;
 
-	SymbolPtr symbol;
-
 	// Look for string in the list of symbols.
-	symbol = FindSymbol(string, 0);
+	SymbolPtr symbol = FindSymbol(string, 0);
 
-	// Add the new symbol.
+	// Add new symbol.
 	if (symbol == 0)
 	{
-#if USEMALLOC
 		symbol = (SymbolPtr)malloc(sizeof(Symbol) + 1 + strlen(string));
-#else
-		symbol = (SymbolPtr)AllocateBootXMemory(sizeof(Symbol) + 1 + strlen(string));
-#endif
-		if (symbol == 0)
+
+		if (symbol)
 		{
-			stop("NULL symbol!");
+			// Set the symbol's data.
+			symbol->refCount = 0;
+			strcpy(symbol->string, string);
+
+			// Add the symbol to the list.
+			symbol->next = gSymbolsHead;
+			gSymbolsHead = symbol;
 		}
-
-		// Set the symbol's data.
-		symbol->refCount = 0;
-		strcpy(symbol->string, string);
-
-		// Add the symbol to the list.
-		symbol->next = gSymbolsHead;
-		gSymbolsHead = symbol;
+		else
+		{
+			stop ("xml.c");
+		}
 	}
 
 	// Update the refCount and return the string.
@@ -706,51 +670,45 @@ static char * NewSymbol(char * string)
 
 	if (lastGuy && lastGuy->next != 0)
 	{
-		stop("last guy not last!");
+		stop ("xml.c");
 	}
 
 	return symbol->string;
 }
 
 
-#if DOFREE
 //==============================================================================
 
 static void FreeSymbol(char * string)
-{ 
+{
 	SymbolPtr symbol, prev;
 	prev = 0;
 
 	// Look for string in the list of symbols.
 	symbol = FindSymbol(string, &prev);
 
-	if (symbol == 0)
+	if (symbol)
 	{
-		return;
-	}
+		// Update the refCount.
+		symbol->refCount--;
 
-	// Update the refCount.
-	symbol->refCount--;
+		if (symbol->refCount == 0)
+		{
+			// Remove the symbol from the list.
+			if (prev != 0)
+			{
+				prev->next = symbol->next;
+			}
+			else
+			{
+				gSymbolsHead = symbol->next;
+			}
+		}
 
-	if (symbol->refCount != 0)
-	{
-		return;
+		// Free the symbol's memory.
+		free (symbol);
 	}
-
-	// Remove the symbol from the list.
-	if (prev != 0)
-	{
-		prev->next = symbol->next;
-	}
-    else
-	{
-		gSymbolsHead = symbol->next;
-	}
-
-	// Free the symbol's memory.
-	free(symbol);
 }
-#endif
 
 
 //==============================================================================
@@ -766,7 +724,7 @@ static SymbolPtr FindSymbol(char * string, SymbolPtr * prevSymbol)
 		{
 			break;
 		}
-    
+
 		prev = symbol;
 		symbol = symbol->next;
 	}
@@ -778,4 +736,3 @@ static SymbolPtr FindSymbol(char * string, SymbolPtr * prevSymbol)
 
 	return symbol;
 }
-
