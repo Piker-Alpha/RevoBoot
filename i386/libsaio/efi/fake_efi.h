@@ -27,6 +27,9 @@
  * EFI implementation for Revolution Copyright (c) 2010 by DHP.
  * All rights reserved.
  *
+ * Updates:
+ *		- Check malloc return (PikerAlpha, November 2012).
+ *
  */
 
 #include "bootstruct.h"							// For bootArgs.
@@ -56,12 +59,17 @@ static EFI_UINT32 const FIRMWARE_REVISION = EFI_SYSTEM_TABLE_REVISION;
 
 static inline char * mallocStringForGuid(EFI_GUID const *pGuid)
 {
-    char *string = malloc(37);
-    efi_guid_unparse_upper(pGuid, string);
+	char *string = malloc(37);
 
-    return string;
+	if (string)
+	{
+		efi_guid_unparse_upper(pGuid, string);
+
+		return string;
+	}
+
+	return NULL;
 }
-
 
 //==============================================================================
 // Function to map a 32-bit address to a 64-bit address, or it simply returns 
