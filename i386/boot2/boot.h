@@ -20,9 +20,12 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- */
-/*
+ *
  * Copyright 1994 NeXT Computer, Inc. All rights reserved.
+ *
+ * Updates:
+ *		- Unused sysConfigValid removed (PikerAlpha, November 2012).
+ *
  */
 
 #ifndef __BOOT2_BOOT_H
