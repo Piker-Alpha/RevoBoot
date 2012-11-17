@@ -34,6 +34,7 @@
  *			- Data selector moved over from RevoBoot/i386/config/data.h (PikerAlpha, October 2012).
  *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
  *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
+ *			- Check return of malloc call (PikerAlpha, November 2012).
  *
  */
 
@@ -257,64 +258,69 @@ void *convertHexStr2Binary(const char *hexStr, int *outLength)
 	uint8_t binChar;
 	uint8_t *binStr = NULL;
 	int hexStrIdx, binStrIdx, hexNibbleIdx;
-	
+
 	len = strlen(hexStr);
-	
+
 	if (len > 1)
 	{
 		// the resulting binary will be the half size of the input hex string
 		binStr = malloc(len / 2);
-		binStrIdx = 0;
-		hexNibbleIdx = 0;
-		
-		for (hexStrIdx = 0; hexStrIdx < len; hexStrIdx++)
+
+		if (binStr)
 		{
-			hexNibble = hexStr[hexStrIdx];
-			
-			// ignore all chars except valid hex numbers
-			if ((hexNibble >= '0' && hexNibble <= '9') || (hexNibble >= 'A' && hexNibble <= 'F') || (hexNibble >= 'a' && hexNibble <= 'f'))
+			binStrIdx = 0;
+			hexNibbleIdx = 0;
+	
+			for (hexStrIdx = 0; hexStrIdx < len; hexStrIdx++)
 			{
-				hexByte[hexNibbleIdx++] = hexNibble;
-				
-				// found both two nibbles, convert to binary
-				if (hexNibbleIdx == 2)
+				hexNibble = hexStr[hexStrIdx];
+
+				// ignore all chars except valid hex numbers
+				if ((hexNibble >= '0' && hexNibble <= '9') || (hexNibble >= 'A' && hexNibble <= 'F') || (hexNibble >= 'a' && hexNibble <= 'f'))
 				{
-					binChar = 0;
-					
-					for (hexNibbleIdx = 0; hexNibbleIdx < sizeof(hexByte); hexNibbleIdx++)
+					hexByte[hexNibbleIdx++] = hexNibble;
+
+					// found both two nibbles, convert to binary
+					if (hexNibbleIdx == 2)
 					{
-						if (hexNibbleIdx > 0)
-						{
-							binChar = binChar << 4;
-						}
-						
-						if (hexByte[hexNibbleIdx] <= '9')
-						{
-							binChar += hexByte[hexNibbleIdx] - '0';
-						}
-						else if (hexByte[hexNibbleIdx] <= 'F')
-						{
-							binChar += hexByte[hexNibbleIdx] - ('A' - 10);
-						}
-						else if (hexByte[hexNibbleIdx] <= 'f')
-						{
-							binChar += hexByte[hexNibbleIdx] - ('a' - 10);
-						}
-					}
+						binChar = 0;
 					
-					binStr[binStrIdx++] = binChar;						
-					hexNibbleIdx = 0;
+						for (hexNibbleIdx = 0; hexNibbleIdx < sizeof(hexByte); hexNibbleIdx++)
+						{
+							if (hexNibbleIdx > 0)
+							{
+								binChar = binChar << 4;
+							}
+						
+							if (hexByte[hexNibbleIdx] <= '9')
+							{
+								binChar += hexByte[hexNibbleIdx] - '0';
+							}
+							else if (hexByte[hexNibbleIdx] <= 'F')
+							{
+								binChar += hexByte[hexNibbleIdx] - ('A' - 10);
+							}
+							else if (hexByte[hexNibbleIdx] <= 'f')
+							{
+								binChar += hexByte[hexNibbleIdx] - ('a' - 10);
+							}
+						}
+					
+						binStr[binStrIdx++] = binChar;
+						hexNibbleIdx = 0;
+					}
 				}
 			}
+
+			*outLength = binStrIdx;
+
+			return binStr;
 		}
-		*outLength = binStrIdx;
-		return binStr;
 	}
-	else
-	{
-		*outLength = 0;
-		return NULL;
-	}
+
+	*outLength = 0;
+
+	return NULL;
 }
 //==============================================================================
 
