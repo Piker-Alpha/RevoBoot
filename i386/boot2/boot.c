@@ -30,28 +30,25 @@
  */
 
 /*
- *          INTEL CORPORATION PROPRIETARY INFORMATION
+ * INTEL CORPORATION PROPRIETARY INFORMATION
  *
- *  This software is supplied under the terms of a license  agreement or 
- *  nondisclosure agreement with Intel Corporation and may not be copied 
- *  nor disclosed except in accordance with the terms of that agreement.
+ * This software is supplied under the terms of a license  agreement or
+ * nondisclosure agreement with Intel Corporation and may not be copied
+ * nor disclosed except in accordance with the terms of that agreement.
  *
- *  Copyright 1988, 1989 by Intel Corporation
- */
-
-/*
+ * Copyright 1988, 1989 by Intel Corporation
+ *
  * Copyright 1993 NeXT Computer, Inc. All rights reserved.
  *
  * Completely reworked by Sam Streeper (sam_s@NeXT.com)
  * Reworked again by Curtis Galloway (galloway@NeXT.com)
- */
-
-/*
+ *
  * Updates:
- *		- Refactorized by DHP in 2010 and 2011.
- *		- Optionally include Recovery HD support code (PikerAlpha, November 2012).
- *		- Fixed clang compilation (PikerAlpha, November 2012).
- *		- Unused sysConfigValid removed and white space fix (PikerAlpha, November 2012).
+ *			- Refactorized by DHP in 2010 and 2011.
+ *			- Optionally include Recovery HD support code (PikerAlpha, November 2012).
+ *			- Fixed clang compilation (PikerAlpha, November 2012).
+ *			- Unused sysConfigValid removed and white space fix (PikerAlpha, November 2012).
+ *
  */
 
 
@@ -122,7 +119,7 @@ unsigned long Adler32(unsigned char *buf, long len)
 static void zeroBSS()
 {
 	extern int  _DATA_bss__start	__asm("section$start$__DATA$__bss");
-	extern int  _DATA_bss__end	__asm("section$end$__DATA$__bss");
+	extern int  _DATA_bss__end		__asm("section$end$__DATA$__bss");
 	extern int  _DATA_common__start	__asm("section$start$__DATA$__common");
 	extern int  _DATA_common__end	__asm("section$end$__DATA$__common");
     
