@@ -17,7 +17,7 @@
 	#include "essentials.h"
 
 	int tableLength = 0;
-	//long fileSize = 0; ***unused variable
+	long fileSize = 0; // FIXME: This variable <i>is used</i> but conditionally!
 
 	#if LOAD_MODEL_SPECIFIC_SMBIOS_DATA
 		char dirSpec[32] = "";
