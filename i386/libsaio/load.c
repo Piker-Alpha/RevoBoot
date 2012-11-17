@@ -18,11 +18,13 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- */
-/*
- *  load.c - Functions for decoding a Mach-o Kernel.
  *
- *  Copyright (c) 1998-2003 Apple Computer, Inc.
+ * load.c - Functions for decoding a Mach-o Kernel.
+ *
+ * Copyright (c) 1998-2003 Apple Computer, Inc.
+ *
+ * Updates:
+ *			- White space changes (PikerAlpha, November 2012)
  *
  */
 
@@ -64,7 +66,7 @@ long ThinFatFile(void **binary, unsigned long *length)
 	cpu_type_t fapcputype;
 	uint32_t fapoffset;
 	uint32_t fapsize;	
-  
+
 	if (fhp->magic == FAT_MAGIC)
 	{
 		nfat = fhp->nfat_arch;
@@ -94,7 +96,7 @@ long ThinFatFile(void **binary, unsigned long *length)
 			fapoffset = fap->offset;
 			fapsize = fap->size;
 		}
-    
+
 		if (fapcputype == gArchCPUType)
 		{
 			*binary = (void *) ((unsigned long)*binary + fapoffset);
@@ -102,7 +104,7 @@ long ThinFatFile(void **binary, unsigned long *length)
 			break;
 		}
 	}
-  
+
 	if (length != 0)
 	{
 		*length = size;
@@ -124,7 +126,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	unsigned long  cnt;
 	long  ret = -1;
 	unsigned int entry = 0;
-  
+
 	gBinaryAddress = (unsigned long)binary;
 	mH = (struct mach_header *)(gBinaryAddress);
 
@@ -143,7 +145,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 		(gArchCPUType == CPU_TYPE_X86_64 && mH->magic != MH_MAGIC_64))
 	{
 		error("Mach-O file has bad magic number\n");
-		return -1;        
+		return -1;
 	} */
 
 	switch (gArchCPUType)
@@ -181,74 +183,75 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 			return -1;
 	}
 
-    /* cmdstart = (unsigned long)gBinaryAddress + (gArchCPUType == CPU_TYPE_I386) ? sizeof(struct mach_header) : 
+	/* cmdstart = (unsigned long)gBinaryAddress + (gArchCPUType == CPU_TYPE_I386) ? sizeof(struct mach_header) :
 																					sizeof(struct mach_header_64); */
-    cmdBase = cmdstart;
-    ncmds = mH->ncmds;
-  
-    for (cnt = 0; cnt < ncmds; cnt++)
-    {
-        cmd = ((long *)cmdBase)[0];
-        cmdsize = ((long *)cmdBase)[1];
-        unsigned int load_addr;
-        unsigned int load_size;
-        
-        switch (cmd)
-        {
-            case LC_SEGMENT_64:
-            case LC_SEGMENT:
-                
-                ret = DecodeSegment(cmdBase, &load_addr, &load_size);
-                
-                if (ret == 0 && load_size != 0 && load_addr >= KERNEL_ADDR)
-                {
-                    vmaddr = min(vmaddr, load_addr);
-                    vmend = max(vmend, load_addr + load_size);
-                }
-                break;
+	cmdBase = cmdstart;
+	ncmds = mH->ncmds;
 
-            case LC_MAIN:	/* Mountain Lion's replacement for LC_UNIXTHREAD */
-            case LC_UNIXTHREAD:
-                ret = DecodeUnixThread(cmdBase, &entry);
-                break;
-                
-            case LC_SYMTAB:
-                break;
-                
-            default:
+	for (cnt = 0; cnt < ncmds; cnt++)
+	{
+		cmd = ((long *)cmdBase)[0];
+		cmdsize = ((long *)cmdBase)[1];
+		unsigned int load_addr;
+		unsigned int load_size;
+
+		switch (cmd)
+		{
+			case LC_SEGMENT_64:
+			case LC_SEGMENT:
+				ret = DecodeSegment(cmdBase, &load_addr, &load_size);
+
+				if (ret == 0 && load_size != 0 && load_addr >= KERNEL_ADDR)
+				{
+					vmaddr = min(vmaddr, load_addr);
+					vmend = max(vmend, load_addr + load_size);
+				}
+				break;
+
+			case LC_MAIN:	/* Mountain Lion's replacement for LC_UNIXTHREAD */
+			case LC_UNIXTHREAD:
+				ret = DecodeUnixThread(cmdBase, &entry);
+				break;
+
+			case LC_SYMTAB:
+				break;
+
+			default:
 #if NOTDEF
-                printf("Ignoring cmd type %d.\n", (unsigned)cmd);
+				printf("Ignoring cmd type %d.\n", (unsigned)cmd);
 #endif
-                break;
-        }
-        
-        if (ret != 0)
-            return -1;
-        
-        cmdBase += cmdsize;
-    }
-    
-    *rentry = (entry_t)( (unsigned long) entry & 0x3fffffff );
-    *rsize = vmend - vmaddr;
-    *raddr = (char *)vmaddr;
-    
-    cmdBase = cmdstart;
-    
-    for (cnt = 0; cnt < ncmds; cnt++)
-    {
-	    cmd = ((long *)cmdBase)[0];
-	    cmdsize = ((long *)cmdBase)[1];
+				break;
+		}
+
+		if (ret != 0)
+		{
+			return -1;
+		}
+
+		cmdBase += cmdsize;
+	}
+
+	*rentry = (entry_t)( (unsigned long) entry & 0x3fffffff );
+	*rsize = vmend - vmaddr;
+	*raddr = (char *)vmaddr;
+
+	cmdBase = cmdstart;
+
+	for (cnt = 0; cnt < ncmds; cnt++)
+	{
+		cmd = ((long *)cmdBase)[0];
+		cmdsize = ((long *)cmdBase)[1];
 		
-	    if (cmd == LC_SYMTAB) 
-        {
+		if (cmd == LC_SYMTAB)
+		{
 			if (DecodeSymbolTable(cmdBase) != 0)
 			{
 				return -1;
 			}
-        }
-        
+		}
+
 		cmdBase += cmdsize;
-    }
+	}
 	
 	return ret;
 }
@@ -263,7 +266,7 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 	char *segname;
 	long   vmsize, filesize;
 	unsigned long vmaddr, fileaddr;
-    
+
 	if (((long *)cmdBase)[0] == LC_SEGMENT_64)
 	{
 		struct segment_command_64 *segCmd = (struct segment_command_64 *)cmdBase;
@@ -284,7 +287,7 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 		filesize = segCmd->filesize;
 		segname = segCmd->segname;
 	}
-    
+
 	// Pre-flight checks.
 	if (vmsize && filesize)
 	{
@@ -322,13 +325,13 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 			// Make boot() skip kernel / MKext(s) loading.
 			gLoadKernelDrivers = false;
 		}
-    
+
 		// Copy from file load area.
 		if (filesize > 0)
 		{
 			bcopy((char *)fileaddr, (char *)vmaddr, vmsize > filesize ? filesize : vmsize);
 		}
-    
+
 		// Zero space at the end of the segment.
 		if (vmsize > filesize)
 		{
@@ -343,7 +346,7 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 		*load_addr = ~0;
 		*load_size = 0;			
 	}
-    
+
 	return 0;
 }
 
@@ -359,7 +362,7 @@ static long DecodeUnixThread(long cmdBase, unsigned int *entry)
 		{
 			i386_thread_state_t *i386ThreadState;
 			i386ThreadState = (i386_thread_state_t *) (cmdBase + sizeof(struct thread_command) + 8);
-  
+
 		#if defined(__DARWIN_UNIX03) && __DARWIN_UNIX03
 			*entry = i386ThreadState->__eip;
 		#else
@@ -398,33 +401,32 @@ static long DecodeSymbolTable(long cmdBase)
 	long gSymbolTableSize;
 	
 	struct symtab_command *symTab, *symTableSave;
-    
+
 	symTab = (struct symtab_command *)cmdBase;
-    
+
 #if DEBUG
-	printf("symoff: %x, nsyms: %x, stroff: %x, strsize: %x\n",
-		   symTab->symoff, symTab->nsyms, symTab->stroff, symTab->strsize);
+	printf("symoff: %x, nsyms: %x, stroff: %x, strsize: %x\n", symTab->symoff, symTab->nsyms, symTab->stroff, symTab->strsize);
 	getchar();
 #endif
-    
+
 	symsSize = symTab->stroff - symTab->symoff;
 	totalSize = symsSize + symTab->strsize;
-    
+
 	gSymbolTableSize = totalSize + sizeof(struct symtab_command);
 	gSymbolTableAddr = AllocateKernelMemory(gSymbolTableSize);
 	// Add the SymTab to the memory-map.
 	AllocateMemoryRange("Kernel-__SYMTAB", gSymbolTableAddr, gSymbolTableSize, -1);
-    
+
 	symTableSave = (struct symtab_command *)gSymbolTableAddr;
 	tmpAddr = gSymbolTableAddr + sizeof(struct symtab_command);
-    
+
 	symTableSave->symoff = tmpAddr;
 	symTableSave->nsyms = symTab->nsyms;
 	symTableSave->stroff = tmpAddr + symsSize;
 	symTableSave->strsize = symTab->strsize;
 	
 	bcopy((char *)(gBinaryAddress + symTab->symoff), (char *)tmpAddr, totalSize);
-    
+
 	return 0;
 }
 
