@@ -9,6 +9,7 @@
 #		- BOOT2ADDR moved to RevoBoot/i386/util/segsize.c (PikerAlpha, November 2012).
 #		- Simplified calls to RevoBoot/i386/util/segsize (PikerAlpha, November 2012).
 #		- Reformatted output, include directory dependency lifted (PikerAlpha, November 2012).
+#		- BOOT2ADDR removed, static compilation and some white space changes (PikerAlpha, November 2012).
 #
 
 
@@ -26,8 +27,7 @@ LIBSADIR = ../libsa
 LIBSAIODIR = ../libsaio
 UTILDIR = ../util
 
-INC = -I. -I.. -I$(SYMROOT) -I$(LIBSADIR) -I$(LIBSAIODIR) -I$(UTILDIR)
-
+INC =	-I. -I.. -I$(SYMROOT) -I$(LIBSADIR) -I$(LIBSAIODIR) -I$(UTILDIR)
 LIBS = -L$(SYMROOT) -lsaio -lsa
 LIBDEP = $(SYMROOT)/libsaio.a $(SYMROOT)/libsa.a
 
@@ -40,7 +40,6 @@ VPATH = $(OBJROOT):$(SYMROOT)
 OBJS = boot2.o boot.o bootlogo.o graphics.o drivers.o options.o lzss.o
 
 DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
-BOOT2ADDR = 20200
 
 #
 # Set maximum size of the booter to 128KB (should be more than sufficient).
@@ -49,10 +48,10 @@ MAXBOOTSIZE = 131072
 
 $(MAKEGOAL): $(DIRS_NEEDED) boot
 
-boot: $(OBJS)
+boot:	$(OBJS)
 
 	@echo "\t[LD] boot.sys"
-	@$(CC)	-nostdlib -arch i386 \
+	@$(CC)	-nostdlib -arch i386 -static \
 		-Wl,-preload \
 		-Wl,-pie \
 		-Wl,-segalign,20 \
