@@ -23,8 +23,8 @@
  *
  * Updates:
  *
- *      - loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
- *      - Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
+ *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
+ *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
  *
  */
 
@@ -116,9 +116,9 @@ extern int		testFAT32EFIBootSector(int biosdev, unsigned int secno, void * buffe
 
 
 /* hfs_compare.c */
-extern int32_t	FastUnicodeCompare(u_int16_t *uniStr1, u_int32_t len1, u_int16_t *uniStr2, u_int32_t len2, int byte_order);
-extern void		utf_encodestr(const u_int16_t * ucsp, int ucslen, u_int8_t * utf8p, u_int32_t bufsize, int byte_order);
-extern void		utf_decodestr(const u_int8_t *utf8p, u_int16_t *ucsp, u_int16_t *ucslen, u_int32_t bufsize, int byte_order);
+extern int32_t	FastUnicodeCompare(u_int16_t *uniStr1, u_int32_t len1, u_int16_t *uniStr2, u_int32_t len2);
+extern void		utf_encodestr(const u_int16_t * ucsp, int ucslen, u_int8_t * utf8p, u_int32_t bufsize);
+extern void		utf_decodestr(const u_int8_t *utf8p, u_int16_t *ucsp, u_int16_t *ucslen, u_int32_t bufsize);
 
 
 /* load.c */
@@ -148,7 +148,6 @@ extern int		loadConfigFile(const char *configFile, config_file_t *configBuff);
 extern int		loadSystemConfig(config_file_t *configBuff);
 extern int		loadHelperConfig(config_file_t *configBuff);
 extern int		loadOverrideConfig(config_file_t *configBuff);
-extern char		* newString(const char *oldString);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
 
@@ -165,7 +164,7 @@ extern long		GetFileBlock(const char *fileSpec, unsigned long long *firstBlock);
 extern long		GetFSUUID(char *spec, char *uuidStr);
 extern long		CreateUUIDString(uint8_t uubytes[], int nbytes, char *uuidStr);
 extern int		openmem(char *buf, int len);
-extern int		open(const char *str, int how);
+extern int		open(const char *str, int flags);
 extern int		close(int fdesc);
 extern int		file_size(int fdesc);
 extern int		read(int fdesc, char *buf, int count);
