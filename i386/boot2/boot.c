@@ -218,6 +218,46 @@ void boot(int biosdev)
 	initPartitionChain();
 #endif
 
+#define DISK_TARGET_EXPERIMENT 0
+
+#if DISK_TARGET_EXPERIMENT
+	config_file_t	nvramStorage;
+	const char * path = "/Extra/NVRAM/nvramStorage.plist";
+	
+	if (loadConfigFile(path, &nvramStorage) == STATE_SUCCESS)
+	{
+		_BOOT_DEBUG_DUMP("nvramStorage.plist located\n");
+
+		if (getValueForConfigTableKey(&nvramStorage, "efi-boot-device-data", &val, &length))
+		{
+			_BOOT_DEBUG_DUMP("Key 'efi-boot-device-data' located %d\n", length);
+
+			int len = ((length / 4) * 3);
+			unsigned char * decodedData = (unsigned char *)malloc(len);
+			int rc = base64Decode(val, decodedData);
+
+			if (rc && decodedData)
+			{
+				EFI_DEVICE_PATH_PROTOCOL * dp = (EFI_DEVICE_PATH_PROTOCOL *) decodedData;
+
+				// FIXME: This doesn't belong here!
+				extern void *getGUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath);
+
+				void * uuid = getGUIDFromDevicePath(dp);
+
+				_BOOT_DEBUG_DUMP("GUID: %s\n", uuid);
+				_BOOT_DEBUG_SLEEP(1);
+
+				strlcpy(rootUUID, uuid, 37);
+			}
+		}
+	}
+	else
+	{
+		_BOOT_DEBUG_DUMP("Warning: unable to locate nvramStorage.plist\n");
+	}
+#endif // #if DISK_TARGET_EXPERIMENT
+
 	#define loadCABootPlist() loadSystemConfig(&bootInfo->bootConfig)
 
 	// Loading: /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
