@@ -23,6 +23,7 @@
  *
  * Updates:
  *			- Cleanups, white space and layout changes (PikerAlpha, November 2012)
+ *			- New/improved kXMLTagData support (PikerAlpha, November 2012) 
  *
  */
 
