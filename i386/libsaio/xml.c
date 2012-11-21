@@ -403,7 +403,7 @@ static long ParseTagInteger(char * buffer, TagPtr * tag)
 
 		if (tmpTag)
 		{
-			long integer = 0L;
+			int integer = 0;
 
 			tmpTag->type	= kTagTypeInteger;
 			tmpTag->string	= (char *)integer;
@@ -430,18 +430,18 @@ static long ParseTagData(char * buffer, TagPtr * tag)
 
 		if (tmpTag)
 		{
+			char * string = NewSymbol(buffer);
+
 			tmpTag->type	= kTagTypeData;
-			tmpTag->string	= 0;
-			tmpTag->tag		= 0;
+			tmpTag->string	= string;
+			tmpTag->tag	= 0;
 			tmpTag->tagNext	= 0;
 
 			*tag = tmpTag;
-
-			return length;
 		}
 	}
 
-	return length;	// -1
+	return length;
 }
 
 
