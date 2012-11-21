@@ -20,11 +20,16 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *  		- STATE_SUCCESS	moved from boot.h (PikerAlpha, November 2012)
+ *
  */
-/* libsaio.h */
 
 #ifndef __LIBSAIO_LIBSAIO_H
 #define __LIBSAIO_LIBSAIO_H
+
+#define STATE_SUCCESS	0
 
 #include "libsa.h"
 #include "memory.h"
