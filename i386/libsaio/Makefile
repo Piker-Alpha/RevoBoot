@@ -8,6 +8,7 @@
 #			- Static data selectors added (PikerAlpha, October 2012).
 #			- STATIC_DATA_FILENAME added (PikerAlpha, October 2012).
 #			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
+#			- SAIO_OBJS changed / base64.o added (PikerAlpha, November 2012).
 #
 
 include ../MakePaths.dir
@@ -38,8 +39,8 @@ VPATH = $(OBJROOT):$(SYMROOT)
 
 SAIO_OBJS = table.o asm.o bios.o biosfn.o \
 	disk.o sys.o cache.o bootstruct.o \
-	stringTable.o load.o pci.o allocate.o \
-	vbe.o hfs.o hfs_compare.o \
+	base64.o stringTable.o load.o pci.o \
+	allocate.o vbe.o hfs.o hfs_compare.o \
 	xml.o md5c.o device_tree.o \
 	cpu.o platform.o acpi.o \
 	smbios.o efi.o console.o
