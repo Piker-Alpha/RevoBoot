@@ -31,7 +31,7 @@
 #ifndef __LIBSAIO_EFI_ESSENTIALS_H
 #define __LIBSAIO_EFI_ESSENTIALS_H
 
-#ifdef REVOBOOT_VERSION_INFO
+#ifdef TARGET_MODEL
 	#include "../boot2/debug.h"
 #endif
 
