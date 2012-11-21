@@ -24,13 +24,16 @@
  * EFI implementation for Revolution Copyright (c) 2010 by DHP.
  * All rights reserved.
  *
+ * Updates:
+ *		- Stand alone support for base64.c added (PikerAlpha, November 2012)
  */
 
 #ifndef __LIBSAIO_EFI_ESSENTIALS_H
 #define __LIBSAIO_EFI_ESSENTIALS_H
 
-// #include "../config/settings.h"
-#include "../boot2/debug.h"
+#ifdef REVOBOOT_VERSION_INFO
+	#include "../boot2/debug.h"
+#endif
 
 typedef void      VOID;
 
