@@ -6,6 +6,7 @@
 #			- Major cleanup (PikerAlpha, October 2012).
 #			- Output improvements (PikerAlpha, October 2012).
 #			- PRODUCT_MODEL_TARGET renamed to MAKE_TARGET_MODEL (PikerAlpha, November 2012).
+#			- Cleanup and output changed (PikerAlpha, October 2012).
 #
 
 #
@@ -25,9 +26,9 @@ SUBDIRS = util libsa libsaio boot2
 
 
 $(MAKEGOAL):
-	@for i in ${SUBDIRS}; \
+	@for i in $(SUBDIRS); \
 	do \
-		echo ================= make MODEL=$(MAKE_TARGET_MODEL) $@ for: RevoBoot/i386/$$i =================; \
+		echo ================= RevoBoot/i386/$$i =================; \
 		( cd $$i; ${MAKE} \
 			"OBJROOT=$(OBJROOT)/$$i" \
 		  	"SYMROOT=$(SYMROOT)" \
