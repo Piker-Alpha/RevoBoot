@@ -26,6 +26,7 @@
  *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
  *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
  *  		- decodeQuantum and base64Decode added (PikerAlpha, October 2012).
+ *    	- Removed unused functions (PikerAlpha, October 2012).
  *
  */
 
@@ -139,20 +140,18 @@ extern void		enableA20(void);
 
 
 /* stringTable.c */
+extern void  	decodeQuantum(const char *input, unsigned char *output);
+extern int		base64Decode(const char *input, unsigned char *decodedData);
+
 extern bool		getValueForConfigTableKey(config_file_t *config, const char *key, const char **val, int *size);
 extern char		* newStringForKey(char *key, config_file_t *configBuff);
 extern bool		getValueForBootKey(const char *line, const char *match, const char **matchval, int *len);
 extern bool		getValueForKey(const char *key, const char **val, int *size, config_file_t *configBuff);
 extern bool		getBoolForKey(const char *key, bool *val, config_file_t *configBuff);
 extern bool		getIntForKey(const char *key, int *val, config_file_t *configBuff);
-extern int		loadConfigFile(const char *configFile, config_file_t *configBuff);
-extern int		loadSystemConfig(config_file_t *configBuff);
-extern int		loadHelperConfig(config_file_t *configBuff);
-extern int		loadOverrideConfig(config_file_t *configBuff);
+extern bool		loadConfigFile(const char *configFile, config_file_t *configBuff);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
-extern void  	decodeQuantum(const char *input, unsigned char *output);
-extern int		base64Decode(const char *input, unsigned char *decodedData);
 
 
 /* sys.c */
