@@ -24,10 +24,12 @@
  * Copyright 1993 NeXT, Inc. All rights reserved.
  *
  * Updates:
- *			- White space changes (PikerAlpha, November 2012)
- *			- Check malloc returns (PikerAlpha, November 2012)
+ *			- White space changes (PikerAlpha, November 2012).
+ *			- Now checking malloc returns (PikerAlpha, November 2012).
+ *			- Cleanups, kTagTypeData support and NVRAMstorage reading changes (PikerAlpha, November 2012).
  *
  */
+
 
 #include "bootstruct.h"
 #include "libsaio.h"
@@ -52,19 +54,18 @@ bool getValueForConfigTableKey(config_file_t *config, const char *key, const cha
 	if (config->dictionary != 0)
 	{
 		// Look up key in XML dictionary
-		TagPtr value;
-		value = XMLGetProperty(config->dictionary, key);
+		TagPtr value = XMLGetProperty(config->dictionary, key);
 
 		if (value != 0)
 		{
-			if (value->type != kTagTypeString)
+			if ((value->type != kTagTypeString) && (value->type != kTagTypeData))
 			{
 #if DEBUG_XML_PARSER
-				error("Non-string tag '%s' found in config file\n", key);
+				error("Unsupported tag '%s' found in config file\n", key);
 #endif
-				
 				return false;
 			}
+
 			*val = value->string;
 			*size = strlen(value->string);
 
@@ -81,8 +82,8 @@ bool getValueForConfigTableKey(config_file_t *config, const char *key, const cha
 
 char * newStringForKey(char *key, config_file_t *config)
 {
-	const char *val;
 	int size;
+	const char *val;
 
 	if (getValueForKey(key, &val, &size, config) && size)
 	{
@@ -253,9 +254,7 @@ bool getValueForKey(const char *key, const char **val, int *size, config_file_t 
 		return true;
 	}
 
-	bool ret = getValueForConfigTableKey(config, key, val, size);
-
-	return ret;
+	return getValueForConfigTableKey(config, key, val, size);
 }
 
 
@@ -338,12 +337,37 @@ long ParseXMLFile(char * buffer, TagPtr * dictionaryPtr)
 }
 
 
+//==============================================================================
+// Returns TRUE on success and FALSE when it is fails to locate / open the file.
+
+bool loadConfigFile(const char * configFile, config_file_t *config)
+{
+	int fd = 0;
+
+	if ((fd = open(configFile, 0)) >= 0)
+	{
+		// IO_CONFIG_DATA_SIZE is defined as 4096 in bios.h and which should
+		// be sufficient enough for RevoBoot (size was 4K for years already).
+		read(fd, config->plist, IO_CONFIG_DATA_SIZE);
+		close(fd);
+	
+		// Build XML dictionary.
+		ParseXMLFile(config->plist, &config->dictionary);
+	
+		return 0;
+	}
+
+	return 1;
+}
+
 
 //==============================================================================
 // Returns 0 on success and -1 when it is fails to locate / open the file.
 
 int loadSystemConfig(config_file_t *config)
 {
+	short retValue = -1;
+
 	static char * dirspec[] =
 	{
 #if LION_RECOVERY_SUPPORT
@@ -374,28 +398,20 @@ int loadSystemConfig(config_file_t *config)
 	if (path)
 	{
 		int i = 0;
-		int fd = 0;
 		int len = (sizeof(dirspec) / sizeof(dirspec[0]));
 
 		for (; i < len; i++)
 		{
 			sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
 
-			if ((fd = open(path, 0)) >= 0)
+			if (loadConfigFile(path, config) == STATE_SUCCESS)
 			{
-				// IO_CONFIG_DATA_SIZE is defined as 4096 in bios.h and which should
-				// be sufficient enough for RevoBoot (size was 4K for years already).
-				read(fd, config->plist, IO_CONFIG_DATA_SIZE);
-				close(fd);
-
-				// Build XML dictionary.
-				ParseXMLFile(config->plist, &config->dictionary);
-
-				free (path);
-				return 0;
+				retValue = 0;
 			}
 		}
+
+		free (path);
 	}
 
-	return -1;
+	return retValue;
 }
