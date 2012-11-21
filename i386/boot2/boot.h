@@ -25,6 +25,7 @@
  *
  * Updates:
  *			- Unused sysConfigValid removed (PikerAlpha, November 2012).
+*			- STATE_SUCCESS	moved to libsaio.h (PikerAlpha, November 2012).
  *
  */
 
@@ -32,8 +33,6 @@
 #define __BOOT2_BOOT_H
 
 #include "platform.h"
-
-#define STATE_SUCCESS	0	// Move this to a more appropriate header file.
 
 #if USE_STATIC_DISPLAY_RESOLUTION
 	#define DEFAULT_SCREEN_WIDTH	STATIC_SCREEN_WIDTH
