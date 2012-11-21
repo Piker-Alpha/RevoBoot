@@ -10,7 +10,7 @@
 #			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
 #			- Enabled clang compilation (dgsga, PikerAlpha, November 2012. Credits to Evan Lojewski for original work).
 #			- Output change and now using libtool instead of ar/ranlib (PikerAlpha, November 2012).
-#
+#			- SAIO_OBJS changed / base64.o added (PikerAlpha, November 2012).
 
 include ../MakePaths.dir
 
@@ -38,10 +38,10 @@ INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSADIR)
 
 VPATH = $(OBJROOT):$(SYMROOT)
 
-SAIO_OBJS = table.o asm.o bios.o biosfn.o disk.o sys.o cache.o bootstruct.o \
-			stringTable.o load.o pci.o allocate.o vbe.o hfs.o hfs_compare.o \
-			xml.o md5c.o device_tree.o cpu.o platform.o acpi.o smbios.o \
-			efi.o console.o
+SAIO_OBJS =	table.o asm.o bios.o biosfn.o disk.o sys.o cache.o bootstruct.o \
+		base64.o stringTable.o load.o pci.o allocate.o vbe.o hfs.o \
+		hfs_compare.o xml.o md5c.o device_tree.o cpu.o platform.o \
+		acpi.o smbios.o efi.o console.o 
 
 LIBS = libsaio.a
 
