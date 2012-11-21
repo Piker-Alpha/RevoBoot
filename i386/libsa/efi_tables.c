@@ -51,7 +51,8 @@
  * CRC32 code derived from work by Gary S. Brown.
  */
 
-static uint32_t crc32_tab[] = {
+static uint32_t crc32_tab[] =
+{
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
 	0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -97,6 +98,9 @@ static uint32_t crc32_tab[] = {
 	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
+
+//==========================================================================
+
 uint32_t crc32(uint32_t crc, const void *buf, size_t size)
 {
 	const uint8_t *p;
@@ -105,7 +109,9 @@ uint32_t crc32(uint32_t crc, const void *buf, size_t size)
 	crc = crc ^ ~0U;
 
 	while (size--)
+	{
 		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+	}
 
 	return crc ^ ~0U;
 }
@@ -113,7 +119,10 @@ uint32_t crc32(uint32_t crc, const void *buf, size_t size)
 
 /*==========================================================================
  * Utility function to make a device tree string from an EFI_GUID
- */
+ *
+ * FIXME: Everything below this line should be moved to: guid.c
+ *
+ *========================================================================*/
 
 void efi_guid_unparse_upper(EFI_GUID const *pGuid, char *out)
 {
@@ -127,40 +136,82 @@ void efi_guid_unparse_upper(EFI_GUID const *pGuid, char *out)
         pGuid->Data4[6], pGuid->Data4[7]);
 }
 
+
+//==========================================================================
+ 
 bool efi_guid_is_null(EFI_GUID const *pGuid)
 {
-    if (pGuid->Data1 == 0 && pGuid->Data2 == 0 && pGuid->Data3 == 0)
-    {
-        int i;
+	if (pGuid->Data1 == 0 && pGuid->Data2 == 0 && pGuid->Data3 == 0)
+	{
+		int i;
 
-        for (i = 0; i < 8; ++i)
-        {
-            if (pGuid->Data4[i] != 0)
-                return false;
-        }
-        return true;
-    }
+		for (i = 0; i < 8; ++i)
+		{
+			if (pGuid->Data4[i] != 0)
+			{
+				return false;
+			}
+		}
 
-    return false;
+		return true;
+	}
+
+	return false;
 }
 
 #define COMPARE_MEMBER_AND_RETURN_IF_NE(a,b,mem) \
-    if( ((a)->mem) < ((b)->mem) ) \
-        return -1; \
-    else if( ((a)->mem) > ((b)->mem) ) \
-        return 1;
+	if( ((a)->mem) < ((b)->mem) ) \
+		return -1; \
+	else if( ((a)->mem) > ((b)->mem) ) \
+		return 1;
+
+//=========================================================================
 
 int efi_guid_compare(EFI_GUID const *pG1, EFI_GUID const *pG2)
 {
-    COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data1);
-    COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data2);
-    COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data3);
-    int i;
+	COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data1);
+	COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data2);
+	COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data3);
 
-    for(i = 0; i < 8; ++i)
-    {
-        COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data4[i]);
-    }
-    return 0;
+	int i;
+
+	for(i = 0; i < 8; ++i)
+	{
+		COMPARE_MEMBER_AND_RETURN_IF_NE(pG1, pG2, Data4[i]);
+	}
+
+	return 0;
 }
 
+
+//=========================================================================
+
+char *getGUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
+{
+	if (devicePath != NULL)
+	{
+		while (!IsDevicePathEndType(devicePath) &&
+			   !(DevicePathType(devicePath) == MEDIA_DEVICE_PATH && DevicePathSubType(devicePath) == MEDIA_HARDDRIVE_DP))
+		{
+			devicePath = NextDevicePathNode(devicePath);
+		}
+		
+		if (DevicePathType(devicePath) == MEDIA_DEVICE_PATH && DevicePathSubType(devicePath) == MEDIA_HARDDRIVE_DP)
+		{
+			HARDDRIVE_DEVICE_PATH * HDDevicePath = (HARDDRIVE_DEVICE_PATH *) devicePath;
+			
+			if (HDDevicePath->SignatureType == SIGNATURE_TYPE_GUID) // 0x02
+			{
+				EFI_GUID const * uuid = (EFI_GUID*)HDDevicePath->Signature;
+				
+				char * guid = (char *)malloc(37);
+				
+				efi_guid_unparse_upper(uuid, guid);
+
+				return guid;
+			}
+		}
+	}
+	
+	return NULL;
+}
