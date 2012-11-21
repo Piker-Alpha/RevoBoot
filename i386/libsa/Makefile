@@ -43,11 +43,3 @@ $(LIBS): $(SA_OBJS)
 	@libtool -o $(SYMROOT)/$@ $^
 
 include ../MakeInc.dir
-	@echo "\t[RM] $(SYMROOT)/$@"
-	@rm -f $(SYMROOT)/$@
-	@echo "\t[AR] $@"
-	@ar q $(SYMROOT)/$@ $^ &> /dev/null
-	@echo "\t[RANLIB] $@"
-	@ranlib $(SYMROOT)/$@
-
-include ../MakeInc.dir
