@@ -150,6 +150,7 @@ extern bool		getValueForKey(const char *key, const char **val, int *size, config
 extern bool		getBoolForKey(const char *key, bool *val, config_file_t *configBuff);
 extern bool		getIntForKey(const char *key, int *val, config_file_t *configBuff);
 extern bool		loadConfigFile(const char *configFile, config_file_t *configBuff);
+extern int  	loadSystemConfig(config_file_t *configBuff);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
 
