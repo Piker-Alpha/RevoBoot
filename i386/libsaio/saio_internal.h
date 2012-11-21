@@ -25,6 +25,7 @@
  *
  *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
  *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
+ *  		- decodeQuantum and base64Decode added (PikerAlpha, October 2012).
  *
  */
 
@@ -150,6 +151,8 @@ extern int		loadHelperConfig(config_file_t *configBuff);
 extern int		loadOverrideConfig(config_file_t *configBuff);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
+extern void  	decodeQuantum(const char *input, unsigned char *output);
+extern int		base64Decode(const char *input, unsigned char *decodedData);
 
 
 /* sys.c */
