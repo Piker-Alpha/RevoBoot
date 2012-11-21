@@ -183,6 +183,26 @@ typedef struct
 	// 0x02 - GUID signature.
 	//
 	EFI_UINT8					SignatureType;
-} EFI_BOOT_DEVICE_PATH; // HARDDRIVE_DEVICE_PATH
+} HARDDRIVE_DEVICE_PATH;
+
+
+// Stuff from EDK2's EfiDevicePath.h
+
+#define MEDIA_HARDDRIVE_DP				0x01
+#define MEDIA_DEVICE_PATH				0x04
+
+#define SIGNATURE_TYPE_MBR				0x01
+#define SIGNATURE_TYPE_GUID				0x02
+
+#define END_DEVICE_PATH_TYPE			0x7f
+#define END_ENTIRE_DEVICE_PATH_SUBTYPE	0xff
+#define EFI_DP_TYPE_MASK				0x7f
+
+#define DevicePathType(a)				( ((a)->Type) & EFI_DP_TYPE_MASK )
+#define DevicePathSubType(a)			( (a)->SubType )
+#define IsDevicePathEndType(a)			( DevicePathType(a) == END_DEVICE_PATH_TYPE )
+#define DevicePathNodeLength(a)			( ((a)->Length[0]) | ((a)->Length[1] << 8) )
+#define NextDevicePathNode(a)			( (EFI_DEVICE_PATH_PROTOCOL *) ( ((EFI_INT8 *) (a)) + DevicePathNodeLength(a)))
 
 #endif /* !__LIBSAIO_EFI_ESSENTIALS_H */
+
