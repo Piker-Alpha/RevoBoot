@@ -1,7 +1,7 @@
 /*
  *
  * Name			: guidTest.c
- * Version		: 0.3
+ * Version		: 0.4
  * Type			: Command line test tool
  * Copyright	: Sam aka RevoGirl (c) 18 March 2011
  *
@@ -14,13 +14,14 @@
  *				- STAND_ALONE check added (PikerAlpha, November 2012)
  *				- Workaround for "___bzero" undefined error in RevoBoot (PikerAlpha, November 2012)
  *				- base64Charset moved to function decodeQuantum (PikerAlpha, November 2012)
+ *				- Length and character checking added (PikerAlpha, November 2012)
  *
  */
 
 #ifdef REVOBOOT_VERSION_INFO
-	#define STAND_ALONE	0
+	#define STAND_ALONE			0
 #else
-	#define STAND_ALONE	1
+	#define STAND_ALONE			1
 #endif
 
 #if STAND_ALONE
@@ -30,46 +31,160 @@
 	#include "libsaio.h"
 #endif
 
-#define DEBUG_BASE64_DECODE	1
+#define DEBUG_BASE64_DECODE		0
+
+#define FULL_BASE64_DATA_CHECK	0
 
 #if DEBUG_BASE64_DECODE
 	int quickLookups = 0;
 #endif
 
-#define PADDINGCHAR		'='
+#define PADDINGCHAR				'=' // 61 - 0x3d
 
-#define TABLELEN        64
+#define TABLELEN				64
 
 
 //==============================================================================
+// Helper function for base64Decode
 
-void decodeQuantum(const char *input, unsigned char *output)
+bool validBase64Length(char * aDataPtr)
 {
+	size_t length = (strlen(aDataPtr) - 1);
+	
+	if (length && (length % 4))
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+
+//==============================================================================
+// Helper function for base64Decode
+
+char *cleanupBase64Data(char *aDataPtr)
+{
+	int index		= 0;
 #if DEBUG_BASE64_DECODE
-	bool found = false;
+	int junkChars	= 0;
 #endif
+
+	size_t length = strlen(aDataPtr);
+
+	char *cleanedUpData = malloc(length);
+	bzero(cleanedUpData, length);
+
+	// Main loop
+	while (*aDataPtr)
+	{
+		/*
+		 * This check acts as a first pass filter. Its purpose is to strip invalid
+		 * characters from the base64 encoded data, but we are mainly using it to
+		 * get rid of the layout enhancement characters (think line feeds and tabs).
+		 */
+		if (*aDataPtr > 42 && *aDataPtr < 123)
+		{
+#if FULL_BASE64_DATA_CHECK
+			/*
+			 * Additional checking is normally not required, but may help people
+			 * getting past messed up plist data fields (think hand editing).
+			 */
+			if (*aDataPtr > 43 && *aDataPtr < 47)		// ,-.
+			{
+				aDataPtr++;
+#if DEBUG_BASE64_DECODE
+				junkChars++;
+#endif
+			}
+			else if (*aDataPtr > 57 && *aDataPtr < 65)	// :'<=>?@
+			{
+				if (*aDataPtr == PADDINGCHAR)
+				{
+					cleanedUpData[index++] = *aDataPtr;
+#if DEBUG_BASE64_DECODE
+					printf("%c", cleanedUpData[length]);
+#endif
+				}
+				else
+				{
+					aDataPtr++;
+#if DEBUG_BASE64_DECODE
+					junkChars++;
+#endif
+				}
+			}
+			else if (*aDataPtr > 90 && *aDataPtr < 97)	// [\]^_`
+			{
+				aDataPtr++;
+#if DEBUG_BASE64_DECODE
+				junkChars++;
+#endif
+			}
+			else
+			{
+#endif
+				cleanedUpData[index++] = *aDataPtr;
+#if DEBUG_BASE64_DECODE
+				printf("%c", cleanedUpData[index]);
+#endif
+#if FULL_BASE64_DATA_CHECK
+			}
+#endif
+		}
+#if DEBUG_BASE64_DECODE
+		else
+		{
+			junkChars++;
+		}
+#endif
+		aDataPtr++;
+	}
+
+	cleanedUpData[index] = 0;
+
+#if DEBUG_BASE64_DECODE
+	printf("\njunkChars : %d\n", junkChars);
+	
+	length = strlen(cleanedUpData);
+
+	for (int i = 0; i < length; i++)
+	{
+		printf("%c", cleanedUpData[i]);
+	}
+#endif
+
+	return cleanedUpData;
+}
+
+
+//==============================================================================
+// Helper function for base64Decode
+
+void decodeQuantum(char *input, unsigned char *output)
+{
 	int j = 0;
-
-	unsigned int x = 0; // We need a 32 bit wide variable for pur bit shifting.
-
+#if DEBUG_BASE64_DECODE
+	int found = 0;
+#endif
+	
+	unsigned int x = 0; // We need a 32 bit wide variable for our bit shifting.
+	
 	const char * base64Charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
+	
 	for (int i = 0; i < 4; i++)
 	{
-#if DEBUG_BASE64_DECODE
-		found = false;
-#endif
 		if (input[i] == PADDINGCHAR)
 		{
 			x = (x << 6);
 #if DEBUG_BASE64_DECODE
-			found = true;
+			found++;
 #endif
 		}
 		else if (input[(i - 1)] == input[i]) // Same character as last one?
 		{
 #if DEBUG_BASE64_DECODE
-			found = true;
+			found++;
 			quickLookups++;
 #endif
 			x = (x << 6) + j;
@@ -82,7 +197,7 @@ void decodeQuantum(const char *input, unsigned char *output)
 				{
 					x = (x << 6) + j;
 #if DEBUG_BASE64_DECODE
-					found = true;
+					found++;
 #endif
 					break;
 				}
@@ -90,12 +205,12 @@ void decodeQuantum(const char *input, unsigned char *output)
 		}
 	}
 #if DEBUG_BASE64_DECODE
-	if (!found)
+	if (found < 4)
 	{
-		printf("ERROR\n");
+		printf("ERROR ");
 	}
 #endif
-
+	
 	output[2] = x;
 	output[1] = (x >>= 8);
 	output[0] = (x >>= 8);
@@ -103,98 +218,52 @@ void decodeQuantum(const char *input, unsigned char *output)
 
 
 //==============================================================================
- 
-int base64Decode(const char *input, unsigned char *decodedData)
+
+int base64Decode(char *input, unsigned char **decodedData)
 {
-	int i				= 0;
-	int j				= 0;
-	int numQuantums		= 0;
-	int paddingChars	= 0;
+	size_t bytes = 0;
 
-	size_t bytes		= 0;
-	size_t length		= 0;
-
-	// These will be initialized later on
-	unsigned char *buffer		= NULL;
-	unsigned char *bufferStart	= NULL;
-	unsigned char *lastQuantum	= NULL;
-
-	while ((input[length] != PADDINGCHAR) && input[length])
+	unsigned char *buffer = NULL;
+	
+	input = cleanupBase64Data(input);
+	
+	if (validBase64Length(input))
 	{
-		length++;
-	}
-
-	// A maximum of two padding characters is allowed.
-	if (input[length] == PADDINGCHAR)
-	{
-		paddingChars++;
-
-		if (input[length + paddingChars] == PADDINGCHAR)
+		int numQuantums = (strlen(input) / 4);
+	
+		if (numQuantums)
 		{
-			paddingChars++;
-		}
-	}
-
-	numQuantums = ((length + paddingChars) / 4);
-
 #if DEBUG_BASE64_DECODE
-	printf("\nnumQuantums: %d\n\n", numQuantums);
+			printf("\nnumQuantums : %d\n\n", numQuantums);
 #endif
+			buffer = (unsigned char *)malloc(numQuantums * 3);
 
-	// Is there anything to decode?
-	if (numQuantums)
-	{
-		buffer = malloc(numQuantums * 3);
-		
-		if (buffer)
-		{
-			bufferStart = buffer;
-			lastQuantum = (unsigned char *)malloc(4);
-
-			while (*input)
+			if (buffer)
 			{
-				// Decode all but the last quantum (which may not decode to a multiple of 3 bytes).
-				for (i = 0; i < (numQuantums - 1); i++)
+				*decodedData = buffer;
+
+				while (bytes < (numQuantums / 3))
 				{
-					decodeQuantum(input, buffer);
+					for (int i = 0; i < numQuantums; i++)
+					{
+						decodeQuantum(input, buffer);
 #if DEBUG_BASE64_DECODE
-					printf("%2ld : %02x %02x %02x\n", (bytes / 3), *buffer++, *buffer++, *buffer++);
+						printf("%2ld : %02x %02x %02x\n", (bytes / 3), *buffer++, *buffer++, *buffer++);
 #else
-					buffer += 3;
+						buffer += 3;
 #endif
-					input += 4;
-					bytes += 3;
+						input += 4;
+						bytes += 3;
+					}
 				}
-
-				// The final decoding phase.
-				decodeQuantum(input, lastQuantum);
-
-				for (j = 0; j < (3 - paddingChars); j++)
-				{
-					buffer[j] = lastQuantum[j];
-					bytes++;
-				}
-
-				input += 4;
-#if DEBUG_BASE64_DECODE
-				printf("%2ld : %02x %02x %02x\n", (bytes / 3), lastQuantum[0], lastQuantum[1], lastQuantum[2]);
-#endif
-				buffer[(numQuantums * 3)] = 0xAA;
-			}
-			
-			free (lastQuantum);
-
-			if ((decodedData = memcpy(decodedData, bufferStart, bytes)) != NULL)
-			{
-#if DEBUG_BASE64_DECODE
-				printf("\nSuccesfully copied %zd bytes\n", bytes);
-#endif
 			}
 		}
 	}
-
 #if DEBUG_BASE64_DECODE
-	printf("\nbuffer: %ld bytes (0 - %d)\n", bytes, (numQuantums - 1));
+	else
+	{
+		printf("\nError: Invalid length of base64 data!\n");
+	}
 #endif
 
 	return bytes;
@@ -204,14 +273,11 @@ int base64Decode(const char *input, unsigned char *decodedData)
 #if STAND_ALONE
 //==============================================================================
 
-#define BUFFFERLEN      128
-
 #include "efi/essentials.h"
 
-
-void *getGUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
+void *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
 {
-	char * guid = NULL;
+	char * uuid = NULL;
 	
 	if (devicePath != NULL)
 	{
@@ -227,24 +293,55 @@ void *getGUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
 			
 			if (HDDevicePath->SignatureType == SIGNATURE_TYPE_GUID) // 0x02
 			{
-				EFI_GUID * uuid = (EFI_GUID*)HDDevicePath->Signature;
+				EFI_GUID * guid = (EFI_GUID*)HDDevicePath->Signature;
 				
-				guid = (void *)malloc(37);
+				uuid = (void *)malloc(37);
 				
 				// Function efi_guid_unparse_upper() in efi/efi_tables.c
-				sprintf(guid, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-						uuid->Data1,
-						uuid->Data2,
-						uuid->Data3,
-						uuid->Data4[0], uuid->Data4[1],
-						uuid->Data4[2], uuid->Data4[3],
-						uuid->Data4[4], uuid->Data4[5],
-						uuid->Data4[6], uuid->Data4[7]);
+				sprintf(uuid, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+						guid->Data1,
+						guid->Data2,
+						guid->Data3,
+						guid->Data4[0], guid->Data4[1],
+						guid->Data4[2], guid->Data4[3],
+						guid->Data4[4], guid->Data4[5],
+						guid->Data4[6], guid->Data4[7]);
 			}
 		}
 	}
 	
-	return guid;
+	return uuid;
+}
+
+
+//==============================================================================
+// Used in RevoBoot/i386/boot2/boot.c
+
+char * getStartupDiskUUID(char * aDataPtr)
+{
+	char * targetDiskUUID = NULL;
+	
+	unsigned char * decodedData = NULL;
+	
+	int rc = base64Decode(aDataPtr, &decodedData);
+	
+	if ((rc == 75) && (decodedData != NULL))
+	{
+		EFI_DEVICE_PATH_PROTOCOL * dp = (EFI_DEVICE_PATH_PROTOCOL *) decodedData;
+			
+		char * uuid = getUUIDFromDevicePath(dp);
+			
+		if (uuid)
+		{
+			targetDiskUUID = uuid;
+		}
+			
+		dp = NULL;
+	}
+		
+	free(decodedData);
+	
+	return targetDiskUUID;
 }
 
 //==============================================================================
@@ -253,40 +350,24 @@ int main(void)
 {
 	// Test example: DE91E8DA-30B6-4B11-B8DC-76DC067BB57A (taken from a Macmini)
 
-	const char * input = "AgEMANBBAwoAAAAAAQEGAAIfAxIKAAIAAAAAAAQBKgACAAAAKEAGAAAAAABASyklAAAAANrokd62MBFLuNx23AZ7tXoCAn//BAA=";
+	char * input = "	AgEMANBBAwoAAAAAAQEGAAIfA\n\r\t\
+						xIKAAIAAAAAAAQBKgACAAAAKE\n\v\
+						AGAAAAAABASyklAAAAANrokd6\n\
+						2MBFLuNx23AZ7tXoCAn//BAA=";
 
 	// 02 01 0c 00 d0 41 03 0a 00 00 00 00
 	// 01 01 06 00 02 1f 03 12 0a 00 02 00 00 00 00 00
 	// 04 01 2a 00 02 00 00 00 28 40 06 00 00 00 00 00 40 4b 29 25 00 00 00 00 da e8 91 de b6 30 11 4b b8 dc 76 dc 06 7b b5 7a 02 02
 	// 7f ff 04 00
 
-	int len = ((strlen(input) / 4) * 3);
+	char * uuid = getStartupDiskUUID(input);
 
-	unsigned char * decodedData = malloc(len);
-
-	// Fill buffer with 0xdd (making errors visible)
-	for (int i = 0; i <= len; i++)
+	if (uuid)
 	{
-		decodedData[i] = 0xdd;
-	}
-
-	int rc = base64Decode(input, decodedData);
-
-	// This of course should never happen
-	if ((rc == 0) || (decodedData == NULL))
-	{
-		printf("FAIL\n");
-	}
-
 #if DEBUG_BASE64_DECODE
-	printf("\nquickLookups: %d\n\n", quickLookups);
+		printf("\nUUID: %s\n", uuid);
 #endif
-
-	EFI_DEVICE_PATH_PROTOCOL * dp = (EFI_DEVICE_PATH_PROTOCOL *) decodedData;
-
-	void * guid = getGUIDFromDevicePath(dp);
-
-	printf("GUID: %s\n", guid);
+	}
 
 	exit(0);
 }
