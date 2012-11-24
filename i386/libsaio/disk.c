@@ -68,8 +68,6 @@
 typedef struct gpt_hdr gpt_hdr;
 typedef struct gpt_ent gpt_ent;
 
-#include "efi_tables.h"
-
 
 #define BPS				512		// sector size of the device.
 #define PROBEFS_SIZE	BPS * 4	// buffer size for filesystem probe.
@@ -500,7 +498,7 @@ static BVRef newGPTBVRef(int biosdev, int partno, unsigned int blkoff, const gpt
 
 static bool isPartitionUsed(gpt_ent * partition)
 {
-	return efi_guid_is_null((EFI_GUID const*)partition->ent_type) ? false : true;
+	return isEFIGUIDNull((EFI_GUID const*)partition->ent_type) ? false : true;
 }
 
 
@@ -574,13 +572,13 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										int bvrFlags = -1;
 #if DEBUG_DISK
 										char stringuuid[100];
-										efi_guid_unparse_upper((EFI_GUID*)gptMap->ent_type, stringuuid);
+										convertEFIGUIDToString((EFI_GUID*)gptMap->ent_type, stringuuid);
 										printf("Reading GPT partition %d, type %s\n", gptID, stringuuid);
 										sleep(1);
 #endif
 
 #if EFI_SYSTEM_PARTITION_SUPPORT		// First check for the EFI partition.
-										if (efi_guid_compare(&GPT_EFISYS_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
+										if (compareEFIGUID(&GPT_EFISYS_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: EFI GUID, probing for HFS format...\n");
 											
@@ -616,7 +614,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 #endif
 
 #if CORE_STORAGE_SUPPORT				// Is this a CoreStorage partition?
-										if (efi_guid_compare(&GPT_CORESTORAGE_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
+										if (compareEFIGUID(&GPT_CORESTORAGE_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: CoreStorage GUID\n");
 
@@ -629,14 +627,14 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										// Check for HFS+ partitions.
 										if (
 #endif
-										!gPlatform.BootRecoveryHD && (efi_guid_compare(&GPT_HFS_GUID, (EFI_GUID const *)gptMap->ent_type) == 0))
+										!gPlatform.BootRecoveryHD && (compareEFIGUID(&GPT_HFS_GUID, (EFI_GUID const *)gptMap->ent_type) == 0))
 										{
 											_DISK_DEBUG_DUMP("Matched: HFS+ GUID\n");
 
 											bvrFlags = kBVFlagZero;
 										}
 #if APPLE_RAID_SUPPORT
-										else if (efi_guid_compare(&GPT_RAID_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
+										else if (compareEFIGUID(&GPT_RAID_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Skipping: GPT_RAID_GUID\n");
 													 
@@ -645,7 +643,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 #endif
 
 #if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT
-										else if (efi_guid_compare(&GPT_BOOT_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
+										else if (compareEFIGUID(&GPT_BOOT_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: GPT_BOOT_GUID\n");
 											
