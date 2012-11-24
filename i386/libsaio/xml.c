@@ -23,7 +23,7 @@
  *
  * Updates:
  *			- Cleanups, white space and layout changes (PikerAlpha, November 2012)
- *			- New/improved kXMLTagData support (PikerAlpha, November 2012) 
+ *			- New/improved kXMLTagData support (PikerAlpha, November 2012)
  *
  */
 
@@ -354,7 +354,7 @@ static long ParseTagKey(char * buffer, TagPtr * tag)
 		}
 	}
 
-	return length;	// -1;
+	return length;
 }
 
 
@@ -388,7 +388,7 @@ static long ParseTagString(char * buffer, TagPtr * tag)
 		}
 	}
 
-	return length;	// -1;
+	return length;
 }
 
 
@@ -415,7 +415,7 @@ static long ParseTagInteger(char * buffer, TagPtr * tag)
 		}
 	}
 
-	return length;	// -1
+	return length;
 }
 
 
@@ -434,8 +434,13 @@ static long ParseTagData(char * buffer, TagPtr * tag)
 			char * string = NewSymbol(buffer);
 
 			tmpTag->type	= kTagTypeData;
+			/*
+			 * We don't strip layout character and/or decode the data at this
+			 * point. We do that later on, and only the data fields that we are
+			 * interested in. Not all of them, because that would slow us down.
+			 */
 			tmpTag->string	= string;
-			tmpTag->tag	= 0;
+			tmpTag->tag		= 0;
 			tmpTag->tagNext	= 0;
 
 			*tag = tmpTag;
@@ -464,12 +469,10 @@ static long ParseTagDate(char * buffer, TagPtr * tag)
 			tmpTag->tagNext	= 0;
 
 			*tag = tmpTag;
-
-			return length;
 		}
 	}
 
-	return -1;
+	return length;
 }
 
 
