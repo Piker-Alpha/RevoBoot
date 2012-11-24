@@ -29,6 +29,7 @@
  *
  * Updates:
  *		- Check malloc return (PikerAlpha, November 2012).
+ *		- Renamed efi_guid_unparse_upper to convertEFIGUIDToString (PikerAlpha, November 2012).
  *
  */
 
