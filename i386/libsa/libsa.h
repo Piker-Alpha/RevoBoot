@@ -42,8 +42,32 @@
 /*
  * boot.c
  */
-
 extern int fastEnableA20(void);
+
+
+/*
+ * crc32.c
+ */
+uint32_t crc32(uint32_t crc, const void *buf, size_t size);
+
+
+/*
+ * getsegbyname.c
+ */
+extern struct segment_command * getsegbynamefromheader(struct mach_header * mhp, char * segname);
+
+
+/*
+ * prf.c
+ */
+extern void prf(const char * fmt, va_list ap, void (*putfn_p)(), void * putfn_arg);
+
+
+/*
+ * printf.c
+ */
+extern int sprintf(char *s, const char * format, ...);
+extern int slvprintf(char * buffer, int len, const char * fmt, va_list arg);
 
 
 /*
@@ -85,6 +109,7 @@ extern size_t	strlen(const char * str);
 extern uint8_t checksum8( void * start, unsigned int length);
 char * removeChar(char *aSourceString, char aTargetChar);
 
+
 /*
  * strtol.c
  */
@@ -92,16 +117,6 @@ extern long strtol(const char * nptr, char ** endptr, int base);
 extern unsigned long strtoul(const char * nptr, char ** endptr, int base);
 extern unsigned long long strtouq(const char *nptr, char ** endptr, int base);
 
-/*
- * prf.c
- */
-extern void prf(const char * fmt, va_list ap, void (*putfn_p)(), void * putfn_arg);
-
-/*
- * printf.c
- */
-extern int sprintf(char *s, const char * format, ...);
-extern int slvprintf(char * buffer, int len, const char * fmt, va_list arg);
 
 /*
  * zalloc.c
@@ -119,10 +134,5 @@ extern int slvprintf(char * buffer, int len, const char * fmt, va_list arg);
 
 extern void   free(void * start);
 extern void * realloc(void * ptr, size_t size);
-
-/*
- * getsegbyname.c
- */
-extern struct segment_command * getsegbynamefromheader(struct mach_header * mhp, char * segname);
 
 #endif /* !__BOOT_LIBSA_H */
