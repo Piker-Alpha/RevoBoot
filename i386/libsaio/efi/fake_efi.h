@@ -64,7 +64,7 @@ static inline char * mallocStringForGuid(EFI_GUID const *pGuid)
 
 	if (string)
 	{
-		efi_guid_unparse_upper(pGuid, string);
+		convertEFIGUIDToString(pGuid, string);
 
 		return string;
 	}
