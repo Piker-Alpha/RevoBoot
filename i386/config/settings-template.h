@@ -210,7 +210,7 @@
 #define LION_RECOVERY_SUPPORT				0	// Set to 0 by default. Change this to 1 to make RevoBoot search for the 'Recovery HD'
 												// partition and, when available, boot from it.
 
-#define DISK_TARGET_SUPPORT					1	// Set to 0 by default. Change this to 1 for System Preference/Startup Disk support.
+#define DISK_TARGET_SUPPORT					0	// Set to 0 by default. Change this to 1 for System Preference/Startup Disk support.
 
 #define DEBUG_BOOT							0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
