@@ -218,9 +218,7 @@ void boot(int biosdev)
 	initPartitionChain();
 #endif
 
-#define DISK_TARGET_EXPERIMENT 0
-
-#if DISK_TARGET_EXPERIMENT
+#if DISK_TARGET_SUPPORT
 	config_file_t	nvramStorage;
 	const char * path = "/Extra/NVRAM/nvramStorage.plist";
 	
@@ -232,19 +230,10 @@ void boot(int biosdev)
 		{
 			_BOOT_DEBUG_DUMP("Key 'efi-boot-device-data' located %d\n", length);
 
-			int len = ((length / 4) * 3);
-			unsigned char * decodedData = (unsigned char *)malloc(len);
-			int rc = base64Decode(val, decodedData);
+			char * uuid = getStartupDiskUUID((char *)val);
 
-			if (rc && decodedData)
+			if (uuid)
 			{
-				EFI_DEVICE_PATH_PROTOCOL * dp = (EFI_DEVICE_PATH_PROTOCOL *) decodedData;
-
-				// FIXME: This doesn't belong here!
-				extern void *getGUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath);
-
-				void * uuid = getGUIDFromDevicePath(dp);
-
 				_BOOT_DEBUG_DUMP("GUID: %s\n", uuid);
 				_BOOT_DEBUG_SLEEP(1);
 
@@ -256,7 +245,7 @@ void boot(int biosdev)
 	{
 		_BOOT_DEBUG_DUMP("Warning: unable to locate nvramStorage.plist\n");
 	}
-#endif // #if DISK_TARGET_EXPERIMENT
+#endif // #if DISK_TARGET_SUPPORT
 
 	#define loadCABootPlist() loadSystemConfig(&bootInfo->bootConfig)
 
@@ -297,9 +286,9 @@ void boot(int biosdev)
 				
 				if (gVerboseMode)
 				{
-/*#if DEBUG_BOOT == false
+#if (DEBUG_BOOT == false)
 					setVideoMode(VGA_TEXT_MODE);
-#endif*/
+#endif
 				}
 
 				// Check for -x (safe) and -f (flush cache) flags.
@@ -310,18 +299,13 @@ void boot(int biosdev)
 				}
 
 				// Is 'boot-uuid=<value>' specified as kernel flag?
-				if (getValueForBootKey(kernelFlags, kBootUUIDKey, &val, &length) && length == 36)
+				if (!rootUUID && (getValueForBootKey(kernelFlags, kBootUUIDKey, &val, &length) && length == 36))
 				{
 					_BOOT_DEBUG_DUMP("Target boot-uuid=<%s>\n", val);
 
 					// Yes. Copy its value into rootUUID.
 					strlcpy(rootUUID, val, 37);
 				}
-				/* else
-				{
-					strlcpy(rootUUID, "3453E0E5-017B-38AD-A0AA-D0BBD8565D6", 37);
-					_BOOT_DEBUG_DUMP("Target boot-uuid=<%s>\n", rootUUID);
-				} */
 			}
 		}
 
