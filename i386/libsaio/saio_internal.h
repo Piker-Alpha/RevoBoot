@@ -23,10 +23,8 @@
  *
  * Updates:
  *
- *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
+ *    	- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
  *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
- *  		- decodeQuantum and base64Decode added (PikerAlpha, October 2012).
- *    	- Removed unused functions (PikerAlpha, October 2012).
  *
  */
 
@@ -34,6 +32,8 @@
 #define __LIBSAIO_SAIO_INTERNAL_H
 
 #include "saio_types.h"
+#include "efi/essentials.h"
+
 
 /* asm.s */
 extern void		real_to_prot(void);
@@ -117,6 +117,14 @@ extern void		turnOffFloppy(void);
 extern int		testFAT32EFIBootSector(int biosdev, unsigned int secno, void * buffer);
 
 
+/* guid.c */
+extern			void convertEFIGUIDToString(EFI_GUID const *aGuid, char *out);
+extern			bool isEFIGUIDNull(EFI_GUID const *aGuid);
+extern			int compareEFIGUID(EFI_GUID const *pG1, EFI_GUID const *pG2);
+extern			char *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath);
+extern			char * getStartupDiskUUID(char * aDataPtr);
+
+
 /* hfs_compare.c */
 extern int32_t	FastUnicodeCompare(u_int16_t *uniStr1, u_int32_t len1, u_int16_t *uniStr2, u_int32_t len2);
 extern void		utf_encodestr(const u_int16_t * ucsp, int ucslen, u_int8_t * utf8p, u_int32_t bufsize);
@@ -140,8 +148,7 @@ extern void		enableA20(void);
 
 
 /* stringTable.c */
-extern void  	decodeQuantum(const char *input, unsigned char *output);
-extern int		base64Decode(const char *input, unsigned char *decodedData);
+extern int		base64Decode(char *input, unsigned char **decodedData);
 
 extern bool		getValueForConfigTableKey(config_file_t *config, const char *key, const char **val, int *size);
 extern char		* newStringForKey(char *key, config_file_t *configBuff);
@@ -150,7 +157,7 @@ extern bool		getValueForKey(const char *key, const char **val, int *size, config
 extern bool		getBoolForKey(const char *key, bool *val, config_file_t *configBuff);
 extern bool		getIntForKey(const char *key, int *val, config_file_t *configBuff);
 extern bool		loadConfigFile(const char *configFile, config_file_t *configBuff);
-extern int  	loadSystemConfig(config_file_t *configBuff);
+extern int		loadSystemConfig(config_file_t *configBuff);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
 
