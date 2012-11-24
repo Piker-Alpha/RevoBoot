@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Master Chief. All rights reserved.
  *
- * Note: This is an essential part of the build process for RevoBoot v1.5.35 and greater.
+ * Note: This is an essential part of the build process for RevoBoot v1.5.36 and greater.
  *
  * Updates:
  *
@@ -27,6 +27,7 @@
  *			- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (PikerAlpha, October 2012).
  *			- LOAD_MODEL_SPECIFIC_STATIC_DATA added (PikerAlpha, October 2012).
  *			- Option SET_MAX_STRUCTURE_LENGTH added (PikerAlpha, November 2012).
+ *			- Option DISK_TARGET_SUPPORT added (PikerAlpha, November 2012).
  */
 
 
@@ -208,6 +209,8 @@
 
 #define LION_RECOVERY_SUPPORT				0	// Set to 0 by default. Change this to 1 to make RevoBoot search for the 'Recovery HD'
 												// partition and, when available, boot from it.
+
+#define DISK_TARGET_SUPPORT					1	// Set to 0 by default. Change this to 1 for System Preference/Startup Disk support.
 
 #define DEBUG_BOOT							0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
