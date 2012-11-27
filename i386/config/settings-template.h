@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Master Chief. All rights reserved.
  *
- * Note: This is an essential part of the build process for RevoBoot v1.5.35 and greater.
+ * Note: This is an essential part of the build process for RevoBoot v1.5.37 and greater.
  *
  * Updates:
  *
@@ -29,6 +29,8 @@
  *			- Option SET_MAX_STRUCTURE_LENGTH added (PikerAlpha, November 2012).
  *			- Option DISK_TARGET_SUPPORT added (PikerAlpha, November 2012).
  *			- DISK_TARGET_SUPPORT renamed to STARTUP_DISK_SUPPORT (PikerAlpha, November 2012).
+ *			- New compiler directive USE_DEVICE_PATH in boot section (PikerAlpha, November 2012).
+ *
  */
 
 
@@ -212,6 +214,13 @@
 												// partition and, when available, boot from it.
 
 #define STARTUP_DISK_SUPPORT				0	// Set to 0 by default. Change this to 1 for System Preference/Startup Disk support.
+
+#if STARTUP_DISK_SUPPORT
+	#define USE_DEVICE_PATH					0	// Set to 0 by default. Change this to 1 when the Startup Disk feature fails to work.
+												//
+												// Note:	This experimental switch will be removed in a next update/release. It is here
+												//			only to give us feedback for a future release of RevoBoot.
+#endif
 
 #define DEBUG_BOOT							0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
