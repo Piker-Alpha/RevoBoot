@@ -23,7 +23,7 @@
  *
  * Updates:
  *
- *    	- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
+ *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
  *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
  *
  */
@@ -118,10 +118,16 @@ extern int		testFAT32EFIBootSector(int biosdev, unsigned int secno, void * buffe
 
 
 /* guid.c */
-extern			void convertEFIGUIDToString(EFI_GUID const *aGuid, char *out);
+extern			void convertEFIGUIDToString(EFI_GUID const *aGuid, char **aUUIDString);
 extern			bool isEFIGUIDNull(EFI_GUID const *aGuid);
 extern			int compareEFIGUID(EFI_GUID const *pG1, EFI_GUID const *pG2);
-extern			char *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath);
+
+#if USE_DEVICE_PATH
+void *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath);
+#else
+void *getUUIDFromDevicePath(EFI_GUID *aGUID);
+#endif
+
 extern			char * getStartupDiskUUID(char * aDataPtr);
 
 

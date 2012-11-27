@@ -6,6 +6,7 @@
 #		- Major cleanup (PikerAlpha, October 2012).
 #		- Fixed clang compilation (dgsga, November 2012).
 #		- Single pass compilation (PikerAlpha, November 2012).
+#		- Removed unused CPPFLAGS (PikerAlpha, November 2012).
 #
 
 
@@ -34,7 +35,7 @@ $(OBJROOT)/%.o: %.m
 
 .s.o:
 	@echo "\t[AS] $<"
-	@$(CC) $(CPPFLAGS) -c $(INC) -arch i386 $< -o $(OBJROOT)/$@
+	@$(CC) -c $(INC) -arch i386 $< -o $(OBJROOT)/$@
 
 $(OBJROOT)/boot2.o:
 	@echo "\t[AS] boot2.s"
@@ -42,7 +43,7 @@ $(OBJROOT)/boot2.o:
 	
 $(OBJROOT)/%.o: %.s
 	@echo "\t[AS] $<"
-	@$(CC) $(CPPFLAGS) -c $(INC) -arch i386 $< -o $(OBJROOT)/$@
+	@$(CC) -c $(INC) -arch i386 $< -o $(OBJROOT)/$@
 
 $(DIRS_NEEDED):
 	@/bin/mkdir -p $@

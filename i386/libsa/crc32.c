@@ -43,21 +43,25 @@
  *
  */
 
-#include "libsaio.h"
+
+#include "libsa.h"
+
+//==========================================================================
+// This data block can also be found in boot.efi
 
 static uint32_t crc32Table[] =
 {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
-	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
+	0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
 	0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
-	0xf3b97148, 0x84be41de,	0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
-	0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec,	0x14015c4f, 0x63066cd9,
-	0xfa0f3d63, 0x8d080df5,	0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
-	0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b,	0x35b5a8fa, 0x42b2986c,
-	0xdbbbc9d6, 0xacbcf940,	0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
+	0xf3b97148, 0x84be41de, 0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
+	0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec, 0x14015c4f, 0x63066cd9,
+	0xfa0f3d63, 0x8d080df5, 0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
+	0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b, 0x35b5a8fa, 0x42b2986c,
+	0xdbbbc9d6, 0xacbcf940, 0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
 	0x26d930ac, 0x51de003a, 0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423,
 	0xcfba9599, 0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
-	0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d,	0x76dc4190, 0x01db7106,
+	0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d, 0x76dc4190, 0x01db7106,
 	0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f, 0x9fbfe4a5, 0xe8b8d433,
 	0x7807c9a2, 0x0f00f934, 0x9609a88e, 0xe10e9818, 0x7f6a0dbb, 0x086d3d2d,
 	0x91646c97, 0xe6635c01, 0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e,
@@ -95,143 +99,16 @@ static uint32_t crc32Table[] =
 
 //==========================================================================
 
-uint32_t crc32(uint32_t crc, const void *buf, size_t size)
+uint32_t crc32(uint32_t aCRC, const void *aBuffer, size_t aSize)
 {
-	const uint8_t *p;
+	const uint8_t *p = aBuffer;
 
-	p = buf;
-	crc = crc ^ ~0U;
+	aCRC = aCRC ^ ~0U;
 
-	while (size--)
+	while (aSize--)
 	{
-		crc = crc32Table[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+		aCRC = crc32Table[(aCRC ^ *p++) & 0xFF] ^ (aCRC >> 8);
 	}
 
-	return crc ^ ~0U;
+	return (aCRC ^ ~0U);
 }
-
-
-/*==========================================================================
- * Utility function to make a device tree string from an EFI_GUID
- *
- * FIXME: Everything below this line should be moved to: guid.c
- */
-
-
-//==========================================================================
-// Used in RevoBoot/i386/libsaio/disk.c
-
-void convertEFIGUIDToString(EFI_GUID const *aGuid, char *out)
-{
-    sprintf(out, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-			aGuid->Data1, /* - */
-			aGuid->Data2, /* - */
-			aGuid->Data3, /* - */
-			aGuid->Data4[0], aGuid->Data4[1], /* - */
-			aGuid->Data4[2], aGuid->Data4[3],
-			aGuid->Data4[4], aGuid->Data4[5],
-			aGuid->Data4[6], aGuid->Data4[7]);
-}
-
-
-//==========================================================================
-// Used in RevoBoot/i386/libsaio/disk.c
-
-bool isEFIGUIDNull(EFI_GUID const *aGuid)
-{
-	if (aGuid->Data1 == 0 && aGuid->Data2 == 0 && aGuid->Data3 == 0)
-	{
-		for (int i = 0; i < 8; ++i)
-		{
-			if (aGuid->Data4[i] != 0)
-			{
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
-	return false;
-}
-
-
-//=========================================================================
-// Used in RevoBoot/i386/libsaio/disk.c
-
-int compareEFIGUID(EFI_GUID const *aSourceGuid, EFI_GUID const *aCompareGuid)
-{
-	if (aSourceGuid->Data1 == aCompareGuid->Data1) // Comparing two EFI_UINT32's
-	{
-		if (aSourceGuid->Data2 == aCompareGuid->Data2) // Comparing two EFI_UINT16's
-		{
-			if (aSourceGuid->Data3 == aCompareGuid->Data3) // Comparing two EFI_UINT16's
-			{
-				// Returns 0 when equal or -1 when not
-				return memcmp((const void *)aSourceGuid->Data4, (const void *)aSourceGuid->Data4, 8);
-			}
-		}
-	}
-	
-	return -1;
-}
-
-
-#if DISK_TARGET_SUPPORT
-//=========================================================================
-// Helper function for getStartupDiskUUID()
-
-char * getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
-{
-	if (devicePath != NULL)
-	{
-		while (!IsDevicePathEndType(devicePath) &&
-			   !(DevicePathType(devicePath) == MEDIA_DEVICE_PATH && DevicePathSubType(devicePath) == MEDIA_HARDDRIVE_DP))
-		{
-			devicePath = NextDevicePathNode(devicePath);
-		}
-		
-		if (DevicePathType(devicePath) == MEDIA_DEVICE_PATH && DevicePathSubType(devicePath) == MEDIA_HARDDRIVE_DP)
-		{
-			HARDDRIVE_DEVICE_PATH * HDDevicePath = (HARDDRIVE_DEVICE_PATH *) devicePath;
-			
-			if (HDDevicePath->SignatureType == SIGNATURE_TYPE_GUID) // 0x02
-			{
-				EFI_GUID const * uuid = (EFI_GUID*)HDDevicePath->Signature;
-				
-				char * guid = (char *)malloc(37);
-				
-				convertEFIGUIDToString(uuid, guid);
-				
-				return guid;
-			}
-		}
-	}
-	
-	return NULL;
-}
-
-
-//==============================================================================
-// Used in RevoBoot/i386/boot2/boot.c
-
-char * getStartupDiskUUID(char * aDataPtr)
-{
-	char * targetDiskUUID = NULL;
-	
-	unsigned char * decodedData = NULL;
-	
-	int rc = base64Decode(aDataPtr, &decodedData);
-	
-	if ((rc == 75) && (decodedData != NULL))
-	{
-		EFI_DEVICE_PATH_PROTOCOL * dp = (EFI_DEVICE_PATH_PROTOCOL *) decodedData;
-		
-		targetDiskUUID = getUUIDFromDevicePath(dp);
-		
-		free(decodedData);
-	}
-	
-	return targetDiskUUID;
-}
-#endif // #if DISK_TARGET_SUPPORT

@@ -25,7 +25,7 @@
  *
  * Updates:
  *			- Unused sysConfigValid removed (PikerAlpha, November 2012).
-*			- STATE_SUCCESS	moved to libsaio.h (PikerAlpha, November 2012).
+ *			- STATE_SUCCESS	moved to libsaio.h (PikerAlpha, November 2012).
  *
  */
 

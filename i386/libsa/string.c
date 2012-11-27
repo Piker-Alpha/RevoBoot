@@ -386,7 +386,7 @@ int strncasecmp(const char *s1, const char *s2, size_t len)
 //==========================================================================
 /* COPYRIGHT NOTICE: checksum8 from AppleSMBIOS */
 
-uint8_t checksum8( void * start, unsigned int length )
+uint8_t checksum8(void * start, unsigned int length)
 {
     uint8_t   csum = 0;
     uint8_t * cp = (uint8_t *) start;

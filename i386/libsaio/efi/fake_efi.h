@@ -29,12 +29,11 @@
  *
  * Updates:
  *		- Check malloc return (PikerAlpha, November 2012).
- *		- Renamed efi_guid_unparse_upper to convertEFIGUIDToString (PikerAlpha, November 2012).
  *
  */
 
-#include "bootstruct.h"							// For bootArgs.
-#include "efi_tables.h"
+#include "bootstruct.h"		// For bootArgs.
+
 
 //------------------------------------------------------------------------------
 
@@ -58,14 +57,14 @@ static EFI_UINT32 const FIRMWARE_REVISION = EFI_SYSTEM_TABLE_REVISION;
 //==============================================================================
 // Utility function to make a device tree string from an EFI_GUID
 
-static inline char * mallocStringForGuid(EFI_GUID const *pGuid)
+static inline char * mallocStringForGuid(EFI_GUID const *aGuid)
 {
-	char *string = malloc(37);
+	char *string = NULL;
+
+	convertEFIGUIDToString(aGuid, &string);
 
 	if (string)
 	{
-		convertEFIGUIDToString(pGuid, string);
-
 		return string;
 	}
 

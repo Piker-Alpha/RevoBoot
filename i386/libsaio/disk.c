@@ -50,6 +50,7 @@
  *			- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
  *			- Renamed encryptedBootPartition to coreStoragePartition (PikerAlpha, November 2012).
  *			- OSBigEndian removed and some minor style nits (PikerAlpha, November 2012).
+ *			- Unused #include <limits.h> removed (PikerAlpha, November 2012).
  *
  */
 
@@ -57,8 +58,6 @@
 #include "bootstruct.h"
 #include "fdisk.h"
 #include "hfs.h"
-
-#include <limits.h>
 
 
 #define DPISTRLEN	32 // Defined in: IOKit/storage/IOApplePartitionScheme.h
@@ -571,9 +570,9 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										BVRef bvr = NULL;
 										int bvrFlags = -1;
 #if DEBUG_DISK
-										char stringuuid[100];
-										convertEFIGUIDToString((EFI_GUID*)gptMap->ent_type, stringuuid);
-										printf("Reading GPT partition %d, type %s\n", gptID, stringuuid);
+										char uuidString = NULL;
+										convertEFIGUIDToString((EFI_GUID*)gptMap->ent_type, &uuidString);
+										printf("Reading GPT partition %d, type %s\n", gptID, uuidString);
 										sleep(1);
 #endif
 

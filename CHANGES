@@ -1,3 +1,33 @@
+RevoBoot v1.5.40 (Next Major Release)
+================
+- Improved CPU detection (with new/additional CPU's).
+- Improved P-State generation (less settings).
+
+
+RevoBoot v1.5.37
+================
+- DISK_TARGET_SUPPORT in settings-template.h renamed to STARTUP_DISK_SUPPORT (PikerAlpha, November 2012).
+- Restored copyright of efi_tables.c to original developer (PikerAlpha, November 2012).
+- Renamed RevoBoot/i386/libsa/efi_tables.c to crc32.c (PikerAlpha, November 2012).
+- Moved GUID function from efi_tables.c to RevoBoot/i386/libsaio/guid.c (PikerAlpha, November 2012). 
+- Fixed some minor C99 issues / restoring gcc compatibility (PikerAlpha, November 2012).
+- Cleanups and other minor improvements.
+- VERSION updated to v1.5.37
+
+
+RevoBoot v1.5.36
+================
+- Now reading efi-boot-device-data from /Extra/NVRAM/nvramStorage.plist to select the Startup Disk (PikerAlpha, November 2012).
+- New DISK_TARGET_SUPPORT setting in settings-template.h (PikerAlpha, November 2012).
+- New file RevoBoot/i386/libsaio/base64.c (written by Sam) added (PikerAlpha, November 2012).
+- Support for data fields added (PikerAlpha, November 2012). 
+- Copied macro's from EDK2's EfiDevicePath.h to RevoBoot/i386/libsaio/efi/essentials.h (PikerAlpha, November 2012).
+- Port of EDK2's function (getGUIDFromDevicePath written by Sam) added (PikerAlpha, November 2012).
+- Function loadSystemConfig now calls new function loadConfigFile (PikerAlpha, November 2012).
+- Cleanups and other minor improvements.
+- VERSION updated to v1.5.36
+
+
 RevoBoot v1.5.35
 ================
 - SMBIOS related enhancements for RevoBoot v1.5.35 (PikerAlpha, November 2012).

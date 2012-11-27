@@ -7,6 +7,7 @@
 #			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
 #			- Enabled clang compilation (dgsga, November 2012. Credits to Evan Lojewski for original work).
 #			- Output change and now using libtool instead of ar/ranlib (PikerAlpha, November 2012).
+#			- efi_table.c renamed to crc32.c (PikerAlpha, November 2012).
 #
 
 include ../MakePaths.dir
@@ -25,7 +26,7 @@ INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSAIODIR)
 
 VPATH = $(OBJROOT):$(SYMROOT)
 
-SA_OBJS = prf.o printf.o zalloc.o string.o strtol.o setjmp.o efi_tables.o
+SA_OBJS = prf.o printf.o zalloc.o string.o strtol.o setjmp.o crc32.o
 
 LIBS = libsa.a
 

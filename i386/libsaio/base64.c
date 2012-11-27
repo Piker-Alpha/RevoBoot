@@ -14,14 +14,16 @@
  *				- STAND_ALONE check added (PikerAlpha, November 2012)
  *				- Workaround for "___bzero" undefined error in RevoBoot (PikerAlpha, November 2012)
  *				- base64Charset moved to function decodeQuantum (PikerAlpha, November 2012)
- *				- Length and character checking added (PikerAlpha, November 2012)
+ *				- base64 length check and character checking added (PikerAlpha, November 2012)
  *
  */
 
 #ifdef REVOBOOT_VERSION_INFO
-	#define STAND_ALONE			0
+	#define STAND_ALONE				0
+	#define DEBUG_BASE64_DECODE		0
 #else
-	#define STAND_ALONE			1
+	#define STAND_ALONE				1
+	#define DEBUG_BASE64_DECODE		1
 #endif
 
 #if STAND_ALONE
@@ -30,8 +32,6 @@
 #else
 	#include "libsaio.h"
 #endif
-
-#define DEBUG_BASE64_DECODE		0
 
 #define FULL_BASE64_DATA_CHECK	0
 
@@ -67,6 +67,7 @@ char *cleanupBase64Data(char *aDataPtr)
 {
 	int index		= 0;
 #if DEBUG_BASE64_DECODE
+	int i = 0;
 	int junkChars	= 0;
 #endif
 
@@ -88,7 +89,7 @@ char *cleanupBase64Data(char *aDataPtr)
 #if FULL_BASE64_DATA_CHECK
 			/*
 			 * Additional checking is normally not required, but may help people
-			 * getting past messed up plist data fields (think hand editing).
+			 * getting passed messed up plist data fields (think hand editing).
 			 */
 			if (*aDataPtr > 43 && *aDataPtr < 47)		// ,-.
 			{
@@ -148,7 +149,7 @@ char *cleanupBase64Data(char *aDataPtr)
 	
 	length = strlen(cleanedUpData);
 
-	for (int i = 0; i < length; i++)
+	for (i = 0; i < length; i++)
 	{
 		printf("%c", cleanedUpData[i]);
 	}
@@ -163,16 +164,16 @@ char *cleanupBase64Data(char *aDataPtr)
 
 void decodeQuantum(char *input, unsigned char *output)
 {
+	int i = 0;
 	int j = 0;
 #if DEBUG_BASE64_DECODE
 	int found = 0;
 #endif
-	
-	unsigned int x = 0; // We need a 32 bit wide variable for our bit shifting.
-	
+
+	unsigned int x = 0; // We use a 32 bit wide variable for our bit shifting.
 	const char * base64Charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	
-	for (int i = 0; i < 4; i++)
+
+	for (i = 0; i < 4; i++)
 	{
 		if (input[i] == PADDINGCHAR)
 		{
@@ -189,7 +190,7 @@ void decodeQuantum(char *input, unsigned char *output)
 #endif
 			x = (x << 6) + j;
 		}
-		else // Dig for target character.
+		else // Dig for next valid target character.
 		{
 			for (j = 0; j < TABLELEN; j++)
 			{
@@ -240,11 +241,13 @@ int base64Decode(char *input, unsigned char **decodedData)
 
 			if (buffer)
 			{
+				int i = 0;
+
 				*decodedData = buffer;
 
 				while (bytes < (numQuantums / 3))
 				{
-					for (int i = 0; i < numQuantums; i++)
+					for (i = 0; i < numQuantums; i++)
 					{
 						decodeQuantum(input, buffer);
 #if DEBUG_BASE64_DECODE
@@ -275,10 +278,43 @@ int base64Decode(char *input, unsigned char **decodedData)
 
 #include "efi/essentials.h"
 
+void convertEFIGUIDToString(EFI_GUID const *aGuid, char **aUUIDString)
+{
+	// Do we need to allocate memory?
+	if (*aUUIDString == NULL)
+	{
+		//          1         2         3
+		// 123456789 123456789 123456789 123456
+		// 00000000-0000-0000-0000-000000000000
+		*aUUIDString = (char *)malloc(36);
+	}
+	
+	if (*aUUIDString)
+	{
+		bzero(*aUUIDString, 36);
+		sprintf(*aUUIDString, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+				aGuid->Data1, /* - */
+				aGuid->Data2, /* - */
+				aGuid->Data3, /* - */
+				aGuid->Data4[0], aGuid->Data4[1], /* - */
+				aGuid->Data4[2], aGuid->Data4[3],
+				aGuid->Data4[4], aGuid->Data4[5],
+				aGuid->Data4[6], aGuid->Data4[7]);
+	}
+}
+
+
+//==============================================================================
+
+#if USE_DEVICE_PATH
 void *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
+#else
+void *getUUIDFromDevicePath(EFI_GUID *aGUID)
+#endif
 {
 	char * uuid = NULL;
 	
+#if USE_DEVICE_PATH
 	if (devicePath != NULL)
 	{
 		while (!IsDevicePathEndType(devicePath) &&
@@ -293,23 +329,16 @@ void *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
 			
 			if (HDDevicePath->SignatureType == SIGNATURE_TYPE_GUID) // 0x02
 			{
-				EFI_GUID * guid = (EFI_GUID*)HDDevicePath->Signature;
+				EFI_GUID * aGUID = (EFI_GUID*)HDDevicePath->Signature;
 				
-				uuid = (void *)malloc(37);
-				
-				// Function efi_guid_unparse_upper() in efi/efi_tables.c
-				sprintf(uuid, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-						guid->Data1,
-						guid->Data2,
-						guid->Data3,
-						guid->Data4[0], guid->Data4[1],
-						guid->Data4[2], guid->Data4[3],
-						guid->Data4[4], guid->Data4[5],
-						guid->Data4[6], guid->Data4[7]);
+				convertEFIGUIDToString(aGUID, &uuid);
 			}
 		}
 	}
-	
+#else
+	convertEFIGUIDToString(aGUID, &uuid);
+#endif
+
 	return uuid;
 }
 
@@ -319,29 +348,28 @@ void *getUUIDFromDevicePath(EFI_DEVICE_PATH_PROTOCOL *devicePath)
 
 char * getStartupDiskUUID(char * aDataPtr)
 {
-	char * targetDiskUUID = NULL;
-	
+	char * startupDiskUUID = NULL;
+
 	unsigned char * decodedData = NULL;
-	
+
 	int rc = base64Decode(aDataPtr, &decodedData);
-	
+
 	if ((rc == 75) && (decodedData != NULL))
 	{
+#if USE_DEVICE_PATH
 		EFI_DEVICE_PATH_PROTOCOL * dp = (EFI_DEVICE_PATH_PROTOCOL *) decodedData;
-			
-		char * uuid = getUUIDFromDevicePath(dp);
-			
-		if (uuid)
-		{
-			targetDiskUUID = uuid;
-		}
-			
-		dp = NULL;
+
+		startupDiskUUID = getUUIDFromDevicePath(dp);
+#else
+		EFI_GUID * guid = (EFI_GUID *) (decodedData + 52);
+
+		convertEFIGUIDToString(guid, &startupDiskUUID);
+#endif
 	}
-		
+
 	free(decodedData);
-	
-	return targetDiskUUID;
+
+	return startupDiskUUID;
 }
 
 //==============================================================================

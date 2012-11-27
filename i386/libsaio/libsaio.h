@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  * Updates:
- *  		- STATE_SUCCESS	moved from boot.h (PikerAlpha, November 2012)
+ *			- STATE_SUCCESS	moved from boot.h (PikerAlpha, November 2012)
  *
  */
 

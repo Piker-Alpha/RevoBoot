@@ -43,6 +43,7 @@ static inline void outi(int port, int index, int val)
 
 
 //==============================================================================
+
 static inline void outib(int port, int index, int val)
 {
     outb (port, index);

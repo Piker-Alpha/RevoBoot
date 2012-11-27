@@ -113,7 +113,7 @@ static void SwapFinderInfo(FndrFileInfo *dst, FndrFileInfo *src)
 
 void HFSFree(CICell ih)
 {
-	if(gCurrentIH == ih)
+	if (gCurrentIH == ih)
 	{
 		gCurrentIH = 0;
 	}

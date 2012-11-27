@@ -65,90 +65,123 @@
  *      Removed dependency on _ctype_ by static versions of isupper()...
  *      Added support for "0b101..." binary constants.
  *      Commented out references to errno.
+ * 
+ * Updates:
+ *			- Layout and other readability improvements (PikerAlpha, November 2012).
+ *			- Commented out references to errno removed (PikerAlpha, November 2012).
+ *			- Unused #include libsa.h removed (PikerAlpha, November 2012).
+ *			- Dependancy on <limits.h> removed (PikerAlpha, November 2012).
+ *
  */
  
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)strtol.c	5.4 (Berkeley) 2/23/91";
-#endif /* LIBC_SCCS and not lint */
 
-#include "libsa.h"
-#include <limits.h>
+#define	LONG_MAX	2147483647L				/* max signed long */
+#define	LONG_MIN	(-2147483647L-1)		/* min signed long */
 
-static inline int
-isupper(char c)
+#define	ULONG_MAX	0xffffffffUL			/* max unsigned long */
+#define	ULLONG_MAX	0xffffffffffffffffULL	/* max unsigned long long */
+
+#define	LLONG_MAX	0x7fffffffffffffffLL	/* max signed long long */
+
+#define	UQUAD_MAX	ULLONG_MAX
+#define	QUAD_MAX	LLONG_MAX
+
+
+//==========================================================================
+
+static inline int isupper(char c)
 {
-    return (c >= 'A' && c <= 'Z');
-}
-
-static inline int
-islower(char c)
-{
-    return (c >= 'a' && c <= 'z');
-}
-
-static inline int
-isalpha(char c)
-{
-    return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
-}
-
-static inline int
-isspace(char c)
-{
-    return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
-}
-
-static inline int
-isdigit(char c)
-{
-    return (c >= '0' && c <= '9');
+	return (c >= 'A' && c <= 'Z');
 }
 
 
-/*
+//==========================================================================
+
+static inline int islower(char c)
+{
+	return (c >= 'a' && c <= 'z');
+}
+
+
+//==========================================================================
+
+static inline int isalpha(char c)
+{
+	return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
+}
+
+
+//==========================================================================
+
+static inline int isspace(char c)
+{
+	return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
+}
+
+
+//==========================================================================
+
+static inline int isdigit(char c)
+{
+	return (c >= '0' && c <= '9');
+}
+
+
+/*==========================================================================
  * Convert a string to a long integer.
  *
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-long
-strtol(nptr, endptr, base)
-	const char *nptr;
-	char **endptr;
-	register int base;
+
+long strtol(const char *nptr, char **endptr, register int base)
 {
 	register const char *s = nptr;
-	register unsigned long acc;
+
 	register int c;
-	register unsigned long cutoff;
 	register int neg = 0, any, cutlim;
+
+	register unsigned long acc;
+	register unsigned long cutoff;
 
 	/*
 	 * Skip white space and pick up leading +/- sign if any.
 	 * If base is 0, allow 0x for hex and 0 for octal, else
 	 * assume decimal; if base is already 16, allow 0x.
 	 */
-	do {
+
+	do
+	{
 		c = *s++;
 	} while (isspace(c));
-	if (c == '-') {
+
+	if (c == '-')
+	{
 		neg = 1;
 		c = *s++;
-	} else if (c == '+')
+	}
+	else if (c == '+')
+	{
 		c = *s++;
-	if ((base == 0 || base == 16) &&
-	    c == '0' && (*s == 'x' || *s == 'X')) {
+	}
+
+	if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X'))
+	{
 		c = s[1];
 		s += 2;
 		base = 16;
-	} else if ((base == 0 || base == 2) &&
-	    c == '0' && (*s == 'b' || *s == 'B')) {
+	}
+	else if ((base == 0 || base == 2) && c == '0' && (*s == 'b' || *s == 'B'))
+	{
 		c = s[1];
 		s += 2;
 		base = 2;
 	}
+
 	if (base == 0)
+	{
 		base = c == '0' ? 8 : 10;
+	}
 
 	/*
 	 * Compute the cutoff value between legal numbers and illegal
@@ -167,175 +200,269 @@ strtol(nptr, endptr, base)
 	 * Set any if any `digits' consumed; make it negative to indicate
 	 * overflow.
 	 */
+
 	cutoff = neg ? -(unsigned long)LONG_MIN : LONG_MAX;
 	cutlim = cutoff % (unsigned long)base;
 	cutoff /= (unsigned long)base;
-	for (acc = 0, any = 0;; c = *s++) {
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
 		if (isdigit(c))
+		{
 			c -= '0';
+		}
 		else if (isalpha(c))
+		{
 			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		}
 		else
+		{
 			break;
+		}
+
 		if (c >= base)
+		{
 			break;
+		}
+
 		if ((any < 0 || acc > cutoff) || (acc == cutoff && c > cutlim))
+		{
 			any = -1;
-		else {
+		}
+		else
+		{
 			any = 1;
 			acc *= base;
 			acc += c;
 		}
 	}
-	if (any < 0) {
+
+	if (any < 0)
+	{
 		acc = neg ? LONG_MIN : LONG_MAX;
-//		errno = ERANGE;
-	} else if (neg)
+	}
+	else if (neg)
+	{
 		acc = -acc;
+	}
+
 	if (endptr != 0)
+	{
 		*endptr = (char *)(any ? s - 1 : nptr);
+	}
+
 	return (acc);
 }
 
 
-/*
+/*==========================================================================
  * Convert a string to an unsigned long integer.
  *
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-unsigned long
-strtoul(nptr, endptr, base)
-	const char *nptr;
-	char **endptr;
-	register int base;
+unsigned long strtoul(const char *nptr, char **endptr, register int base)
 {
 	register const char *s = nptr;
-	register unsigned long acc;
+
 	register int c;
-	register unsigned long cutoff;
 	register int neg = 0, any, cutlim;
+
+	register unsigned long acc;
+	register unsigned long cutoff;
 
 	/*
 	 * See strtol for comments as to the logic used.
 	 */
-	do {
+	do
+	{
 		c = *s++;
 	} while (isspace(c));
-	if (c == '-') {
+
+	if (c == '-')
+	{
 		neg = 1;
 		c = *s++;
-	} else if (c == '+')
+	}
+	else if (c == '+')
+	{
 		c = *s++;
-	if ((base == 0 || base == 16) &&
-	    c == '0' && (*s == 'x' || *s == 'X')) {
+	}
+
+	if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X'))
+	{
 		c = s[1];
 		s += 2;
 		base = 16;
-	} else if ((base == 0 || base == 2) &&
-	    c == '0' && (*s == 'b' || *s == 'B')) {
+	}
+	else if ((base == 0 || base == 2) && c == '0' && (*s == 'b' || *s == 'B'))
+	{
 		c = s[1];
 		s += 2;
 		base = 2;
 	}
+
 	if (base == 0)
+	{
 		base = c == '0' ? 8 : 10;
+	}
+
 	cutoff = (unsigned long)ULONG_MAX / (unsigned long)base;
 	cutlim = (unsigned long)ULONG_MAX % (unsigned long)base;
-	for (acc = 0, any = 0;; c = *s++) {
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
 		if (isdigit(c))
+		{
 			c -= '0';
+		}
 		else if (isalpha(c))
+		{
 			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		}
 		else
+		{
 			break;
+		}
+
 		if (c >= base)
+		{
 			break;
+		}
+
 		if ((any < 0 || acc > cutoff) || (acc == cutoff && c > cutlim))
+		{
 			any = -1;
-		else {
+		}
+		else
+		{
 			any = 1;
 			acc *= base;
 			acc += c;
 		}
 	}
-	if (any < 0) {
+
+	if (any < 0)
+	{
 		acc = ULONG_MAX;
-//		errno = ERANGE;
-	} else if (neg)
+	}
+	else if (neg)
+	{
 		acc = -acc;
+	}
+
 	if (endptr != 0)
+	{
 		*endptr = (char *)(any ? s - 1 : nptr);
+	}
+
 	return (acc);
 }
 
-/*
+
+/*==========================================================================
  * Convert a string to an unsigned quad integer.
  *
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-unsigned long long
-strtouq(nptr, endptr, base)
-	const char *nptr;
-	char **endptr;
-	register int base;
+
+unsigned long long strtouq(const char *nptr, char **endptr, register int base)
 {
 	register const char *s = nptr;
-	register unsigned long long acc;
+
 	register int c;
-	register unsigned long long qbase, cutoff;
 	register int neg, any, cutlim;
+
+	register unsigned long long acc;
+	register unsigned long long qbase, cutoff;
 
 	/*
 	 * See strtoq for comments as to the logic used.
 	 */
 	s = nptr;
-	do {
+
+	do
+	{
 		c = *s++;
 	} while (isspace(c));
-	if (c == '-') {
+
+	if (c == '-')
+	{
 		neg = 1;
 		c = *s++;
-	} else { 
-		neg = 0;
-		if (c == '+')
-			c = *s++;
 	}
-	if ((base == 0 || base == 16) &&
-	    c == '0' && (*s == 'x' || *s == 'X')) {
+	else
+	{
+		neg = 0;
+
+		if (c == '+')
+		{
+			c = *s++;
+		}
+	}
+
+	if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X'))
+	{
 		c = s[1];
 		s += 2;
 		base = 16;
 	}
+
 	if (base == 0)
+	{
 		base = c == '0' ? 8 : 10;
+	}
+
 	qbase = (unsigned)base;
 	cutoff = (unsigned long long)UQUAD_MAX / qbase;
 	cutlim = (unsigned long long)UQUAD_MAX % qbase;
-	for (acc = 0, any = 0;; c = *s++) {
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
 		if (isdigit(c))
+		{
 			c -= '0';
+		}
 		else if (isalpha(c))
+		{
 			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		}
 		else
+		{
 			break;
+		}
+
 		if (c >= base)
+		{
 			break;
+		}
+
 		if ((any < 0 || acc > cutoff) || (acc == cutoff && c > cutlim))
+		{
 			any = -1;
-		else {
+		}
+		else
+		{
 			any = 1;
 			acc *= qbase;
 			acc += c;
 		}
 	}
-	if (any < 0) {
+
+	if (any < 0)
+	{
 		acc = UQUAD_MAX;
-//		errno = ERANGE;
-	} else if (neg)
+	}
+	else if (neg)
+	{
 		acc = -acc;
+	}
+
 	if (endptr != 0)
+	{
 		*endptr = (char *)(any ? s - 1 : nptr);
+	}
+
 	return (acc);
 }

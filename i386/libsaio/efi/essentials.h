@@ -25,15 +25,18 @@
  * All rights reserved.
  *
  * Updates:
- *		- Stand alone support for base64.c added (PikerAlpha, November 2012)
+ *			- Stand alone support for base64.c added (PikerAlpha, November 2012).
+ *
  */
 
 #ifndef __LIBSAIO_EFI_ESSENTIALS_H
 #define __LIBSAIO_EFI_ESSENTIALS_H
 
+
 #ifdef TARGET_MODEL
 	#include "../boot2/debug.h"
 #endif
+
 
 typedef void      VOID;
 
@@ -208,4 +211,3 @@ typedef struct
 #define NextDevicePathNode(a)			( (EFI_DEVICE_PATH_PROTOCOL *) ( ((EFI_INT8 *) (a)) + DevicePathNodeLength(a)))
 
 #endif /* !__LIBSAIO_EFI_ESSENTIALS_H */
-

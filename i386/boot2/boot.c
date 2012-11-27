@@ -218,17 +218,22 @@ void boot(int biosdev)
 	initPartitionChain();
 #endif
 
-#if DISK_TARGET_SUPPORT
+#if STARTUP_DISK_SUPPORT
+	/*
+	 * sudo nano /etc/rc.shutdown.local
+	 * #!/bin/sh
+	 * /usr/sbin/nvram -x -p > /Extra/NVRAM/nvramStorage.plist
+	 */
 	config_file_t	nvramStorage;
 	const char * path = "/Extra/NVRAM/nvramStorage.plist";
 	
 	if (loadConfigFile(path, &nvramStorage) == STATE_SUCCESS)
 	{
-		_BOOT_DEBUG_DUMP("nvramStorage.plist located\n");
+		_BOOT_DEBUG_DUMP("nvramStorage.plist found\n");
 
 		if (getValueForConfigTableKey(&nvramStorage, "efi-boot-device-data", &val, &length))
 		{
-			_BOOT_DEBUG_DUMP("Key 'efi-boot-device-data' located %d\n", length);
+			_BOOT_DEBUG_DUMP("Key 'efi-boot-device-data' found %d\n", length);
 
 			char * uuid = getStartupDiskUUID((char *)val);
 
@@ -298,8 +303,8 @@ void boot(int biosdev)
 					gBootMode = kBootModeSafe;
 				}
 
-				// Is 'boot-uuid=<value>' specified as kernel flag?
-				if (!rootUUID && (getValueForBootKey(kernelFlags, kBootUUIDKey, &val, &length) && length == 36))
+				// Is rootUUID still empty and 'boot-uuid=<value>' specified as kernel flag?
+				if (rootUUID[0] == '\0' && (getValueForBootKey(kernelFlags, kBootUUIDKey, &val, &length) && length == 36))
 				{
 					_BOOT_DEBUG_DUMP("Target boot-uuid=<%s>\n", val);
 
@@ -346,7 +351,7 @@ void boot(int biosdev)
 	// Was a target drive (per UUID) specified in com.apple.Boot.plist?
 	if (rootUUID[0] == '\0')
 	{
-		_BOOT_DEBUG_DUMP("No UUID specified in com.apple.Boot.plist\n");
+		_BOOT_DEBUG_DUMP("No NVRAM-Startup Disk / rd=uuid bootuuid= in com.apple.Boot.plist\n");
 
 		// No, so are we booting from a System Volume?
 		if (gPlatform.BootVolume->flags & kBVFlagSystemVolume)
