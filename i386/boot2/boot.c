@@ -211,38 +211,42 @@ void boot(int biosdev)
 
 #if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0)
 	/*
-	 * We can only make this call here when static EFI is included from
-	 * RevoBoot/i386/config/EFI/[MacModelNN.h] Not when the data is read
-	 * from: /Extra/ because then: RevoBoot/i386/libsaio/platform.c calls it.
+	 * We can only make this call here when static EFI is included from:
+	 * RevoBoot/i386/config/EFI/[MacModelNN.h] Not when the data is read from:
+	 * /Extra/EFI/ because then RevoBoot/i386/libsaio/platform.c makes the call.
 	 */
 	initPartitionChain();
 #endif
 
 #if STARTUP_DISK_SUPPORT
-	/*
-	 * sudo nano /etc/rc.shutdown.local
-	 * #!/bin/sh
-	 * /usr/sbin/nvram -x -p > /Extra/NVRAM/nvramStorage.plist
-	 */
-	config_file_t	nvramStorage;
-	const char * path = "/Extra/NVRAM/nvramStorage.plist";
-	
-	if (loadConfigFile(path, &nvramStorage) == STATE_SUCCESS)
+	// Booting from a Recovery HD ignores the Startup Disk setting (as it should).
+	if (gPlatform.BootRecoveryHD == false)
 	{
-		_BOOT_DEBUG_DUMP("nvramStorage.plist found\n");
-
-		if (getValueForConfigTableKey(&nvramStorage, "efi-boot-device-data", &val, &length))
+		/*
+		 * sudo nano /etc/rc.shutdown.local
+		 * #!/bin/sh
+		 * /usr/sbin/nvram -x -p > /Extra/NVRAM/nvramStorage.plist
+		 */
+		config_file_t	nvramStorage;
+		const char * path = "/Extra/NVRAM/nvramStorage.plist";
+	
+		if (loadConfigFile(path, &nvramStorage) == STATE_SUCCESS)
 		{
-			_BOOT_DEBUG_DUMP("Key 'efi-boot-device-data' found %d\n", length);
+			_BOOT_DEBUG_DUMP("nvramStorage.plist found\n");
 
-			char * uuid = getStartupDiskUUID((char *)val);
-
-			if (uuid)
+			if (getValueForConfigTableKey(&nvramStorage, "efi-boot-device-data", &val, &length))
 			{
-				_BOOT_DEBUG_DUMP("GUID: %s\n", uuid);
-				_BOOT_DEBUG_SLEEP(1);
+				_BOOT_DEBUG_DUMP("Key 'efi-boot-device-data' found %d\n", length);
 
-				strlcpy(rootUUID, uuid, 37);
+				char * uuid = getStartupDiskUUID((char *)val);
+
+				if (uuid)
+				{
+					_BOOT_DEBUG_DUMP("GUID: %s\n", uuid);
+					_BOOT_DEBUG_SLEEP(1);
+
+					strlcpy(rootUUID, uuid, 37);
+				}
 			}
 		}
 	}
@@ -250,7 +254,7 @@ void boot(int biosdev)
 	{
 		_BOOT_DEBUG_DUMP("Warning: unable to locate nvramStorage.plist\n");
 	}
-#endif // #if DISK_TARGET_SUPPORT
+#endif // #if STARTUP_DISK_SUPPORT
 
 	#define loadCABootPlist() loadSystemConfig(&bootInfo->bootConfig)
 
