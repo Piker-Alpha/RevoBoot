@@ -53,6 +53,8 @@
 	#define PROBOARD	0
 #endif
 
+#define IOSERVICE_PLATFORM_FEATURE	0x0000000000000001
+
 //------------------------------------------------------------------------------
 
 struct SMBStructure
@@ -69,24 +71,26 @@ struct SMBStructure
 
 struct SMBStructure requiredStructures[] =
 {
-	{ kSMBTypeBIOSInformation		/*   0 */ ,	 0,					5,					false,	0	},
-	{ kSMBTypeSystemInformation		/*   1 */ ,	 6,					10,					false,	0	},
-	{ kSMBTypeBaseBoard				/*   2 */ ,	(11 + PROBOARD),	(12 + PROBOARD),	false,	0	},
-	{ kSMBUnused					/*   3 */ ,	 0,					0,					false,	0	},
-	{ kSMBTypeProcessorInformation	/*   4 */ ,	(13 + PROBOARD),	(14 + PROBOARD),	true,	0	},
-	{ kSMBUnused					/*   5 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*   6 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*   7 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*   8 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*   9 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  10 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  11 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  12 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  13 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  14 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  15 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused					/*  16 */ ,	 0,					0,					false,	0	},
-	{ kSMBTypeMemoryDevice			/*  17 */ ,	(15 + PROBOARD),	(19 + PROBOARD),	true,	0	}
+	{ kSMBTypeBIOSInformation			/*   0 */ ,	 0,					5,					false,	0	},
+	{ kSMBTypeSystemInformation			/*   1 */ ,	 6,					10,					false,	0	},
+	{ kSMBTypeBaseBoard					/*   2 */ ,	(11 + PROBOARD),	(12 + PROBOARD),	false,	0	},
+	{ kSMBUnused						/*   3 */ ,	 0,					0,					false,	0	},
+	{ kSMBTypeProcessorInformation		/*   4 */ ,	(13 + PROBOARD),	(14 + PROBOARD),	true,	0	},
+	{ kSMBUnused						/*   5 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*   6 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*   7 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*   8 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*   9 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  10 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  11 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  12 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  13 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  14 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  15 */ ,	 0,					0,					false,	0	},
+	{ kSMBUnused						/*  16 */ ,	 0,					0,					false,	0	},
+	{ kSMBTypeMemoryDevice				/*  17 */ ,	(15 + PROBOARD),	(20 + PROBOARD),	true,	0	},
+	{ kSMBUnused						/*  18 */ ,	 0,					0,					false,	0	},
+	{ kSMBTypeMemoryArrayMappedAddress	/*	19 */ ,	 -1,				-1,					false,	0	}
 };
 
 
@@ -158,7 +162,15 @@ struct SMBProperty SMBProperties[] =
 	{ kSMBTypeProcessorInformation,	0x14,	kSMBWord,		.getSMBWord		= getCPUFrequency			},
 	
 	//----------------------------------------------------------------------------------------------------
-	
+
+#if DYNAMIC_RAM_OVERRIDE_ERROR_HANDLE
+	// Handle or instance number associated with any error that was previously detected for the device.
+	// If the system does not provide the error information structure, then this field contains FFFEh;
+	// otherwise this field contains either FFFFh (if no error was detected) or the handle (number) of
+	// the error information structure. See 7.18.4 and 7.34 of the SMBIOS specification.
+	{ kSMBTypeMemoryDevice,			0x06,	kSMBWord,		.plainData		= 0xFFFE					},
+#endif
+
 #if DYNAMIC_RAM_OVERRIDE_SIZE
 	{ kSMBTypeMemoryDevice,			0x0c,	kSMBWord,		.getSMBWord		= getRAMSize				},
 #endif
@@ -280,8 +292,8 @@ void setupSMBIOS(void)
 		newtablesPtr += 8;
 	}
 
-#if (DYNAMIC_RAM_OVERRIDE_SIZE || DYNAMIC_RAM_OVERRIDE_TYPE || DYNAMIC_RAM_OVERRIDE_FREQUENCY)
-	requiredStructures[17].stop = (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
+#if (DYNAMIC_RAM_OVERRIDE_ERROR_HANDLE || DYNAMIC_RAM_OVERRIDE_SIZE || DYNAMIC_RAM_OVERRIDE_TYPE || DYNAMIC_RAM_OVERRIDE_FREQUENCY)
+	requiredStructures[17].stop = PROBOARD + (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
 #endif
 
 	//------------------------------------------------------------------------------
@@ -292,7 +304,7 @@ void setupSMBIOS(void)
 		struct SMBStructHeader * factoryHeader = (struct SMBStructHeader *) structurePtr;
 		SMBByte currentStructureType = factoryHeader->type;
 
-		if ((currentStructureType > 17) || (requiredStructures[currentStructureType].type == kSMBUnused))
+		if ((currentStructureType > 19) || (requiredStructures[currentStructureType].type == kSMBUnused))
 		{
 			// _SMBIOS_DEBUG_DUMP("Dropping SMBIOS structure: %d\n", currentStructureType);
 
@@ -408,13 +420,21 @@ void setupSMBIOS(void)
 		{
 			const char * str = "";
 
-#if (DEBUG_SMBIOS & 2)
 			if (SMBProperties[j].type != currentStructureType)
 			{
-				printf("SMBIOS Patcher Error: Turbo Index [%d != %d] Mismatch!\n", SMBProperties[j].type, currentStructureType);
+#if (DEBUG_SMBIOS & 2)
+				/*
+				 * When SMBProperties[j].start and SMBProperties[j].stop are set to -1
+				 * then there isn't anything to add/replace, but that is not an error.
+				 */
+				if ((SMBProperties[j].start > -1) && (SMBProperties[j].stop > -1))
+				{
+					printf("SMBIOS Patcher Error: Turbo Index [%d != %d] Mismatch!\n", SMBProperties[j].type, currentStructureType);
+				}
+#endif
 				continue;
 			}
-#endif
+
 			switch (SMBProperties[j].valueType)
 			{
 				case kSMBByte:
@@ -450,7 +470,7 @@ void setupSMBIOS(void)
 					{
 						memcpy(newtablesPtr, str, size);
 						newtablesPtr[size]	= 0;
-						newtablesPtr		+= size + 1;
+						newtablesPtr		+= (size + 1);
 						*((uint8_t *)(((char *)newHeader) + SMBProperties[j].offset)) = ++numberOfStrings;
 					}
 					break;
@@ -469,13 +489,32 @@ void setupSMBIOS(void)
 	}
 
 	//------------------------------------------------------------------------------
+	// Add Platform Feature structure (Apple Specific Type 0x85/133).
+	//
+	// Note: AppleSMBIOS.kext will use this data for: IOService:/platform-feature
+
+	newHeader = (struct SMBStructHeader *) newtablesPtr;
+  
+	newHeader->type		= kSMBTypeOemPlatformFeature;
+	newHeader->length	= 0x0C;
+	newHeader->handle	= ++handle;
+  
+	*((uint64_t *)(((char *)newHeader) + 4)) = IOSERVICE_PLATFORM_FEATURE;
+  
+	// Update EPS
+	newEPS->dmi.tableLength += 0x0E; // 0x0C + two (00 00)
+	newEPS->dmi.structureCount++;
+  
+	newtablesPtr += 0x0E;
+
+	//------------------------------------------------------------------------------
 	// Add EndOfTable structure.
 
 	newHeader = (struct SMBStructHeader *) newtablesPtr;
 
 	newHeader->type		= kSMBTypeEndOfTable;
 	newHeader->length	= 4;
-	newHeader->handle	= ++handle;
+	newHeader->handle	= 0xFFFD; // ++handle;
 
 	newtablesPtr += 6;
 
