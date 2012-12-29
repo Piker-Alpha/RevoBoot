@@ -162,8 +162,9 @@ unsigned long getQPISpeed(uint64_t aFSBFrequency)
 
 void initCPUStruct(void)
 {
-	bool SandyBridge	= false;
-	bool IvyBridge		= false;
+	// bool SandyBridge	= false;
+	// bool IvyBridge	= false;
+	uint8_t		CoreBridgeType = 0;
 
 	uint8_t		maxcoef, maxdiv, currcoef, currdiv;
 
@@ -301,11 +302,11 @@ void initCPUStruct(void)
 
 	//--------------------------------------------------------------------------
 	// Setup features.
-	gPlatform.CPU.Features |= getCachedCPUID(LEAF_1, ecx);
-	gPlatform.CPU.Features |= getCachedCPUID(LEAF_1, edx);
+	// gPlatform.CPU.Features |= getCachedCPUID(LEAF_1, ecx);
+	// gPlatform.CPU.Features |= getCachedCPUID(LEAF_1, edx);
 	// Add extended features.
-	gPlatform.CPU.Features |= getCachedCPUID(LEAF_81, ecx);
-	gPlatform.CPU.Features |= getCachedCPUID(LEAF_81, edx);
+	// gPlatform.CPU.Features |= getCachedCPUID(LEAF_81, ecx);
+	// gPlatform.CPU.Features |= getCachedCPUID(LEAF_81, edx);
 
 	fsbFrequency = 0;
 	cpuFrequency = 0;
@@ -322,24 +323,32 @@ void initCPUStruct(void)
 			
 			switch (gPlatform.CPU.Model)
 			{
-				case CPU_MODEL_SB_CORE:	
-				case CPU_MODEL_SB_JAKETOWN:
-					SandyBridge = true;
-
 				case CPU_MODEL_DALES_32NM:
-				case CPU_MODEL_WESTMERE:
-				case CPU_MODEL_WESTMERE_EX:
+					CoreBridgeType = DALES_BRIDGE;
 					/*
 					 * This should be the same as Nehalem but an A0 silicon bug returns
 					 * invalid data in the top 12 bits. Hence, we use only bits [19..16]
-					 * rather than [31..16] for core count - which actually can't exceed 8. 
-					 */		
+					 * rather than [31..16] for core count - which actually can't exceed 8.
+					 */
+					hiBit = 19;
+					break;
+
+				case CPU_MODEL_SB_CORE:
+				case CPU_MODEL_SB_JAKETOWN:
+					CoreBridgeType = SANDY_BRIDGE;
+					hiBit = 19;
+					break;
+
+				case CPU_MODEL_WESTMERE:
+				case CPU_MODEL_WESTMERE_EX:
 					hiBit = 19;
 					break;
 
 				case CPU_MODEL_IB_CORE:
 				case CPU_MODEL_IB_CORE_EX:
-					IvyBridge = true;
+					CoreBridgeType = IVY_BRIDGE;
+					hiBit = 31;
+					break;
 
 				case CPU_MODEL_NEHALEM:
 				case CPU_MODEL_NEHALEM_EX:
@@ -366,15 +375,15 @@ void initCPUStruct(void)
 				// Get 'cpu-type' for our SMBIOS patcher.
 				if (strstr(gPlatform.CPU.BrandString, "Core(TM) i7"))
 				{
-					gPlatform.CPU.Type = 0x701;		// Core i7
+					gPlatform.CPU.Type = (0x700 + CoreBridgeType);		// Core i7
 				}
 				else if (strstr(gPlatform.CPU.BrandString, "Core(TM) i5"))
 				{
-					gPlatform.CPU.Type = 0x601;		// Core i5
+					gPlatform.CPU.Type = (0x600 + CoreBridgeType);		// Core i5
 				}
 				else if (strstr(gPlatform.CPU.BrandString, "Core(TM) i3"))
 				{
-					gPlatform.CPU.Type = 0x901;		// Core i3
+					gPlatform.CPU.Type = (0x900 + CoreBridgeType);		// Core i3
 				}
 
 				msr = rdmsr64(MSR_PLATFORM_INFO);
@@ -388,9 +397,9 @@ void initCPUStruct(void)
 					requestMaxTurbo(maxBusRatio);
 				}
 
-				if (SandyBridge || IvyBridge)
+				if (CoreBridgeType) // (SandyBridge || IvyBridge)
 				{
-					gPlatform.CPU.Type |= 0x02; // Note: Use 0x01 here for the new Macmini5,1 (to get cpu-type = 0x602).
+					// gPlatform.CPU.Type += CoreBridgeType;
 
 #if AUTOMATIC_SSDT_PR_CREATION || DEBUG_CPU_TDP
 					gPlatform.CPU.TDP = getTDP();
@@ -476,7 +485,7 @@ void initCPUStruct(void)
 		}
 	}
 
-	if (!fsbFrequency && !SandyBridge && !IvyBridge)
+	if (!fsbFrequency && !CoreBridgeType) // !SandyBridge && !IvyBridge)
 	{
 		fsbFrequency = (DEFAULT_FSB * 1000);
 		cpuFrequency = tscFrequency;
@@ -523,7 +532,7 @@ void initCPUStruct(void)
 
 	_CPU_DEBUG_DUMP("CPU: NumCores/NumThreads   : %d/%d\n",				gPlatform.CPU.NumCores, gPlatform.CPU.NumThreads);
 
-	if (SandyBridge)
+	if (CoreBridgeType) // SandyBridge)
 	{
 		_CPU_DEBUG_DUMP("CPU: Min/Max busratio      : %d/%d\n",			gPlatform.CPU.MinBusRatio, gPlatform.CPU.MaxBusRatio);
 	}
