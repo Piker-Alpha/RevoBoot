@@ -182,7 +182,9 @@ static SMBWord getRAMSize(void)
 
 static SMBByte getRAMType(void)
 {
+#if (DEBUG_SMBIOS == 2)
 	_SMBIOS_DEBUG_DUMP("In getRAMType() = %s\n", SMBMemoryDeviceTypes[DYNAMIC_RAM_OVERRIDE_TYPE]);
+#endif
 
 	return DYNAMIC_RAM_OVERRIDE_TYPE;
 }
@@ -309,6 +311,7 @@ static const char * getBIOSDate(void)
 	size_t len = strlen(smbBIOSVersion);
 
 	char biosDate[len];
+	bzero(biosDate, len);
 
 	strncpy(biosDate,		smbBIOSVersion + (len -  8), 2);
 	strncpy(biosDate + 2,	"/", 1);
@@ -316,7 +319,7 @@ static const char * getBIOSDate(void)
 	strncpy(biosDate + 5,	"/20", 3);
 	strncpy(biosDate + 8,	smbBIOSVersion + (len -  10), 2);
 
-	biosDate[10] = 0;
+	// biosDate[10] = 0;
 
 	_SMBIOS_DEBUG_DUMP("biosData = %s\n", biosDate);
 	_SMBIOS_DEBUG_SLEEP(5);
