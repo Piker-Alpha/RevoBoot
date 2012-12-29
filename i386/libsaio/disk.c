@@ -64,7 +64,39 @@
 
 #include <IOKit/storage/IOGUIDPartitionScheme.h>
 
+/* Partition map from: IOGUIDPartitionScheme.h
+struct gpt_hdr
+{
+    uint8_t  hdr_sig[8];
+    uint32_t hdr_revision;
+    uint32_t hdr_size;
+    uint32_t hdr_crc_self;
+    uint32_t __reserved;
+    uint64_t hdr_lba_self;
+    uint64_t hdr_lba_alt;
+    uint64_t hdr_lba_start;
+    uint64_t hdr_lba_end;
+    uuid_t   hdr_uuid;
+    uint64_t hdr_lba_table;
+    uint32_t hdr_entries;
+    uint32_t hdr_entsz;
+    uint32_t hdr_crc_table;
+    uint32_t padding;
+}; */
+
 typedef struct gpt_hdr gpt_hdr;
+
+/* Partition map entry from: IOGUIDPartitionScheme.h
+struct gpt_ent
+{
+    uuid_t   ent_type;
+    uuid_t   ent_uuid;
+    uint64_t ent_lba_start;
+    uint64_t ent_lba_end;
+    uint64_t ent_attr;
+    uint16_t ent_name[36];
+}; */
+
 typedef struct gpt_ent gpt_ent;
 
 
@@ -560,7 +592,6 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 #if CORE_STORAGE_SUPPORT
 								bool coreStoragePartition = false;
 #endif
-
 								for (; gptID <= gptCount; gptID++)
 								{
 									gptMap = (gpt_ent *) (buffer + ((gptID - 1) * gptSize));
@@ -570,9 +601,9 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										BVRef bvr = NULL;
 										int bvrFlags = -1;
 #if DEBUG_DISK
-										char uuidString = NULL;
-										convertEFIGUIDToString((EFI_GUID*)gptMap->ent_type, &uuidString);
-										printf("Reading GPT partition %d, type %s\n", gptID, uuidString);
+										char *uuidString = NULL;
+										convertEFIGUIDToString((EFI_GUID*)gptMap->ent_uuid, &uuidString);
+										printf("Partition[%d] UUID: %s\n", gptID, uuidString);
 										sleep(1);
 #endif
 
