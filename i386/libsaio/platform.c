@@ -276,9 +276,10 @@ void initPlatform(int biosDevice)
 	}
 
 	_PLATFORM_DEBUG_DUMP("Static data for %d RAM BANKS used.\n", gPlatform.RAM.SlotCount);
+	_PLATFORM_DEBUG_SLEEP(10);
 #endif
 
-	_PLATFORM_DEBUG_SLEEP(15);
+	_PLATFORM_DEBUG_SLEEP(5);
 
 	initKernelBootConfig();
 
