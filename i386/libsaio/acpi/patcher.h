@@ -284,10 +284,22 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 #if STATIC_FACS_TABLE_INJECTION
 	// Replace the factory FACS table.
 	_ACPI_DEBUG_DUMP("patchedFADT->FIRMWARE_CTRL: 0x%08x\n", patchedFADT->FIRMWARE_CTRL);
-		
-	patchedFADT->FIRMWARE_CTRL = (uint32_t)customTables[FACS].tableAddress;
-	// Zero out this field conform the ACPI specification.
-	patchedFADT->X_FIRMWARE_CTRL = (uint64_t) 0;
+
+	/*
+	 * factoryFADT->FIRMWARE_CTRL is usually non zero on systems with less than 4GB.
+	 */
+	if (factoryFADT->FIRMWARE_CTRL > 0)
+	{
+		// In which case we must use this value
+		patchedFADT->FIRMWARE_CTRL = (uint32_t) customTables[FACS].tableAddress;
+		// And we must zero out this field (conform the ACPI specification).
+		patchedFADT->X_FIRMWARE_CTRL = (uint64_t) 0;
+	}
+	else
+	{
+		patchedFADT->FIRMWARE_CTRL = (uint32_t) 0;
+		patchedFADT->X_FIRMWARE_CTRL = (uint64_t) customTables[FACS].tableAddress;
+	}
 
 	customTables[FACS].table = NULL;
 #endif	// STATIC_FACS_TABLE_INJECTION
