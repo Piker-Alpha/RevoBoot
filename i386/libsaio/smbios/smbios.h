@@ -98,6 +98,7 @@ enum {
     kSMBTypePhysicalMemoryArray         = 16,
     kSMBTypeMemoryDevice                = 17,
     kSMBType32BitMemoryErrorInfo        = 18,
+    kSMBTypeMemoryArrayMappedAddress	= 19,
     kSMBType64BitMemoryErrorInfo        = 33,
 
     kSMBTypeEndOfTable                  = 127,
@@ -107,8 +108,9 @@ enum {
     kSMBTypeMemorySPD                   = 130,
     kSMBTypeOemProcessorType            = 131,
     kSMBTypeOemProcessorBusSpeed        = 132,
+	kSMBTypeOemPlatformFeature          = 133,
 
-	// Structures dropped by Revolution.
+	// Structures dropped by RevoBoot.
 	kSMBUnused							= 255
 };
 
@@ -306,13 +308,12 @@ typedef struct SMBSystemSlot
 //
 // OEM Strings - Type 11 (AppleSMBIOS-43)
 //
+// Note: Used to add IODeviceTree:/rom@0/apple-rom-version (Data)
+//
 
 typedef struct SMBOemStrings
 {
-    SMB_STRUCT_HEADER
-    SMBByte     type;
-    SMBByte     length;
-    SMBWord     handle;
+    SMB_STRUCT_HEADER               // Length is a fixed value (5)
     SMBByte     count;
 } __attribute__((packed)) SMBOemStrings;
 
@@ -385,6 +386,26 @@ typedef struct SMBMemoryDevice
     SMBByte    attributes;
 } __attribute__((packed)) SMBMemoryDevice;
 
+///
+/// Memory Array Mapped Address (Type 19).
+///
+/// This structure provides the address mapping for a Physical Memory Array.
+/// One structure is present for each contiguous address range described.
+///
+typedef struct SMBMemoryArrayMappedAddress
+{
+	SMB_STRUCT_HEADER				// Type 19
+	SMBDWord	StartingAddress;
+	SMBDWord	EndingAddress;
+	SMBWord		MemoryArrayHandle;
+	SMBByte		PartitionWidth;
+	//
+	// Added for SMBIOS v2.7
+	//
+	// SMBQWord	ExtendedStartingAddress;
+	// SMBQWord	ExtendedEndingAddress;
+} __attribute__((packed))  SMBMemoryArrayMappedAddress;
+
 //
 // Firmware Volume Description (Apple Specific - Type 128)
 //
@@ -409,7 +430,7 @@ typedef struct FW_REGION_INFO
 
 typedef struct SMBFirmwareVolume
 {
-    SMB_STRUCT_HEADER               // Type 128
+    SMB_STRUCT_HEADER               // Type 0x80/128
     SMBByte           RegionCount;
     SMBByte           Reserved[3];
     SMBDWord          FirmwareFeatures;
@@ -424,7 +445,7 @@ typedef struct SMBFirmwareVolume
 
 typedef struct SMBMemorySPD
 {
-	SMB_STRUCT_HEADER               // Type 130
+	SMB_STRUCT_HEADER               // Type 0x82/130
 	SMBWord           Type17Handle;
 	SMBWord           Offset;
 	SMBWord           Size;
@@ -432,7 +453,7 @@ typedef struct SMBMemorySPD
 } __attribute__((packed)) SMBMemorySPD;
 
 
-#if DEBUG_SMBIOS
+#if (DEBUG_SMBIOS == 4)
 static const char * SMBMemoryDeviceTypes[] =
 {
     "RAM",          /* 00h  Undefined */
@@ -467,7 +488,7 @@ static const int kSMBMemoryDeviceTypeCount = sizeof(SMBMemoryDeviceTypes) / size
 
 
 //
-// OEM Processor Type (Apple Specific - Type 131)
+// OEM Processor Type (Apple Specific - Type 0x83/131)
 //
 
 struct SMBOemProcessorType
@@ -478,7 +499,7 @@ struct SMBOemProcessorType
 
 
 //
-// OEM Processor Bus Speed (Apple Specific - Type 132)
+// OEM Processor Bus Speed (Apple Specific - Type 0x84/132)
 //
 struct SMBOemProcessorBusSpeed
 {
@@ -488,7 +509,7 @@ struct SMBOemProcessorBusSpeed
 
 
 //
-// OEM Platform Feature (Apple Specific - Type 133 / AppleSMBIOS-43)
+// OEM Platform Feature (Apple Specific - Type 0x85/133 / AppleSMBIOS-43)
 //
 struct SMBOemPlatformFeature
 {
