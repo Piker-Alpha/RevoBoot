@@ -29,7 +29,7 @@
 #include "../smbios.h"
 
 #define DEBUG		0	// Set to 1 for additional (debug) output
-#define VERBOSE		0
+#define VERBOSE		1
 
 #if VERBOSE
 	#define VERBOSE_DUMP(x...) printf(x)
@@ -42,7 +42,7 @@
 
 //==============================================================================
 
-char tableDescriptions[133][36] = 
+char tableDescriptions[134][36] =
 {
 	/*   0 */ "BIOS Information", 
 	/*   1 */ "System Information", 
@@ -102,6 +102,7 @@ char tableDescriptions[133][36] =
 	/* 130 */ "Memory SPD Data",
 	/* 131 */ "OEM Processor Type",
 	/* 132 */ "OEM Processor Bus Speed"
+	/* 133 */ "OEM Platform Feature"
 };
 
 
@@ -351,19 +352,22 @@ int main(int argc, char * argv[])
 				
 				switch (header->type)
 				{
-					case kSMBTypeBIOSInformation:		// Type 0
-					case kSMBTypeSystemInformation:		// Type 1
-					case kSMBTypeBaseBoard:				// Type 2
-					case kSMBTypeProcessorInformation:	// Type 4
-					// case kSMBTypeMemoryModule:		// Type 6
-					// case kSMBTypeSystemSlot:			// Type 9
-					case kSMBTypePhysicalMemoryArray:	// Type 16
-					case kSMBTypeMemoryDevice:			// Type 17
-					case kSMBTypeEndOfTable:			// Type 127
-					case kSMBTypeFirmwareVolume:		// Type 128
-					case kSMBTypeMemorySPD:				// Type 130
-					case kSMBTypeOemProcessorType:		// Type 131
-					case kSMBTypeOemProcessorBusSpeed:	// Type 132
+					case kSMBTypeBIOSInformation:			// Type 0
+					case kSMBTypeSystemInformation:			// Type 1
+					case kSMBTypeBaseBoard:					// Type 2
+					case kSMBTypeProcessorInformation:		// Type 4
+					// case kSMBTypeMemoryModule:			// Type 6
+					// case kSMBTypeSystemSlot:				// Type 9
+					case kSMBTypeOemStrings:				// Type 11
+					case kSMBTypePhysicalMemoryArray:		// Type 16
+					case kSMBTypeMemoryDevice:				// Type 17
+					case kSMBTypeMemoryArrayMappedAddress:	// Type 19
+					case kSMBTypeEndOfTable:				// Type 127
+					case kSMBTypeFirmwareVolume:			// Type 128
+					case kSMBTypeMemorySPD:					// Type 130
+					case kSMBTypeOemProcessorType:			// Type 131
+					case kSMBTypeOemProcessorBusSpeed:		// Type 132
+					case kSMBTypeOemPlatformFeature:		// Type 133
 
 						newStructureCount++;
 						tableStructureStart = tablePtr;
@@ -382,7 +386,8 @@ int main(int argc, char * argv[])
 				tablePtr += header->length;
 				
 				// Skip the unformatted structure area at the end (strings).
-				for (; tableEndPtr > tablePtr + sizeof(SMBStructHeader); tablePtr++)
+				// for (; tableEndPtr > tablePtr + sizeof(SMBStructHeader); tablePtr++)
+				for (; tableEndPtr > tablePtr; tablePtr++)
 				{
 					// Look for a terminating double NULL.
 					if (tablePtr[0] == 0 && tablePtr[1] == 0)

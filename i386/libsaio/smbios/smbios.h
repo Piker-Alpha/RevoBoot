@@ -95,6 +95,7 @@ enum {
     kSMBTypeMemoryModule                =  6,
     kSMBTypeCacheInformation            =  7,
     kSMBTypeSystemSlot                  =  9,
+    kSMBTypeOemStrings                  = 11,
     kSMBTypePhysicalMemoryArray         = 16,
     kSMBTypeMemoryDevice                = 17,
     kSMBType32BitMemoryErrorInfo        = 18,
