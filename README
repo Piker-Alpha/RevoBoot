@@ -38,8 +38,8 @@ We also have a configuration README available at:
 
 https://github.com/RevoGirl/RevoBoot/blob/master/i386/config/README
 
-There's also RevoBuilder (a great tool for first starters) over at:
+There is also a tool called RevoBuilder (great tool for first starters) available over at:
 
 https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder
 
-Note: RevoBuilder is most likeky broken for RevoBoot v.1.5.00 and greater!
+Note: RevoBuilder is most likely broken as of RevoBoot v.1.5.00!
