@@ -192,7 +192,71 @@ typedef struct
 } HARDDRIVE_DEVICE_PATH;
 
 
-// Stuff from EDK2's EfiDevicePath.h
+/*
+ * Stuff from EDK2's EfiDevicePath.h
+ */
+
+//
+// Networking Definitions
+//
+
+typedef struct
+{
+	EFI_UINT8 Addr[4];
+} EFI_IPv4_ADDRESS;
+
+typedef struct
+{
+	EFI_UINT8 Addr[16];
+} EFI_IPv6_ADDRESS;
+
+typedef struct
+{
+	EFI_UINT8 Addr[32];
+} EFI_MAC_ADDRESS;
+
+typedef struct
+{
+	EFI_DEVICE_PATH_PROTOCOL		Header;
+	EFI_UINT16						HBAPortNumber;
+	EFI_UINT16						PortMultiplierPortNumber;
+	EFI_UINT16						Lun;
+} SATA_DEVICE_PATH;
+
+typedef struct
+{
+	EFI_DEVICE_PATH_PROTOCOL		Header;
+	EFI_MAC_ADDRESS					MacAddress;
+	EFI_UINT8						IfType;
+} MAC_ADDR_DEVICE_PATH;
+
+typedef struct
+{
+	EFI_DEVICE_PATH_PROTOCOL		Header;
+	EFI_IPv4_ADDRESS				LocalIpAddress;
+	EFI_IPv4_ADDRESS				RemoteIpAddress;
+	EFI_UINT16						LocalPort;
+	EFI_UINT16						RemotePort;
+	EFI_UINT16						Protocol;
+	EFI_BOOLEAN						StaticIpAddress;
+} IPv4_DEVICE_PATH;
+
+typedef struct
+{
+	EFI_DEVICE_PATH_PROTOCOL		Header;
+	EFI_IPv6_ADDRESS				LocalIpAddress;
+	EFI_IPv6_ADDRESS				RemoteIpAddress;
+	EFI_UINT16						LocalPort;
+	EFI_UINT16						RemotePort;
+	EFI_UINT16						Protocol;
+	EFI_BOOLEAN						StaticIpAddress;
+} IPv6_DEVICE_PATH;
+
+
+#define MSG_SATA_DP						0x12
+#define MSG_MAC_ADDR_DP					0x0b
+#define MSG_IPv4_DP						0x0c
+#define MSG_IPv6_DP						0x0d
 
 #define MEDIA_HARDDRIVE_DP				0x01
 #define MEDIA_DEVICE_PATH				0x04
