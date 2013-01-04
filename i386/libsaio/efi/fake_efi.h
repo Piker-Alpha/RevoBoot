@@ -121,6 +121,8 @@ extern EFI_STATUS addConfigurationTable(EFI_GUID const *pGuid, void * table, cha
 		{
 			DT__AddProperty(tableNode, "alias", strlen(tableAlias) + 1, (char *)tableAlias);
 		}
+      
+		gPlatform.EFI.SystemTable->NumberOfTableEntries++;
 	}
 	
 	return EFI_SUCCESS;
@@ -134,13 +136,6 @@ void setupEFITables(void)
 {
 	// return instruction.
 	static uint8_t const VOIDRET_INSTRUCTIONS[] = { 0xc3 };
-
-	// movl $0x80000003,%eax; ret
-	// static uint8_t const UNSUPPORTEDRET_INSTRUCTIONS[] = { 0xb8, 0x03, 0x00, 0x00, 0x80, 0xc3 };
-
-	// movabs $0x8000000000000003,%rax
-	// ret
-	static uint8_t const UNSUPPORTEDRET_INSTRUCTIONS[] = { 0x48, 0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xc3 };
 
 	// Occupying a single 4 KB memory block (wired page) to prevent multiple smaller allocations.
 	struct EFI_Container
@@ -250,7 +245,7 @@ void setupEFITables(void)
      * things like efiRuntimeServices* and what not.
      *
      * In fact, the only code that seems to use that is the hibernate code so it
-     * knows not to save the pages.  It even checks to make sure its nonzero.
+     * knows not to save the pages.  It even checks to make sure that it is non-zero.
      */	
     bootArgs->efiSystemTable = (uint32_t)efiSystemTable;
 

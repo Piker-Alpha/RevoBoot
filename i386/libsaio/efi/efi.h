@@ -33,13 +33,51 @@
 // Set up space for up to 5 tables but we currently only add two.
 #define EFI_MAX_CONFIG_TABLES			5
 
-#define EFI_MAX_BIT						0x80000000
+#if EFI_64_BIT
+	// Mountain Lion
+	//
+	// movabs $0x8000000000000003,%rax
+	// ret
+	static uint8_t const UNSUPPORTEDRET_INSTRUCTIONS[] = { 0x48, 0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xc3 };
+#else
+	// Lion, Snow Leopard and Leopard
+	//
+	// movl $0x80000003,%eax
+	// ret
+	static uint8_t const UNSUPPORTEDRET_INSTRUCTIONS[] = { 0xb8, 0x03, 0x00, 0x00, 0x80, 0xc3 };
+#endif
+
+///
+/// 32/64-bit native width with the highest bit set.
+///
+#if EFI_64_BIT
+	#define EFI_MAX_BIT					0x8000000000000000ULL
+#else
+	#define EFI_MAX_BIT					0x80000000
+#endif
+
+///
+/// Macro's to encode the status code.
+///
 
 // Set the upper bit to indicate EFI Error.
-#define EFIERR(a)						(EFI_MAX_BIT | (a))
+#define ENCODE_ERROR(_a)				(EFI_MAX_BIT | (_a))
 
+#define EFIERR(_a)						ENCODE_ERROR(_a)
+
+///
+/// The operation completed successfully.
+///
 #define EFI_SUCCESS						0
+
+///
+/// The parameter was incorrect.
+///
 #define EFI_INVALID_PARAMETER			EFIERR (2)
+
+///
+/// The operation is not supported.
+///
 #define EFI_UNSUPPORTED					EFIERR (3)
 
 // EFI Revision info.
