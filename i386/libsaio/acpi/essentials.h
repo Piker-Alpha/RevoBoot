@@ -261,7 +261,7 @@ typedef struct acpi_2_fadt
 {
 	char            Signature[4];					// FADT
 	uint32_t        Length;							// Length varies per revision.
-	uint8_t         Revision;						// 1-4.
+	uint8_t         Revision;						// 1-5.
 	uint8_t         Checksum;
 	char            OEMID[6];
 	char            OEMTableID[8];
