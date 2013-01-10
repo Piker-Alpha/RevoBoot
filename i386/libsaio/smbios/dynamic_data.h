@@ -16,6 +16,7 @@
  *			- Removed some unused experimental code snippets (PikerAlpha, November 2012).
  *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (PikerAlpha, November 2012).
  *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (PikerAlpha, November 2012).
+ *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (PikerAlpha, January 2013).
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -41,18 +42,6 @@
 #include "smbios.h"
 #include "model_data.h"
 
-#if (TARGET_MODEL & MACPRO)
-	/*
-	 * Number of additional properties for MacPro models.
-	 */
-	#define PROBOARD	2
-#else
-	/*
-	 * No additional properties for other Mac models.
-	*/
-	#define PROBOARD	0
-#endif
-
 #define IOSERVICE_PLATFORM_FEATURE	0x0000000000000001
 
 //------------------------------------------------------------------------------
@@ -71,26 +60,26 @@ struct SMBStructure
 
 struct SMBStructure requiredStructures[] =
 {
-	{ kSMBTypeBIOSInformation			/*   0 */ ,	 0,					5,					false,	0	},
+	{ kSMBTypeBIOSInformation			/*   0 */ ,  0,					 5,					false,	0	},
 	{ kSMBTypeSystemInformation			/*   1 */ ,	 6,					10,					false,	0	},
-	{ kSMBTypeBaseBoard					/*   2 */ ,	(11 + PROBOARD),	(12 + PROBOARD),	false,	0	},
-	{ kSMBUnused						/*   3 */ ,	 0,					0,					false,	0	},
-	{ kSMBTypeProcessorInformation		/*   4 */ ,	(13 + PROBOARD),	(14 + PROBOARD),	true,	0	},
-	{ kSMBUnused						/*   5 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*   6 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*   7 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*   8 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*   9 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  10 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  11 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  12 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  13 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  14 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  15 */ ,	 0,					0,					false,	0	},
-	{ kSMBUnused						/*  16 */ ,	 0,					0,					false,	0	},
-	{ kSMBTypeMemoryDevice				/*  17 */ ,	(15 + PROBOARD),	(20 + PROBOARD),	true,	0	},
-	{ kSMBUnused						/*  18 */ ,	 0,					0,					false,	0	},
-	{ kSMBTypeMemoryArrayMappedAddress	/*	19 */ ,	 -1,				-1,					false,	0	}
+	{ kSMBTypeBaseBoard					/*   2 */ ,	13,					14,					false,	0	},
+	{ kSMBUnused						/*   3 */ ,	 0,					 0,					false,	0	},
+	{ kSMBTypeProcessorInformation		/*   4 */ ,	15,					16,					true,	0	},
+	{ kSMBUnused						/*   5 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*   6 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*   7 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*   8 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*   9 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  10 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  11 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  12 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  13 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  14 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  15 */ ,	 0,					 0,					false,	0	},
+	{ kSMBUnused						/*  16 */ ,	 0,					 0,					false,	0	},
+	{ kSMBTypeMemoryDevice				/*  17 */ ,	17,					22,					true,	0	},
+	{ kSMBUnused						/*  18 */ ,	 0,					 0,					false,	0	},
+	{ kSMBTypeMemoryArrayMappedAddress	/*	19 */ ,	-1,					-1,					false,	0	}
 };
 
 
@@ -151,10 +140,8 @@ struct SMBProperty SMBProperties[] =
 	{ kSMBTypeBaseBoard,			0x04,	kSMBString,		.plainData		= APPLE_INC					},
 	{ kSMBTypeBaseBoard,			0x05,	kSMBString,		.plainData		= SMB_BOARD_PRODUCT			},
 
-#if (TARGET_MODEL & MACPRO)
     { kSMBTypeBaseBoard,			0x07,	kSMBString,		.plainData		= SMB_BOARD_SERIAL_NUMBER	},
 	{ kSMBTypeBaseBoard,			0x0d,	kSMBByte,		.getSMBByte		= getBoardType				},
-#endif
 
 	//----------------------------------------------------------------------------------------------------
 	
@@ -293,7 +280,7 @@ void setupSMBIOS(void)
 	}
 
 #if (DYNAMIC_RAM_OVERRIDE_ERROR_HANDLE || DYNAMIC_RAM_OVERRIDE_SIZE || DYNAMIC_RAM_OVERRIDE_TYPE || DYNAMIC_RAM_OVERRIDE_FREQUENCY)
-	requiredStructures[17].stop = PROBOARD + (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
+	requiredStructures[17].stop = (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
 #endif
 
 	//------------------------------------------------------------------------------

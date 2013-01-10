@@ -383,9 +383,9 @@
 
 #define SMB_SYSTEM_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
 
-#if (TARGET_MODEL & MACPRO)
-	#define SMB_BOARD_SERIAL_NUMBER			"SOMESRLNUMBR" // Example only!
-#endif
+#define SMB_BOARD_SERIAL_NUMBER				"SOMESRLNUMBR" // Example only!
+												//
+												// Note: Board serial injection is required for iMessage support!
 
 #define SET_MAX_STRUCTURE_LENGTH			0	// Set to 0 by default. Only change this to 1 when boot hangs without it.
 												//
