@@ -11,6 +11,7 @@
  *			- Function getOverrideString removed (PikerAlpha, October 2012).
  *			- Function getBIOSDate added (PikerAlpha, October 2012).
  *			- Unused arguments removed (PikerAlpha, October 2012).
+  *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (PikerAlpha, January 2013).
  *
  * Credits:
  *			- macerintel (see note in source code)
@@ -352,9 +353,11 @@ static SMBDWord getBIOSFeaturesEX(void)
 
 //==============================================================================
 
-#if TARGET_MODEL & MACPRO
 static SMBByte getBoardType(void)
 {
-	return 0x0b;	// Some logic here or just return 11/0x0b.
-}
+#if TARGET_MODEL & MACPRO
+	return 0x0b;
+#else
+	return 0x0a;
 #endif
+}

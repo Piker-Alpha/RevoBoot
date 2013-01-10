@@ -35,9 +35,9 @@
  *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
  *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
  *			- Check return of malloc call (PikerAlpha, November 2012).
+ *			- Sam's workaround for iMessage breakage added (PikerAlpha, January 2013).
  *
  */
-
 
 #include "efi/fake_efi.h"
 
@@ -192,6 +192,15 @@ void initEFITree(void)
 	// DT__AddProperty(optionsNode, "EFICapsuleResult", 4, "STAR"); // 53 54 41 52
 
 #endif
+
+	// FIXME: We should either rename this or put the data somewhere else! 
+	Node *optionsNode = DT__AddChild(gPlatform.DT.RootNode, "RevoEFI");
+
+	static EFI_UINT8 const NVRAM_ROM_DATA[] = STATIC_NVRAM_ROM;
+	DT__AddProperty(optionsNode, "NVRAM:ROM", sizeof(NVRAM_ROM_DATA), (EFI_UINT8*) &NVRAM_ROM_DATA);
+	
+	static EFI_UINT8 const NVRAM_MLB_DATA[] = STATIC_NVRAM_MLB;
+	DT__AddProperty(optionsNode, "NVRAM:MLB", sizeof(NVRAM_MLB_DATA), (EFI_UINT8*) &NVRAM_MLB_DATA);
 
 	// DT__AddProperty(chosenNode, "boot-kernelcache-adler32", sizeof(uint64_t), adler32);
 
