@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Master Chief. All rights reserved.
  *
- * Note: This is an essential part of the build process for RevoBoot v1.5.37 and greater.
+ * Note: This is an essential part of the build process for RevoBoot v1.5.38 and greater.
  *
  * Updates:
  *
@@ -30,6 +30,8 @@
  *			- Option DISK_TARGET_SUPPORT added (PikerAlpha, November 2012).
  *			- DISK_TARGET_SUPPORT renamed to STARTUP_DISK_SUPPORT (PikerAlpha, November 2012).
  *			- New compiler directive USE_DEVICE_PATH in boot section (PikerAlpha, November 2012).
+ *			- Always inject SMB_BOARD_SERIAL_NUMBER, required for iMessage (PikerAlpha, January 2013).
+ *			- New compiler directives in EFI section added (PikerAlpha, January 2013).
  *
  */
 
@@ -324,7 +326,13 @@
 
 #define EFI_SYSTEM_SERIAL_NUMBER			{ 'S', 'O', 'M', 'E', 'S', 'R', 'L', 'N', 'U', 'M', 'B', 'R' }
 
-#define STATIC_SYSTEM_ID					{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F } // Example only!
+#define STATIC_SYSTEM_ID					{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } // Example only!
+
+#define STATIC_NVRAM_ROM					{ 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN } // Example only!
+												//
+												// Note: Use your MAC address for the last nibbles!
+
+#define STATIC_NVRAM_MLB					{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11 } // Example only!
 
 #define DEBUG_EFI							0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
