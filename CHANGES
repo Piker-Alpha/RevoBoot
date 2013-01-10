@@ -4,6 +4,14 @@ RevoBoot v1.5.40 (Next Major Release)
 - Improved P-State generation (less settings).
 
 
+RevoBoot v1.5.38
+================
+- RevoBoot/i386/libsaio/efi.c modified to workaround iMessage login/registration problems (PikerAlpha, January 2013).
+- getBoardType in RevoBoot/i386/libsaio/SMBIOS/getters.h now always returns a board type (PikerAlpha, January 2013).
+- STATIC_NVRAM_ROM/STATIC_NVRAM_MLB added (used in efi.c) to settings-template.h (PikerAlpha, January 2013).
+- VERSION updated to v1.5.38
+
+
 RevoBoot v1.5.37
 ================
 - DISK_TARGET_SUPPORT in settings-template.h renamed to STARTUP_DISK_SUPPORT (PikerAlpha, November 2012).
