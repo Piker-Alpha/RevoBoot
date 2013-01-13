@@ -17,6 +17,7 @@
  *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (PikerAlpha, November 2012).
  *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (PikerAlpha, November 2012).
  *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (PikerAlpha, January 2013).
+ *			- SMBStructure.start[2] was 13 but should have been 11 (PikerAlpha, January 2013).
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -62,7 +63,7 @@ struct SMBStructure requiredStructures[] =
 {
 	{ kSMBTypeBIOSInformation			/*   0 */ ,  0,					 5,					false,	0	},
 	{ kSMBTypeSystemInformation			/*   1 */ ,	 6,					10,					false,	0	},
-	{ kSMBTypeBaseBoard					/*   2 */ ,	13,					14,					false,	0	},
+	{ kSMBTypeBaseBoard					/*   2 */ ,	11,					14,					false,	0	},
 	{ kSMBUnused						/*   3 */ ,	 0,					 0,					false,	0	},
 	{ kSMBTypeProcessorInformation		/*   4 */ ,	15,					16,					true,	0	},
 	{ kSMBUnused						/*   5 */ ,	 0,					 0,					false,	0	},
