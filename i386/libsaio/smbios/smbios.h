@@ -137,13 +137,16 @@ typedef struct SMBSystemInformation
 {
     // 2.0+ spec (8 bytes)
     SMB_STRUCT_HEADER               // Type 1
-    SMBString  manufacturer;
-    SMBString  productName;
-    SMBString  version;
-    SMBString  serialNumber;
+    SMBString	manufacturer;
+    SMBString	productName;
+    SMBString	version;
+    SMBString	serialNumber;
     // 2.1+ spec (25 bytes)
-    SMBByte    uuid[16];            // can be all 0 or all 1's
-    SMBByte    wakeupReason;        // reason for system wakeup
+    SMBByte		uuid[16];            // can be all 0 or all 1's
+    SMBByte		wakeupReason;        // reason for system wakeup
+    // 2.4+ spec (27 bytes)
+	SMBString	SKUNumber;			// System SKU#
+	SMBString	family;				// Mac, Macmini etc
 } __attribute__((packed)) SMBSystemInformation;
 
 //
