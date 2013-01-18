@@ -25,6 +25,7 @@
  *
  * Updates:
  *			- White space changes (PikerAlpha, November 2012)
+ *			- Mountain Lion kernel patch for iMessage implemented (PikerAlpha, January 2013)
  *
  */
 
@@ -197,8 +198,8 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 
 		switch (cmd)
 		{
-			case LC_SEGMENT_64:
 			case LC_SEGMENT:
+			case LC_SEGMENT_64:
 				ret = DecodeSegment(cmdBase, &load_addr, &load_size);
 
 				if (ret == 0 && load_size != 0 && load_addr >= KERNEL_ADDR)
@@ -256,6 +257,14 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	return ret;
 }
 
+#define UINT64_LE_FROM_CHARS(a,b,c,d,e,f,g,h) ( \
+((uint64_t)h << 56)	| ((uint64_t)g << 48) | \
+((uint64_t)f << 40) | ((uint64_t)e << 32) | \
+((uint64_t)d << 24) | ((uint64_t)c << 16) | \
+((uint64_t)b <<  8) | ((uint64_t)a <<  0) )
+
+#define NVRAM_GUID_UINT64 UINT64_LE_FROM_CHARS('4','D','1','E','D','E','0','5')
+#define NVRAM_OPTIONS_UINT64 UINT64_LE_FROM_CHARS('/','o','p','t','i','o','n','s')
 
 //==============================================================================
 // Private function. Called from DecodeMachO()
@@ -272,10 +281,66 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 		struct segment_command_64 *segCmd = (struct segment_command_64 *)cmdBase;
 
 		vmaddr = (segCmd->vmaddr & 0x3fffffff);
-		vmsize = segCmd->vmsize;	  
+		vmsize = segCmd->vmsize;
 		fileaddr = (gBinaryAddress + segCmd->fileoff);
 		filesize = segCmd->filesize;
 		segname = segCmd->segname;
+
+		//
+		// iMessage kernel patch
+		//
+		if (strncmp(segname, "__KLD", 5) == 0)
+		{
+			uint32_t	index = 0;
+			uint32_t	offset = sizeof(struct segment_command_64);
+
+			while(offset < segCmd->cmdsize)
+			{
+				struct section_64 *section = (struct section_64 *)((char *)segCmd + offset);
+				offset += sizeof(struct section_64);
+
+				if (strncmp((char *)section->sectname, "__cstring", 9) == 0)
+				{
+					bool guidReplaced = FALSE;
+					uint64_t sectionStart	= (fileaddr + index);
+					uint64_t sectionEnd		= (fileaddr + filesize);
+
+					unsigned char * baseAddress = (unsigned char *)sectionStart;
+
+					for (; baseAddress <= (unsigned char *)sectionEnd; baseAddress += 1)
+					{
+						// Quick lookup
+						if (*(uint64_t *)baseAddress == NVRAM_GUID_UINT64)
+						{
+							// Full lookup
+							if (strncmp((char *)baseAddress, "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14", 36) == 0)
+							{
+								// Zero out NVRAM GUID
+								bzero((char *)baseAddress, 36);
+								// Replace inject GUID replacement
+								memcpy((char *)baseAddress, "NVRAM", 5);
+								// Point to the end of the (now former) GUID string
+								baseAddress += 36;
+								// Signal that phase one is done
+								guidReplaced = TRUE;
+							}
+						}
+						// Wait for the GUID to be replaced, then do phase two
+						if (guidReplaced && (*(uint64_t *)baseAddress == NVRAM_OPTIONS_UINT64))
+						{
+							// Replacing /option with /RevoEFI
+							memcpy((unsigned char *)baseAddress, "/RevoEFI", 8);
+							// Where done here. Bail out.
+							break;
+						}
+					}
+				}
+				else
+				{
+					index += section->size;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -291,18 +356,6 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 	// Pre-flight checks.
 	if (vmsize && filesize)
 	{
-#if DEBUG
-		printf("segname: %s, vmaddr: %x, vmsize: %x, fileoff: %x, filesize: %x\n", 
-			   segname, (unsigned)vmaddr, (unsigned)vmsize, (unsigned)fileaddr, (unsigned)filesize);
-
-		if (gArchCPUType == CPU_TYPE_X86_64)
-		{
-			printf("nsects: %d, flags: %x.\n", (unsigned) segCmd->nsects, (unsigned)segCmd->flags);
-		}
-
-		getchar();
-#endif
-		
 		if (! ((vmaddr >= KERNEL_ADDR && (vmaddr + vmsize) <= (KERNEL_ADDR + KERNEL_LEN)) ||
 			   (vmaddr >= HIB_ADDR && (vmaddr + vmsize) <= (HIB_ADDR + HIB_LEN))))
 		{
