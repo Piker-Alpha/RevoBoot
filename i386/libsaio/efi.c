@@ -63,6 +63,7 @@ void useStaticEFIProperties(Node * aEFINode)
 #endif */
 
 //==============================================================================
+// Called from RevoBoot/i386/libsaio/platform.c
 
 void initEFITree(void)
 {
@@ -193,17 +194,6 @@ void initEFITree(void)
 
 #endif
 
-	// FIXME: We should either rename this or put the data somewhere else! 
-	Node *optionsNode = DT__AddChild(gPlatform.DT.RootNode, "RevoEFI");
-
-	static EFI_UINT8 const NVRAM_ROM_DATA[] = STATIC_NVRAM_ROM;
-	DT__AddProperty(optionsNode, "NVRAM:ROM", sizeof(NVRAM_ROM_DATA), (EFI_UINT8*) &NVRAM_ROM_DATA);
-	
-	static EFI_UINT8 const NVRAM_MLB_DATA[] = STATIC_NVRAM_MLB;
-	DT__AddProperty(optionsNode, "NVRAM:MLB", sizeof(NVRAM_MLB_DATA), (EFI_UINT8*) &NVRAM_MLB_DATA);
-
-	// DT__AddProperty(chosenNode, "boot-kernelcache-adler32", sizeof(uint64_t), adler32);
-
 	gPlatform.EFI.Nodes.Chosen = chosenNode;
 
 #if INJECT_EFI_DEVICE_PROPERTIES
@@ -256,125 +246,34 @@ void initEFITree(void)
 }
 
 
-#if UNUSED_EFI_CODE
-//==============================================================================
+#ifndef SMB_STATIC_SYSTEM_UUID
+/*==============================================================================
 
-void *convertHexStr2Binary(const char *hexStr, int *outLength)
+static EFI_CHAR8 * getSmbiosUUID()
 {
-	int len;
-	char hexNibble;
-	char hexByte[2] = "";
-	uint8_t binChar;
-	uint8_t *binStr = NULL;
-	int hexStrIdx, binStrIdx, hexNibbleIdx;
+	bool error = TRUE;
 
-	len = strlen(hexStr);
+	UInt8 *p = (UInt8 *)gPlatform.UUID;
 
-	if (len > 1)
+	for (int i = 0; i < 16; i++)
 	{
-		// the resulting binary will be the half size of the input hex string
-		binStr = malloc(len / 2);
-
-		if (binStr)
+		if (p[i] != 0x00 || p[i] != 0xff)
 		{
-			binStrIdx = 0;
-			hexNibbleIdx = 0;
-	
-			for (hexStrIdx = 0; hexStrIdx < len; hexStrIdx++)
-			{
-				hexNibble = hexStr[hexStrIdx];
-
-				// ignore all chars except valid hex numbers
-				if ((hexNibble >= '0' && hexNibble <= '9') || (hexNibble >= 'A' && hexNibble <= 'F') || (hexNibble >= 'a' && hexNibble <= 'f'))
-				{
-					hexByte[hexNibbleIdx++] = hexNibble;
-
-					// found both two nibbles, convert to binary
-					if (hexNibbleIdx == 2)
-					{
-						binChar = 0;
-					
-						for (hexNibbleIdx = 0; hexNibbleIdx < sizeof(hexByte); hexNibbleIdx++)
-						{
-							if (hexNibbleIdx > 0)
-							{
-								binChar = binChar << 4;
-							}
-						
-							if (hexByte[hexNibbleIdx] <= '9')
-							{
-								binChar += hexByte[hexNibbleIdx] - '0';
-							}
-							else if (hexByte[hexNibbleIdx] <= 'F')
-							{
-								binChar += hexByte[hexNibbleIdx] - ('A' - 10);
-							}
-							else if (hexByte[hexNibbleIdx] <= 'f')
-							{
-								binChar += hexByte[hexNibbleIdx] - ('a' - 10);
-							}
-						}
-					
-						binStr[binStrIdx++] = binChar;
-						hexNibbleIdx = 0;
-					}
-				}
-			}
-
-			*outLength = binStrIdx;
-
-			return binStr;
+			error = FALSE;
 		}
 	}
 
-	*outLength = 0;
-
-	return NULL;
-}
-//==============================================================================
-
-
-static EFI_UINT32* getUUIDFromString(const char * givenUUID) // Patch by: rekursor (rewrite by Master Chief).
-{
-	if (givenUUID) // Sanity check.
+	if (error)
 	{
-		static char errStr[] = "getUUIDFromString: Invalid SystemID - ";
-		
-		if (strlen(givenUUID) == 36) // Real UUID's only please.
-		{
-			int size = 0;
-			char szUUID[37]; // 0-35 (36) + 1
-			char *p = szUUID;
-			
-			while (*givenUUID)
-			{
-				if (*givenUUID != '-')
-				{
-					*p++ = *givenUUID++;
-				}
-				else
-				{
-					givenUUID++;
-				}
-			}
-			*p = '\0';
-			void* binaryString = convertHexStr2Binary(szUUID, &size);
-			
-			if (binaryString && size == 16)
-			{
-				return (EFI_UINT32*) binaryString;
-			}
-			
-			verbose("%swrong format maybe?\n", errStr);
-		}
-		else
-		{
-			verbose("%slength should be 36.\n", errStr);
-		}
+		printf("No proper UUID found in the System Information Table\n");
+		return NULL;
 	}
-	return (EFI_UINT32*) 0;
+
+	return (EFI_CHAR8 *)gPlatform.UUID;
 }
+ */
 #endif
+
 
 //==============================================================================
 // Stage two EFI initialization (after getting data from com.apple.Boot.plist).
@@ -383,36 +282,13 @@ void updateEFITree(char *rootUUID)
 {
 	_EFI_DEBUG_DUMP("In updateEFITree(%s)\n", rootUUID);
 
-	static EFI_CHAR8 const SYSTEM_ID[] = STATIC_SYSTEM_ID;
-
-	// This is your hardcoded SYSTEM_ID (see: config/settings.h).
-	EFI_UINT32 * targetUUID = (EFI_UINT32 *) &SYSTEM_ID;
-
-#if UNUSED_EFI_CODE
-	// Feature to set your own, uuidgen generated string in com.apple.Boot.plist
-	// Note: Unsupported feature in Revolution (you need to compile it anyway).
-
-	const char* userDefinedUUID = newStringForKey("SystemID", &bootInfo->bootConfig);
-	
-	if (userDefinedUUID)
+	// Only accept a UUID with the correct length.
+	if (strlen(rootUUID) == 36)
 	{
-		targetUUID = getUUIDFromString(userDefinedUUID);
-
-		if (targetUUID)
-		{
-			_EFI_DEBUG_DUMP("Customizing SystemID with: %s\n", userDefinedUUID);
-		}
-
-		free ((void*) userDefinedUUID);
+		_EFI_DEBUG_DUMP("Initializing property boot-uuid (%s)\n", rootUUID);
+		
+		DT__AddProperty(gPlatform.EFI.Nodes.Chosen, "boot-uuid", 37, rootUUID);
 	}
-
-#endif
-
-	DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, targetUUID);
-	// gPlatform.EFI.Nodes.Platform = NULL;
-
-	setRootUUID(gPlatform.EFI.Nodes.Chosen, rootUUID);
-	// gPlatform.EFI.Nodes.Chosen = NULL;
 
 	/* 
 	 * Check the architectures' target (boot) mode against the chosen setting of  
@@ -428,25 +304,6 @@ void updateEFITree(char *rootUUID)
 	}
 
 	_EFI_DEBUG_SLEEP(5);
-}
-
-
-//==============================================================================
-// Called from initEFITree() and execKernel() in boot.c
-
-bool setRootUUID(Node *chosenNode, char *rootUUID)
-{
-	// Only accept a UUID with the correct length.
-	if (strlen(rootUUID) == 36)
-	{
-		_EFI_DEBUG_DUMP("Initializing property boot-uuid (%s)\n", rootUUID);
-
-		DT__AddProperty(chosenNode, "boot-uuid", 37, rootUUID);
-
-		return 0;
-	}
-
-	return -1;
 }
 
 
@@ -494,19 +351,54 @@ bool initMultiProcessorTableAdress(void)
 //==============================================================================
 // Called from execKernel() in boot.c
 
-void finalizeEFITree(void)
+void finalizeEFITree(EFI_UINT32 kernelAdler32)
 {
-	_EFI_DEBUG_DUMP("Calling setupEFITables(");
+	_EFI_DEBUG_DUMP("done).Calling setupEFITables(");
 
 	setupEFITables();
-
-	_EFI_DEBUG_DUMP("done).\nCalling setupSMBIOS(");
+	
+	DT__AddProperty(gPlatform.EFI.Nodes.Chosen, "boot-kernelcache-adler32", sizeof(EFI_UINT32), (EFI_UINT32*)kernelAdler32);
 
 	setupSMBIOS();
 
 	_EFI_DEBUG_DUMP("done).\nAdding EFI configuration table for SMBIOS(");
 
 	addConfigurationTable(&gPlatform.SMBIOS.Guid, &gPlatform.SMBIOS.BaseAddress, NULL);
+
+#ifdef SMB_STATIC_SYSTEM_UUID
+	// Static UUID from: RevoBoot/i386/config/SETTINGS/MacModelNN.h
+	static EFI_CHAR8 const SYSTEM_ID[] = SMB_STATIC_SYSTEM_UUID;
+	
+	DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, (EFI_CHAR8 *) &SYSTEM_ID);
+#else
+	// DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, getSmbiosUUID());
+	DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, (EFI_CHAR8 *)gPlatform.UUID);
+#endif
+	
+	//
+	// Start of experimental code
+	//
+	
+	Node *revoEFINode = DT__AddChild(gPlatform.DT.RootNode, "RevoEFI");
+	
+#ifdef STATIC_NVRAM_ROM
+	static EFI_UINT8 const NVRAM_ROM_DATA[] = STATIC_NVRAM_ROM;
+#else
+#ifdef SMB_STATIC_SYSTEM_UIID
+	static EFI_UINT8 const NVRAM_ROM_DATA[] = SMB_STATIC_SYSTEM_UUID;
+#else
+	static EFI_UINT8 const NVRAM_ROM_DATA[] = gPlatform.UUID;
+#endif
+#endif
+	
+	DT__AddProperty(revoEFINode, "NVRAM:ROM", sizeof(NVRAM_ROM_DATA), (EFI_UINT8 *) &NVRAM_ROM_DATA);
+	
+	static EFI_UINT8 const NVRAM_MLB_DATA[] = STATIC_NVRAM_MLB;
+	DT__AddProperty(revoEFINode, "NVRAM:MLB", sizeof(NVRAM_MLB_DATA), (EFI_UINT8 *) &NVRAM_MLB_DATA);
+
+	//
+	// End of experimental code
+	//
 
 #if INCLUDE_MPS_TABLE
 	// This BIOS includes a MP table?
