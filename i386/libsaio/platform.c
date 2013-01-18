@@ -217,16 +217,18 @@ void initPlatform(int biosDevice)
 
 	_PLATFORM_DEBUG_DUMP("gPlatform.OSVersion: %s\n", gPlatform.OSVersion);
 
+	gPlatform.KernelCachePath		= strdup(kKernelCachePath);	// Used in boot.c and driver.c
+	
+	_PLATFORM_DEBUG_DUMP("Kernel cache path: %s\n", gPlatform.KernelCachePath);
+
 	gPlatform.BIOSDevice			= (biosDevice & kBIOSDevMask);	// Device number masked with 0xFF.
 	gPlatform.BootVolume			= NULL;	// Will be initialized in disk.c
 	gPlatform.BootPartitionChain	= NULL;	// Will be initialized in sys.c
 	gPlatform.RootVolume			= NULL;	// Will be initialized in disk.c (used in sys.c)
 
+	gPlatform.UUID					= NULL;	// Will be initialized in RevoBoot/i386/libsaio/smbios/[dynamic/static]_data.h
+
 	gPlatform.RAM.SlotCount			= 0;	// Will be initialized further down (used in smbios/dynamic_data.h)
-
-	gPlatform.KernelCachePath		= strdup(kKernelCachePath);	// Used in boot.c and driver.c
-
-	_PLATFORM_DEBUG_DUMP("Kernel cache path: %s\n", gPlatform.KernelCachePath);
 
 #if USE_STATIC_SMBIOS_DATA
 	// We don't have to do anything when static SMBIOS data is used.
