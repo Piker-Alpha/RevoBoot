@@ -17,7 +17,11 @@
  *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (PikerAlpha, November 2012).
  *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (PikerAlpha, November 2012).
  *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (PikerAlpha, January 2013).
+<<<<<<< HEAD
  *			- SMBStructure.start[2] was 13 but should have been 11 (PikerAlpha, January 2013).
+=======
+ *			- Override factory SystemID when (PikerAlpha, January 2013).
+>>>>>>> Make SMBIOS more Apple like
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -62,10 +66,10 @@ struct SMBStructure
 struct SMBStructure requiredStructures[] =
 {
 	{ kSMBTypeBIOSInformation			/*   0 */ ,  0,					 5,					false,	0	},
-	{ kSMBTypeSystemInformation			/*   1 */ ,	 6,					10,					false,	0	},
-	{ kSMBTypeBaseBoard					/*   2 */ ,	11,					14,					false,	0	},
+	{ kSMBTypeSystemInformation			/*   1 */ ,	 6,					11,					false,	0	},
+	{ kSMBTypeBaseBoard					/*   2 */ ,	12,					18,					false,	0	},
 	{ kSMBUnused						/*   3 */ ,	 0,					 0,					false,	0	},
-	{ kSMBTypeProcessorInformation		/*   4 */ ,	15,					16,					true,	0	},
+	{ kSMBTypeProcessorInformation		/*   4 */ ,	19,					20,					true,	0	},
 	{ kSMBUnused						/*   5 */ ,	 0,					 0,					false,	0	},
 	{ kSMBUnused						/*   6 */ ,	 0,					 0,					false,	0	},
 	{ kSMBUnused						/*   7 */ ,	 0,					 0,					false,	0	},
@@ -78,7 +82,7 @@ struct SMBStructure requiredStructures[] =
 	{ kSMBUnused						/*  14 */ ,	 0,					 0,					false,	0	},
 	{ kSMBUnused						/*  15 */ ,	 0,					 0,					false,	0	},
 	{ kSMBUnused						/*  16 */ ,	 0,					 0,					false,	0	},
-	{ kSMBTypeMemoryDevice				/*  17 */ ,	17,					22,					true,	0	},
+	{ kSMBTypeMemoryDevice				/*  17 */ ,	21,					25,					true,	0	},
 	{ kSMBUnused						/*  18 */ ,	 0,					 0,					false,	0	},
 	{ kSMBTypeMemoryArrayMappedAddress	/*	19 */ ,	-1,					-1,					false,	0	}
 };
@@ -113,7 +117,10 @@ struct SMBProperty
 	const char *plainData;
 };
 
-#define APPLE_INC			"Apple Inc."
+#define APPLE_INC				"Apple Inc."
+#define SMB_SYSTEM_SKU			"System SKU#"
+#define SMB_BOARD_ASSET_TAG		"Base Board Asset Tag#"
+#define SMB_BOARD_LOCATION		"Part Component"
 
 //------------------------------------------------------------------------------
 
@@ -134,14 +141,20 @@ struct SMBProperty SMBProperties[] =
 	{ kSMBTypeSystemInformation,	0x05,	kSMBString,		.plainData		= SMB_PRODUCT_NAME			},
 	{ kSMBTypeSystemInformation,	0x06,	kSMBString,		.plainData		= "1.0"						},
 	{ kSMBTypeSystemInformation,	0x07,	kSMBString,		.plainData		= SMB_SYSTEM_SERIAL_NUMBER	},
+
+	{ kSMBTypeSystemInformation,	0x19,	kSMBString,		.plainData		= SMB_SYSTEM_SKU			},
 	{ kSMBTypeSystemInformation,	0x1a,	kSMBString,		.plainData		= SMB_FAMILY				},
 	
 	//----------------------------------------------------------------------------------------------------
 	
 	{ kSMBTypeBaseBoard,			0x04,	kSMBString,		.plainData		= APPLE_INC					},
 	{ kSMBTypeBaseBoard,			0x05,	kSMBString,		.plainData		= SMB_BOARD_PRODUCT			},
-
+	{ kSMBTypeBaseBoard,			0x06,	kSMBString,		.plainData		= SMB_FAMILY				},
     { kSMBTypeBaseBoard,			0x07,	kSMBString,		.plainData		= SMB_BOARD_SERIAL_NUMBER	},
+	{ kSMBTypeBaseBoard,			0x08,	kSMBString,		.plainData		= SMB_BOARD_ASSET_TAG		},
+
+	{ kSMBTypeBaseBoard,			0x0a,	kSMBString,		.plainData		= SMB_BOARD_LOCATION		},
+
 	{ kSMBTypeBaseBoard,			0x0d,	kSMBByte,		.getSMBByte		= getBoardType				},
 
 	//----------------------------------------------------------------------------------------------------
@@ -317,6 +330,24 @@ void setupSMBIOS(void)
 
 		// Copy structure data from factory table to new table (not the strings).
 		memcpy(newHeader, factoryHeader, factoryHeader->length);
+
+		if (currentStructureType == kSMBTypeSystemInformation)
+		{
+			// gPlatform.UUID is set to NULL in platform.c so that we can check for NULL to see if we
+			// located the (per spec) required SMBIOS type 1 structure (allocating memory signals OK).
+			gPlatform.UUID = malloc(16);
+
+#ifdef SMB_STATIC_SYSTEM_UUID
+			static unsigned char SMB_SYSTEM_UUID[] = SMB_STATIC_SYSTEM_UUID;
+
+			// Replace factory UUID with the one specified in: RevoBoot/i386/config/SETTINGS/MacModelNN.h
+			memcpy(((SMBSystemInformation *)newHeader)->uuid, SMB_SYSTEM_UUID, 16);
+			memcpy(gPlatform.UUID, SMB_SYSTEM_UUID, 16);
+#else
+			// Get factory UUID from SMBIOS.
+			memcpy(gPlatform.UUID, ((SMBSystemInformation *)factoryHeader)->uuid, 16);
+#endif
+		}
 
 		// Init handle in the new header.
 		newHeader->handle = ++handle;
