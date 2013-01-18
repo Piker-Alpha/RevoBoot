@@ -17,11 +17,8 @@
  *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (PikerAlpha, November 2012).
  *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (PikerAlpha, November 2012).
  *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (PikerAlpha, January 2013).
-<<<<<<< HEAD
  *			- SMBStructure.start[2] was 13 but should have been 11 (PikerAlpha, January 2013).
-=======
  *			- Override factory SystemID when (PikerAlpha, January 2013).
->>>>>>> Make SMBIOS more Apple like
  *
  * Credits:
  *			- Kabyl (see notes in source code)
