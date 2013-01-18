@@ -173,7 +173,9 @@ typedef struct _PlatformInfo_t
 	bool				BootRecoveryHD;			//
 	
 	uint32_t			allocatedVRAM;			// Amount of allocated graphics memory (UEFI-BIOS settings).
-	
+
+	uint8_t *			UUID;					// Allocated/set in RevoBoot/i386/libsaio/smbios/[dynamic/static]_data.h
+
 	struct ACPI									// Used in acpi_patcher.h
 	{
 		uint8_t			Type;					// System type. Referring to FACP->PM_Profile.
