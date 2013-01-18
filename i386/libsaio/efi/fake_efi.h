@@ -39,7 +39,6 @@
 
 extern void setupACPI(void);
 extern void setupSMBIOS(void);
-extern bool setRootUUID(Node *chosenNode, char * rootUUID);
 
 //------------------------------------------------------------------------------
 
