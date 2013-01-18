@@ -75,7 +75,7 @@ extern void		sleep(int n);
 /* efi.c */
 extern void		initEFITree(void);
 extern void		updateEFITree(char *rootUUID);
-extern void		finalizeEFITree(void);
+extern void		finalizeEFITree(uint32_t kernelAdler32);
 
 /* bootstruct.c */
 extern void		initKernelBootConfig(void);
