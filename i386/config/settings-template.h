@@ -32,6 +32,7 @@
  *			- New compiler directive USE_DEVICE_PATH in boot section (PikerAlpha, November 2012).
  *			- Always inject SMB_BOARD_SERIAL_NUMBER, required for iMessage (PikerAlpha, January 2013).
  *			- New compiler directives in EFI section added (PikerAlpha, January 2013).
+ *			- STATIC_SYSTEM_ID renamed to SMB_STATIC_SYSTEM_UUID and moved to SMBIOS section (PikerAlpha, January 2013).
  *
  */
 
@@ -326,8 +327,6 @@
 
 #define EFI_SYSTEM_SERIAL_NUMBER			{ 'S', 'O', 'M', 'E', 'S', 'R', 'L', 'N', 'U', 'M', 'B', 'R' }
 
-#define STATIC_SYSTEM_ID					{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } // Example only!
-
 #define STATIC_NVRAM_ROM					{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN } // Example only!
 												// sudo nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM=%01%02%03%04%05%06%07%08%09%0A%0B%NN%NN%NN%NN%NN%NN
 												// Note: Use your MAC address for the last six bytes!
@@ -395,6 +394,8 @@
 #define SMB_BOARD_SERIAL_NUMBER				"SOMESRLNUMBR" // Example only!
 												//
 												// Note: Board serial injection is required for iMessage support!
+
+#define SMB_STATIC_SYSTEM_UUID				{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } // Example only!
 
 #define SET_MAX_STRUCTURE_LENGTH			0	// Set to 0 by default. Only change this to 1 when boot hangs without it.
 												//
