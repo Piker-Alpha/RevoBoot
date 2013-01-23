@@ -17,7 +17,8 @@ void initCPUStruct(void)
 {
 	gPlatform.CPU.Vendor		= CPU_VENDOR_ID;			// Used in ACPI/patcher.h
 
-	gPlatform.CPU.Type			= STATIC_CPU_Type;			// Used in SMBIOS/dynamic_data.h, 'About This Mac' and System Profiler.
+	gPlatform.CPU.Type			= STATIC_CPU_Type;			// Used in SMBIOS/dynamic_data.h and ACPI/SSDT_PR
+															// Affects CPU type in 'About This Mac' and System Profiler.
 
 	gPlatform.CPU.NumCores		= STATIC_CPU_NumCores;		// machdep.cpu.cores_per_package - used in: ACPI/ssdt_pm_generator.h
 	gPlatform.CPU.NumThreads	= STATIC_CPU_NumThreads;	// machdep.cpu.logical_per_package - used in: ACPI/ssdt_pm_generator.h
