@@ -3,12 +3,13 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 1.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 1.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
 #			- Filename error fixed (Pike, January, 2013)
 #			- Namespace error fixed in _printScopeStart (Pike, January, 2013)
+#			- Model and board-id checks added (Pike, January, 2013)
 #
 
 # set -x # Used for tracing errors (can be put anywhere in the script).
@@ -336,6 +337,123 @@ function _printCPUScopes()
 	echo '}'                                                                >> $ssdtPR
 }
 
+#--------------------------------------------------------------------------------
+
+function _getModelName()
+{
+	echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *"*=*<*>*//g' -e 's/compatible*//'`
+}
+
+#--------------------------------------------------------------------------------
+
+function _getBoardID()
+{
+	echo `ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *"*=*<*>*//g' -e 's/board-id*//'`
+}
+
+#--------------------------------------------------------------------------------
+
+function _getSandyMacModelByBoardID()
+{
+	local boardID=$(_getBoardID)
+	local macModelIdentifier=""
+
+	case $boardID in
+		Mac-942B59F58194171B)
+			local macModelIdentifier="iMac12,1"
+			;;
+
+		Mac-942B5BF58194151B)
+			local macModelIdentifier="iMac12,2"
+			;;
+
+		Mac-8ED6AF5B48C039E1)
+			local macModelIdentifier="Macmini5,1"
+			;;
+
+		Mac-4BC72D62AD45599E)
+			local macModelIdentifier="Macmini5,2"
+			;;
+
+		Mac-7BA5B2794B2CDB12)
+			local macModelIdentifier="Macmini5,3"
+			;;
+
+		Mac-94245B3640C91C81)
+			local macModelIdentifier="MacBookPro8,1"
+			;;
+
+		Mac-94245A3940C91C80)
+			local macModelIdentifier="MacBookPro8,2"
+			;;
+
+		Mac-942459F5819B171B)
+			local macModelIdentifier="MacBookPro8,3"
+			;;
+
+		Mac-C08A6BB70A942AC2)
+			local macModelIdentifier="MacBookAir4,1"
+			;;
+
+		Mac-742912EFDBEE19B3)
+			local macModelIdentifier="MacBookAir4,2"
+			;;
+	esac
+
+	echo $macModelIdentifier
+}
+
+#--------------------------------------------------------------------------------
+
+function _getIvyMacModelByBoardID()
+{
+  local boardID=$(_getBoardID)
+  local macModelIdentifier=""
+
+  case $boardID in
+	Mac-00BE6ED71E35EB86)
+		local macModelIdentifier="iMac13,1"
+		;;
+
+	Mac-FC02E91DDD3FA6A4)
+		local macModelIdentifier="iMac13,2"
+		;;
+
+	Mac-031AEE4D24BFF0B15819B171B)
+		local macModelIdentifier="Macmini6,1"
+		;;
+
+	Mac-F65AE981FFA204ED)
+		local macModelIdentifier="Macmini6,2"
+		;;
+
+	Mac-4B7AC7E43945597E)
+		local macModelIdentifier="MacBookPro9,1"
+		;;
+
+	Mac-6F01561E16C75D06)
+		local macModelIdentifier="MacBookPro9,2"
+		;;
+
+	Mac-C3EC7CD22292981F)
+		local macModelIdentifier="MacBookPro10,1"
+		;;
+
+	Mac-AFD8A9D944EA4843)
+		local macModelIdentifier="MacBookPro10,2"
+		;;
+
+	Mac-66F35F19FE2A0D05)
+		local macModelIdentifier="MacBookAir5,1"
+		;;
+
+	Mac-2E6FAB96566FE58C)
+		local macModelIdentifier="MacBookAir5,2"
+		;;
+  esac
+
+  echo $macModelIdentifier
+}
 
 #--------------------------------------------------------------------------------
 #
@@ -399,12 +517,40 @@ function main()
 	_printPackages $tdp $frequency $maxTurboFrequency $3
 	_printCSTScope
 
+	local modelID=$(_getModelName)
+	local usedBoardID=$(_getBoardID)
+
 	if [ $3 -eq 1 ]
 		then
-			_printIvybridgeMethods
-	fi
+			local targetModelID=$(_getIvyMacModelByBoardID)
 
-	_printCPUScopes $logicalCPUs
+			_printIvybridgeMethods $usedBoardID $targetModelID
+			_printCPUScopes $logicalCPUs
+
+			if [ "$targetModelID" == "" ]
+				then
+					echo "Warning: Used board-id [$usedBoardID] is not supported by Ivybridge PM"
+				else
+					if [ "$targetModelID" != "$modelID" ]
+						then
+							echo "Error: board-id [$usedBoardID] and model [$modelID] mismatch"
+					fi
+			fi
+		else
+			local targetModelID=$(_getSandyMacModelByBoardID)
+
+			_printCPUScopes $logicalCPUs
+
+			if [ "$targetModelID" == "" ]
+				then
+					echo "Warning: Used board-id [$usedBoardID] is not supported by Sandybridge PM"
+				else
+					if [ "$targetModelID" != "$modelID" ]
+						then
+							echo "Error: board-id [$usedBoardID] and model [$modelID] mismatch"
+					fi
+			fi
+	fi
 }
 
 
