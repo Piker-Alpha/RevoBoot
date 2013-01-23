@@ -42,26 +42,6 @@
 #include "efi/fake_efi.h"
 
 
-/* #if LOAD_MODEL_SPECIFIC_EFI_DATA
-//==============================================================================
-
-void useStaticEFIProperties(Node * aEFINode)
-{
-	// The STRING (macro) is defined in RevoBoot/i386/config/settings.h
-	#include STRING(EFI_DATA_FILE)
-	
-	static EFI_UINT8 const EFI_DEVICE_PROPERTIES[] =
-	{
-		// Replaced with data from: RevoBoot/i386/config/EFI/[data-template/MacModelNN].h
-		STATIC_EFI_DEVICE_PROPERTIES
-	};
-	
-	DT__AddProperty(aEFINode, "device-properties", sizeof(EFI_DEVICE_PROPERTIES), (EFI_CHAR8*) &EFI_DEVICE_PROPERTIES);
-	
-	// _EFI_DEBUG_DUMP("Using statically linked EFI device-properties\n");
-}
-#endif */
-
 //==============================================================================
 // Called from RevoBoot/i386/libsaio/platform.c
 
@@ -191,7 +171,6 @@ void initEFITree(void)
 	// Adding the options node breaks AppleEFINVRAM (missing hardware UUID).
 	// Node *optionsNode = DT__AddChild(gPlatform.DT.RootNode, "options");
 	// DT__AddProperty(optionsNode, "EFICapsuleResult", 4, "STAR"); // 53 54 41 52
-
 #endif
 
 	gPlatform.EFI.Nodes.Chosen = chosenNode;
@@ -384,11 +363,11 @@ void finalizeEFITree(EFI_UINT32 kernelAdler32)
 #ifdef STATIC_NVRAM_ROM
 	static EFI_UINT8 const NVRAM_ROM_DATA[] = STATIC_NVRAM_ROM;
 #else
-#ifdef SMB_STATIC_SYSTEM_UIID
-	static EFI_UINT8 const NVRAM_ROM_DATA[] = SMB_STATIC_SYSTEM_UUID;
-#else
-	static EFI_UINT8 const NVRAM_ROM_DATA[] = gPlatform.UUID;
-#endif
+	#ifdef SMB_STATIC_SYSTEM_UIID
+		static EFI_UINT8 const NVRAM_ROM_DATA[] = SMB_STATIC_SYSTEM_UUID;
+	#else
+		static EFI_UINT8 const NVRAM_ROM_DATA[] = gPlatform.UUID;
+	#endif
 #endif
 	
 	DT__AddProperty(revoEFINode, "NVRAM:ROM", sizeof(NVRAM_ROM_DATA), (EFI_UINT8 *) &NVRAM_ROM_DATA);
