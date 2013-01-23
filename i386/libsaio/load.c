@@ -43,6 +43,10 @@
 	#define LC_MAIN (0x28|LC_REQ_DYLD) /* replacement for LC_UNIXTHREAD */
 #endif
 
+#define NVRAM_GUID_UINT64		0x3530454445314434
+#define OPTIONS_STRING_UINT64	0x736e6f6974706f2f
+
+
 // Load MKext(s) or separate kexts (default behaviour / behavior).
 bool gLoadKernelDrivers = true;
 
@@ -257,14 +261,6 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	return ret;
 }
 
-#define UINT64_LE_FROM_CHARS(a,b,c,d,e,f,g,h) ( \
-((uint64_t)h << 56)	| ((uint64_t)g << 48) | \
-((uint64_t)f << 40) | ((uint64_t)e << 32) | \
-((uint64_t)d << 24) | ((uint64_t)c << 16) | \
-((uint64_t)b <<  8) | ((uint64_t)a <<  0) )
-
-#define NVRAM_GUID_UINT64 UINT64_LE_FROM_CHARS('4','D','1','E','D','E','0','5')
-#define NVRAM_OPTIONS_UINT64 UINT64_LE_FROM_CHARS('/','o','p','t','i','o','n','s')
 
 //==============================================================================
 // Private function. Called from DecodeMachO()
@@ -286,13 +282,16 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 		filesize = segCmd->filesize;
 		segname = segCmd->segname;
 
+#if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
 		//
-		// iMessage kernel patch
+		// Kernel patch routine for iMessage
 		//
+		// This segment will be replaced by random data (since 18 April 2011) and released
+		// when the kernel is done with it. Meaning that our data is short lived as well.
 		if (strncmp(segname, "__KLD", 5) == 0)
 		{
-			uint32_t	index = 0;
-			uint32_t	offset = sizeof(struct segment_command_64);
+			uint32_t	index	= 0;
+			uint32_t	offset	= sizeof(struct segment_command_64);
 
 			while(offset < segCmd->cmdsize)
 			{
@@ -301,46 +300,47 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 
 				if (strncmp((char *)section->sectname, "__cstring", 9) == 0)
 				{
-					bool guidReplaced = FALSE;
 					uint64_t sectionStart	= (fileaddr + index);
 					uint64_t sectionEnd		= (fileaddr + filesize);
 
 					unsigned char * baseAddress = (unsigned char *)sectionStart;
 
-					for (; baseAddress <= (unsigned char *)sectionEnd; baseAddress += 1)
+					// Search for the NVRAM GUID.
+					for (; baseAddress <= (unsigned char *)sectionEnd; baseAddress++)
 					{
-						// Quick lookup
 						if (*(uint64_t *)baseAddress == NVRAM_GUID_UINT64)
 						{
-							// Full lookup
-							if (strncmp((char *)baseAddress, "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14", 36) == 0)
+							// Zero out NVRAM GUID
+							bzero((char *)baseAddress, 36);
+							// Replace/inject GUID replacement
+							memcpy((char *)baseAddress, "NVRAM", 5);
+							// Point to the end of the (former) NVRAM GUID string
+							baseAddress += 36;
+
+							// Search for "/options" after the GUID.
+							for (; baseAddress <= (unsigned char *)sectionEnd; baseAddress++)
 							{
-								// Zero out NVRAM GUID
-								bzero((char *)baseAddress, 36);
-								// Replace inject GUID replacement
-								memcpy((char *)baseAddress, "NVRAM", 5);
-								// Point to the end of the (now former) GUID string
-								baseAddress += 36;
-								// Signal that phase one is done
-								guidReplaced = TRUE;
+								if (*(uint64_t *)baseAddress == OPTIONS_STRING_UINT64)
+								{
+									// Rename /option to /RevoEFI (just temporarily)
+									memcpy((unsigned char *)baseAddress, "/RevoEFI", 8);
+									// Prepare to break out early.
+									baseAddress = (unsigned char *)(sectionEnd + 1);
+									// Done.
+									break;
+								}
 							}
-						}
-						// Wait for the GUID to be replaced, then do phase two
-						if (guidReplaced && (*(uint64_t *)baseAddress == NVRAM_OPTIONS_UINT64))
-						{
-							// Replacing /option with /RevoEFI
-							memcpy((unsigned char *)baseAddress, "/RevoEFI", 8);
-							// Where done here. Bail out.
-							break;
 						}
 					}
 				}
 				else
 				{
+					// Skip unwanted sections (which makes us a little faster).
 					index += section->size;
 				}
 			}
 		}
+#endif
 	}
 	else
 	{
