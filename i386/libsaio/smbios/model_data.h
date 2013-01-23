@@ -21,6 +21,7 @@
  *			- SMB_PRODUCT_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
  *			- EFI_MODEL_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
  *			- Data for new MacBookPro and Macmini added (PikerAlpha, October 2012).
+ *			- Data for iMac13,2 and MacBookPro9,2 added (PikerAlpha, October 2013).
  *
  * Credits:
  *			- blackosx, DB1, dgsga, FKA, humph, scrax and STLVNUB (testers).
@@ -31,11 +32,15 @@
 // -------------------------------------------------------------------------------------
 	#define SMB_FAMILY	"Mac"
 
-	#if (TARGET_MODEL == IMAC_131)
-		// Intel Core i7-3770 @ 3.40 GHz - 4 Cores / 8 Threads.
+	#if (TARGET_MODEL == IMAC_132)
+		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
+		#define SMB_PRODUCT_NAME	"iMac13,2"
+		#define SMB_BOARD_PRODUCT	"Mac-FC02E91DDD3FA6A4"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '2' }
+	#elif (TARGET_MODEL == IMAC_131)
 		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
 		#define SMB_PRODUCT_NAME	"iMac13,1"
-		#define SMB_BOARD_PRODUCT	"Mac-FC02E91DDD3FA6A4"
+		#define SMB_BOARD_PRODUCT	"Mac-00BE6ED71E35EB86"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '1' }
 	#elif (TARGET_MODEL == IMAC_122)
 		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B1D.1110171110"
@@ -110,22 +115,28 @@
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '1' }
 	#elif (TARGET_MODEL == MACBOOK_PRO_91)
 		// Intel Core i7-3820QM @ 2.70 GHz - 4 cores / 8 threads.
-		#define SMB_BIOS_VERSION	"MBP91.88Z.00D3.B00.1203211536"
+		#define SMB_BIOS_VERSION	"MBP91.88Z.00D3.B02.1203281326"
 		#define SMB_PRODUCT_NAME	"MacBookPro9,1"
 		#define SMB_BOARD_PRODUCT	"Mac-4B7AC7E43945597E"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '9', ',', '1' }
+	#elif (TARGET_MODEL == MACBOOK_PRO_92)
+		// Intel Core i7-3820QM @ 2.70 GHz - 4 cores / 8 threads.
+		#define SMB_BIOS_VERSION	"MBP91.88Z.00D3.B02.1203281326"
+		#define SMB_PRODUCT_NAME	"MacBookPro9,2"
+		#define SMB_BOARD_PRODUCT	"Mac-6F01561E16C75D06"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '9', ',', '2' }
 	#elif (TARGET_MODEL == MACBOOK_PRO_83)
-		#define SMB_BIOS_VERSION	"MBP81.88Z.0047.B24.1110141131"
+		#define SMB_BIOS_VERSION	"MBP81.88Z.0047.B27.1201241646"
 		#define SMB_PRODUCT_NAME	"MacBookPro8,3"
 		#define SMB_BOARD_PRODUCT	"Mac-942459F5819B171B"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '8', ',', '3' }
 	#elif (TARGET_MODEL == MACBOOK_PRO_82)
-		#define SMB_BIOS_VERSION	"MBP81.88Z.0047.B24.1110141131"
+		#define SMB_BIOS_VERSION	"MBP81.88Z.0047.B27.1201241646"
 		#define SMB_PRODUCT_NAME	"MacBookPro8,2"
 		#define SMB_BOARD_PRODUCT	"Mac-94245A3940C91C80"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '8', ',', '2' }
 	#elif (TARGET_MODEL == MACBOOK_PRO_81)
-		#define SMB_BIOS_VERSION	"MBP81.88Z.0047.B24.1110141131"
+		#define SMB_BIOS_VERSION	"MBP81.88Z.0047.B27.1201241646"
 		#define SMB_PRODUCT_NAME	"MacBookPro8,1"
 		#define SMB_BOARD_PRODUCT	"Mac-94245B3640C91C81"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '8', ',', '1' }
