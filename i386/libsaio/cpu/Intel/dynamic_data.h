@@ -520,7 +520,7 @@ void initCPUStruct(void)
 
 	_CPU_DEBUG_DUMP("                             123456789 123456789 123456789 123456789 12345678\n");
 	_CPU_DEBUG_DUMP("CPU: Brandstring           : %s\n",				gPlatform.CPU.BrandString);
-	_CPU_DEBUG_DUMP("CPU: Vendor/Model/ExtModel : 0x%x/0x%x/0x%x\n",		gPlatform.CPU.Vendor, gPlatform.CPU.Model, gPlatform.CPU.ExtModel);
+	_CPU_DEBUG_DUMP("CPU: Vendor/Model/ExtModel : 0x%x/0x%x/0x%x\n",	gPlatform.CPU.Vendor, gPlatform.CPU.Model, gPlatform.CPU.ExtModel);
 	_CPU_DEBUG_DUMP("CPU: Stepping / Signature  : 0x%x/0x%x\n",			gPlatform.CPU.Stepping, gPlatform.CPU.Signature);
 	_CPU_DEBUG_DUMP("CPU: Family/ExtFamily      : 0x%x/0x%x\n",			gPlatform.CPU.Family, gPlatform.CPU.ExtFamily);
 	_CPU_DEBUG_DUMP("CPU: Type                  : 0x%x\n",				gPlatform.CPU.Type);
