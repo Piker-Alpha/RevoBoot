@@ -3,6 +3,12 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
+# Version 1.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+#
+# Updates:
+#			- Added support for Ivybridge (Pike, January, 2013)
+#			- Filename error fixed (Pike, January, 2013)
+#			- Namespace error fixed in _printScopeStart (Pike, January, 2013)
 #
 
 # set -x # Used for tracing errors (can be put anywhere in the script).
@@ -11,25 +17,13 @@
 
 ssdtPR=/tmp/ssdt-pr.dsl
 
-ssdtID=ssdt-pr
+ssdtID=ssdt_pr
 
 #
-# Lowest possible idle frequency (800 for mobile processors).
+# Lowest possible idle frequency minus 100.
 #
 
 baseFrequency=1500
-
-#CPU='i5-2410M','i5-2510E','i5-2515E','i5-2520M','i5-2537M','i5-2540M','i5-2557M',\
-#'i5-3210M','i5-3317U','i5-3320M','i5-3360M','i5-3427U','i5-3610ME'
-
-#TDP=		35,35,35,35,17,35,17,35,17,35,35,17,25
-
-#CLOCKSPEED=	23,25,25,25,14,26,17,25,17,26,28,18,27
-
-#MAXTURBO=	29,31,31,32,23,33,27,31,26,33,35,28,33
-
-#THREADS=	04,04,04,04,04,04,04,04,04,04,04,04,04
-
 
 #--------------------------------------------------------------------------------
 
@@ -90,22 +84,38 @@ function _printProcessorDefinitions()
 
 function _printScopeStart()
 {
-	echo '    Scope (_PR.CPU0)'                                             >> $ssdtPR
+	echo '    Scope (\_PR.CPU0)'                                            >> $ssdtPR
 	echo '    {'                                                            >> $ssdtPR
 
-    #
-    # Check number of Turbo states (for IASL optimization).
-    #
+	let packageLength=$2
 
-    if [ $1 -eq 0 ];
-        then
-            echo '        Name (APSN, Zero)'                                >> $ssdtPR
-        else
-            printf "        Name (APSN, 0x%02X" $1                          >> $ssdtPR
-            echo ')'                                                        >> $ssdtPR
-    fi
+	#
+	# Do we need to create additional (Low Frequency) P-States for Ivybridge?
+	#
 
-   printf "        Name (APSS, Package (0x%02X" $2                          >> $ssdtPR
+	if [ $3 -eq 1 ];
+		then
+			let lowestFrequency=($baseFrequency+100)
+			let lowFrequencyPStates=($lowestFrequency/100)-8
+			let packageLength=($2+$lowFrequencyPStates)
+
+			printf "        Name (APLF, 0x%02x" $lowFrequencyPStates        >> $ssdtPR
+			echo ')'                                                        >> $ssdtPR
+	fi
+
+	#
+	# Check number of Turbo states (for IASL optimization).
+	#
+
+	if [ $1 -eq 0 ];
+		then
+			echo '        Name (APSN, Zero)'                                >> $ssdtPR
+		else
+			printf "        Name (APSN, 0x%02X" $1                          >> $ssdtPR
+			echo ')'                                                        >> $ssdtPR
+	fi
+
+	printf "        Name (APSS, Package (0x%02X" $packageLength             >> $ssdtPR
 
 	echo ')'                                                                >> $ssdtPR
 	echo '        {'                                                        >> $ssdtPR
@@ -119,10 +129,21 @@ function _printPackages()
 	let tdp=($1*1000)
 	let maxNonTurboFrequency=$2
 	let frequency=$3
+	let min_ratio=($baseFrequency/100)
 	let max_ratio=($frequency/100)
+	let lowFrequencyPStates=$4
+	let lowestFrequency=$baseFrequency
 
-	while [ $frequency -gt $baseFrequency ]; do
-		echo ''                                                             >> $ssdtPR
+	#
+	# Do we need to create additional (Low Frequency) P-States for Ivybridge?
+	#
+
+	if [ $lowFrequencyPStates -eq 1 ]
+		then
+			let lowestFrequency=(800-100)
+	fi
+
+	while [ $frequency -gt $lowestFrequency ]; do
 		echo '            Package (0x06)'                                   >> $ssdtPR
 		echo '            {'                                                >> $ssdtPR
 
@@ -131,17 +152,21 @@ function _printPackages()
 		echo ','                                                            >> $ssdtPR
 
 		let ratio=$frequency/100
-        
-        if [ $frequency -lt $maxNonTurboFrequency ];
-            then
-                power=$(echo "scale=6;m=((1.1-(($max_ratio-$ratio)*0.00625))/1.1);(($ratio/$max_ratio)*(m*m)*$tdp);" | bc | sed -e 's/.[0-9A-F]*$//')
-            else
-                power=$tdp
-        fi
 
-		printf "                0x%08X" $power                              >> $ssdtPR
+		if [ $ratio -gt $min_ratio ]
+			then
+				if [ $frequency -lt $maxNonTurboFrequency ];
+					then
+						power=$(echo "scale=6;m=((1.1-(($max_ratio-$ratio)*0.00625))/1.1);(($ratio/$max_ratio)*(m*m)*$tdp);" | bc | sed -e 's/.[0-9A-F]*$//')
+					else
+						power=$tdp
+				fi
 
-		echo ','                                                            >> $ssdtPR
+				printf "                0x%08X" $power                      >> $ssdtPR
+				echo ','                                                    >> $ssdtPR
+			else
+				echo '                Zero,'                                 >> $ssdtPR
+		fi
 
 		echo '                0x0A,'                                        >> $ssdtPR
 		echo '                0x0A,'                                        >> $ssdtPR
@@ -156,17 +181,47 @@ function _printPackages()
 
 		let frequency-=100
 
-		if [ $frequency -eq $baseFrequency ];
+		if [ $frequency -eq $lowestFrequency ];
 			then
 				echo '            }'                                        >> $ssdtPR
 			else
 				echo '            },'                                       >> $ssdtPR
-		fi
+				echo ''                                                     >> $ssdtPR
+			fi
 	done
 
-	echo '        })'                                                       >> $ssdtPR
+		echo '        })'                                                   >> $ssdtPR
 }
 
+
+#--------------------------------------------------------------------------------
+
+function _printIvybridgeMethods()
+{
+	echo ''                                                                 >> $ssdtPR
+	echo '        Method (MCDP, 2, NotSerialized)'                          >> $ssdtPR
+	echo '        {'                                                        >> $ssdtPR
+	echo '            If (LEqual (Arg0, Zero))'                             >> $ssdtPR
+	echo '            {'                                                    >> $ssdtPR
+	echo '                Store (Buffer (One)'                              >> $ssdtPR
+	echo '                {'                                                >> $ssdtPR
+	echo '                    0x03'                                         >> $ssdtPR
+	echo '                }, Arg1)'                                         >> $ssdtPR
+	echo '            }'                                                    >> $ssdtPR
+	echo '        }'                                                        >> $ssdtPR
+	echo ''                                                                 >> $ssdtPR
+	echo '        Method (_DSM, 4, NotSerialized)'                          >> $ssdtPR
+	echo '        {'                                                        >> $ssdtPR
+	echo '            Store (Package (0x02)'                                >> $ssdtPR
+	echo '            {'                                                    >> $ssdtPR
+	echo '                "plugin-type",'                                   >> $ssdtPR
+	echo '                One'                                              >> $ssdtPR
+	echo '            }, Local0)'                                           >> $ssdtPR
+	echo '            MCDP (Arg2, RefOf (Local0))'                          >> $ssdtPR
+	echo '            Return (Local0)'                                      >> $ssdtPR
+	echo '        }'                                                        >> $ssdtPR
+	echo '    }'                                                            >> $ssdtPR
+}
 
 #--------------------------------------------------------------------------------
 
@@ -248,7 +303,15 @@ function _printCSTScope()
 	echo '                }'                                                >> $ssdtPR
 	echo '            })'                                                   >> $ssdtPR
 	echo '        }'                                                        >> $ssdtPR
-	echo '    }'                                                            >> $ssdtPR
+
+	#
+	# We don't want a closing bracket here when we add methods for Ivybridge.
+	#
+
+	if [ $lowFrequencyPStates -eq 0 ]
+		then
+			echo '    }'                                                    >> $ssdtPR
+	fi
 }
 
 
@@ -301,6 +364,7 @@ function main()
 
     let tdp=$1
     let maxTurboFrequency=$2
+	# let lowFrequencyPStates=$3
 
     #
     # Do not change anything below this line!
@@ -331,9 +395,15 @@ function main()
 
     _printHeader
 	_printExternals $logicalCPUs
-	_printScopeStart $turboStates $packageLength
-	_printPackages $tdp $frequency $maxTurboFrequency
+	_printScopeStart $turboStates $packageLength $3
+	_printPackages $tdp $frequency $maxTurboFrequency $3
 	_printCSTScope
+
+	if [ $3 -eq 1 ]
+		then
+			_printIvybridgeMethods
+	fi
+
 	_printCPUScopes $logicalCPUs
 }
 
@@ -344,11 +414,11 @@ function main()
 # Check number of arguments.
 #
 
-if [ $# -eq 2 ];
+if [ $# -eq 3 ];
     then
-        main $1 $2
+        main $1 $2 $3
     else
-        echo "Usage: $0 TDP MaxTurboFrequency"
+        echo "Usage: $0 TDP MaxTurboFrequency (0 for SandyBridge / 1 for IvyBridge)"
         exit 1
 fi
 
