@@ -116,8 +116,8 @@ void generateSSDT_PR(void)
 
 	uint8_t SCOPE_PR_CPU0[] =						// Scope (\_PR.CPU0) { }
 	{
-		/* 0000 */	0x10, 0xFF, 0xFF, 0x2E, 0x5F, 0x50, 0x52, 0x5F, 
-		/* 0008 */	_CPU_LABEL_REPLACEMENT
+		/* 0000 */	0x10, 0xFF, 0xFF, 0x5C, 0x2E, 0x5F, 0x50, 0x52,
+		/* 0008 */	0x5F, _CPU_LABEL_REPLACEMENT
 	};
 
 	uint8_t NAME_APSN[] =							// Name (APSN, 0xFF)
