@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 1.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 1.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -12,6 +12,7 @@
 #			- Model and board-id checks added (Pike, January, 2013)
 #			- SMBIOS cpu-type check added (Pike, January, 2013)
 #			- Copy/paste error fixed (Pike, January, 2013)
+#			- Method ACST added to CPU scopes for IB CPUPM (Pike, January, 2013)
 #
 
 # set -x # Used for tracing errors (can be put anywhere in the script).
@@ -332,6 +333,20 @@ function _printCPUScopes()
 		echo '        {'                                                    >> $ssdtPR
 		echo '            Return (\_PR.CPU0.APSS)'                          >> $ssdtPR
 		echo '        }'                                                    >> $ssdtPR
+		echo ''                                                             >> $ssdtPR
+
+		#
+		# IB CPUPM tries to parse/execute Method ACST (see debug data) and thus we add
+		# this method, conditionally, since SB CPUPM doesn't seem to care about it.
+		#
+		if [ $lowFrequencyPStates -eq 1 ]
+			then
+				echo '        Method (ACST, 0, NotSerialized)'              >> $ssdtPR
+				echo '        {'                                            >> $ssdtPR
+				echo '            Return (\_PR.CPU0.ACST)'                  >> $ssdtPR
+				echo '        }'                                            >> $ssdtPR
+		fi
+
 		echo '    }'                                                        >> $ssdtPR
 		let currentCPU+=1
 	done
