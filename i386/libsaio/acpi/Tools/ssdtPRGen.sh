@@ -3,13 +3,14 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 1.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 1.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
 #			- Filename error fixed (Pike, January, 2013)
 #			- Namespace error fixed in _printScopeStart (Pike, January, 2013)
 #			- Model and board-id checks added (Pike, January, 2013)
+#			- SMBIOS cpu-type check added (Pike, January, 2013)
 #
 
 # set -x # Used for tracing errors (can be put anywhere in the script).
@@ -341,6 +342,9 @@ function _printCPUScopes()
 
 function _getModelName()
 {
+	#
+	# Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
+	#
 	echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *"*=*<*>*//g' -e 's/compatible*//'`
 }
 
@@ -348,7 +352,24 @@ function _getModelName()
 
 function _getBoardID()
 {
+	#
+	# Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
+	#
 	echo `ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *"*=*<*>*//g' -e 's/board-id*//'`
+}
+
+#--------------------------------------------------------------------------------
+
+function _getCPUtype()
+{
+	#
+	# Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
+	#
+	local grepStr=`ioreg -p IODeviceTree -n CPU0@0 -k cpu-type | grep cpu-type | sed -e 's/.*[<]//' -e 's/0\{0\}>$//'`
+	#
+	# Swap bytes with help of ${str:pos:num}
+	#
+	echo ${grepStr:2:2}${grepStr:0:2}
 }
 
 #--------------------------------------------------------------------------------
@@ -522,6 +543,7 @@ function main()
 
 	if [ $3 -eq 1 ]
 		then
+			local typeCPU=$(_getCPUtype)
 			local targetModelID=$(_getIvyMacModelByBoardID)
 
 			_printIvybridgeMethods $usedBoardID $targetModelID
@@ -535,6 +557,11 @@ function main()
 						then
 							echo "Error: board-id [$usedBoardID] and model [$modelID] mismatch"
 					fi
+			fi
+
+			if [ "${typeCPU}:2:2" != "04" ]
+				then
+					echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}04)"
 			fi
 		else
 			local targetModelID=$(_getSandyMacModelByBoardID)
@@ -550,6 +577,12 @@ function main()
 							echo "Error: board-id [$usedBoardID] and model [$modelID] mismatch"
 					fi
 			fi
+
+			if [ "${typeCPU}:2:2" != "02" ]
+				then
+					echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}02)"
+			fi
+
 	fi
 }
 
