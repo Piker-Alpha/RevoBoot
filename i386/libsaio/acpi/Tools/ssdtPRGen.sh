@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 1.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 1.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -11,6 +11,7 @@
 #			- Namespace error fixed in _printScopeStart (Pike, January, 2013)
 #			- Model and board-id checks added (Pike, January, 2013)
 #			- SMBIOS cpu-type check added (Pike, January, 2013)
+#			- Copy/paste error fixed (Pike, January, 2013)
 #
 
 # set -x # Used for tracing errors (can be put anywhere in the script).
@@ -440,7 +441,7 @@ function _getIvyMacModelByBoardID()
 		local macModelIdentifier="iMac13,2"
 		;;
 
-	Mac-031AEE4D24BFF0B15819B171B)
+	Mac-031AEE4D24BFF0B1)
 		local macModelIdentifier="Macmini6,1"
 		;;
 
