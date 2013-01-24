@@ -540,10 +540,10 @@ function main()
 
 	local modelID=$(_getModelName)
 	local usedBoardID=$(_getBoardID)
+	local typeCPU=$(_getCPUtype)
 
 	if [ $3 -eq 1 ]
 		then
-			local typeCPU=$(_getCPUtype)
 			local targetModelID=$(_getIvyMacModelByBoardID)
 
 			_printIvybridgeMethods $usedBoardID $targetModelID
@@ -559,7 +559,7 @@ function main()
 					fi
 			fi
 
-			if [ "${typeCPU}:2:2" != "04" ]
+			if [ "${typeCPU:2:2}" != "04" ]
 				then
 					echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}04)"
 			fi
@@ -578,7 +578,7 @@ function main()
 					fi
 			fi
 
-			if [ "${typeCPU}:2:2" != "02" ]
+			if [ "${typeCPU:2:2}" != "02" ]
 				then
 					echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}02)"
 			fi
