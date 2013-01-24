@@ -1,12 +1,14 @@
 /*
  * Copyright (c) 2009 by Master Chief.
  *
- * Refactoring for Revolution done by DHP in 2010/2011.
- * Expanded (requestMaxTurbo added) by DHP in May 2011.
- * Simplified by DHP in Juni 2011 (thanks to MC and flAked for the idea).
- * Code copied from Intel/dynamic_data.h  by DHP in juni 2011.
- * New compiler directive (BOOT_TURBO_RATIO) added by Jeroen (June 2011).
- * Function checkFlexRatioMSR added by DHP (August 2011).
+ * Updates:
+ *			- Refactoring for Revolution done by DHP in 2010/2011.
+ *			- Expanded (requestMaxTurbo added) by DHP in May 2011.
+ *			- Simplified by DHP in Juni 2011 (thanks to MC and flAked for the idea).
+ *			- Code copied from Intel/dynamic_data.h  by DHP in juni 2011.
+ *			- New compiler directive (BOOT_TURBO_RATIO) added by Jeroen (June 2011).
+ *			- Function checkFlexRatioMSR added by DHP (August 2011).
+ *			- Fixed error: use of undeclared identifier 'NUMBER_OF_TURBO_STATES' (Pike, January 2013).
  */
 
 
@@ -90,10 +92,11 @@ void initTurboRatios()
 	// We need to have something to work with so check for it, and the 
 	// way we do that (trying to be smart) supports any number of cores.
 
+	uint8_t	numberOfCores = gPlatform.CPU.NumCores;
+
 	if (gPlatform.CPU.CoreTurboRatio[0] != 0)
 	{
 		uint8_t i, duplicatedRatios = 0;
-		uint8_t	numberOfCores = gPlatform.CPU.NumCores;
 
 		// Simple check to see if all ratios are the same.
 		for (i = 0; i < numberOfCores; i++)
@@ -107,15 +110,20 @@ void initTurboRatios()
 			duplicatedRatios++;
 		}
 
+#ifdef NUMBER_OF_TURBO_STATES
+		uint8_t numberOfTurboStates = NUMBER_OF_TURBO_STATES;
+#else
+		uint8_t numberOfTurboStates = numberOfCores;
+#endif
 		// Should we add only one turbo P-State?
 		if (duplicatedRatios == 0)
 		{
-			gPlatform.CPU.NumberOfTurboRatios = NUMBER_OF_TURBO_STATES;	// Default for AICPUPM.
+			gPlatform.CPU.NumberOfTurboRatios = numberOfTurboStates;	// Default for AICPUPM.
 		}
 		else // Meaning that we found duplicated ratios.
 		{
 			// Do we need to inject one Turbo P-State only?
-			if (duplicatedRatios == NUMBER_OF_TURBO_STATES)
+			if (duplicatedRatios == numberOfTurboStates)
 			{
 				// Yes. Wipe the rest (keeping the one with the highest multiplier).
 				for (i = 1; i < numberOfCores; i++)		// i set to 1 to preserve the first one.
@@ -133,7 +141,7 @@ void initTurboRatios()
 		}
 
 		// Jeroen: Used in ACPI/ssdt_pr_generator.h / for DEBUG_CPU_TURBO_RATIOS.
-		gPlatform.CPU.NumberOfTurboRatios = (NUMBER_OF_TURBO_STATES - duplicatedRatios);
+		gPlatform.CPU.NumberOfTurboRatios = (numberOfTurboStates - duplicatedRatios);
 		
 		/* if (duplicatedRatios == 4)
 		{
