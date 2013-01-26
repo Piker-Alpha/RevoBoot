@@ -19,9 +19,9 @@
 
 #================================= GLOBAL VARS ==================================
 
-ssdtPR=/tmp/ssdt-pr.dsl
+ssdtPR=~/Desktop/SSDT_PR.dsl
 
-ssdtID=ssdt_pr
+ssdtID=SSDT_PR
 
 #
 # Lowest possible idle frequency minus 100.
@@ -343,7 +343,7 @@ function _printCPUScopes()
 			then
 				echo '        Method (ACST, 0, NotSerialized)'              >> $ssdtPR
 				echo '        {'                                            >> $ssdtPR
-				echo '            Return (\_PR.CPU0.ACST)'                  >> $ssdtPR
+				echo '            Return (\_PR.CPU0.ACST ())'               >> $ssdtPR
 				echo '        }'                                            >> $ssdtPR
 		fi
 
