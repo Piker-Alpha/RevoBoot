@@ -54,12 +54,14 @@
 // Additional model selectors to select a specific target model.
 //------------------------------------------------------------------------------
 
-#define IMAC_131				IMAC | (3 << 15)
-#define IMAC_111				IMAC | (2 << 15)
-#define IMAC_122				IMAC | (1 << 15)
-#define IMAC_121				IMAC					// Defaults to iMac12,1
 
-#define MACBOOK_41				MACBOOK					// Defaults to MacBook,1
+#define IMAC_131				(IMAC | (4 << 15))
+#define IMAC_122				(IMAC | (3 << 15))
+#define IMAC_121				(IMAC | (2 << 15))
+#define IMAC_111				(IMAC | (1 << 15))       
+#define IMAC_132				IMAC                    // Defaults to iMac13,2
+
+#define MACBOOK_41				MACBOOK					// Defaults to MacBook4,1
 
 #define MACBOOK_AIR_42			MACBOOK_AIR | (1 << 15)
 #define MACBOOK_AIR_41			MACBOOK_AIR				// Defaults to MacBookAir4,1
