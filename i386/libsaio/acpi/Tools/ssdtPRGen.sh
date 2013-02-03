@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 1.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 2.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -13,21 +13,59 @@
 #			- SMBIOS cpu-type check added (Pike, January, 2013)
 #			- Copy/paste error fixed (Pike, January, 2013)
 #			- Method ACST added to CPU scopes for IB CPUPM (Pike, January, 2013)
+#			- Method ACST corrected for latest version of iasl (Dave, January, 2013)
+#			- Changed path/filename to ~/Desktop/SSDT_PR.dsl (Dave, January, 2013)
+#			- P-States are now one-liners instead of blocks (Pike, January, 2013)
+#			- Support for flexible ProcessorNames added (Pike, Februari, 2013)
+#			- Better feedback and Debug() injection added (Pike, Februari, 2013)
+#			- Automatic processor type detection (Pike, Februari, 2013)
+#			- TDP and processor type are now optional arguments (Pike, Februari, 2013)
+#			- system-type check (used by X86PlatformPlugin) added (Pike, Februari, 2013)
+#			- ACST injection for all logical processors (Pike, Februari, 2013)
+#
+# Contributors:
+#			- Thanks to Dave and Toleda for their help (bug fixes and other improvements).
 #
 
-# set -x # Used for tracing errors (can be put anywhere in the script).
+# set -x # Used for tracing errors (can be used anywhere in the script).
 
 #================================= GLOBAL VARS ==================================
 
-ssdtPR=~/Desktop/SSDT_PR.dsl
+scriptVersion=2.0
 
+#
+# Path and filename setup.
+#
+
+path=~/Desktop
 ssdtID=SSDT_PR
+ssdtPR=${path}/${ssdtID}.dsl
 
 #
-# Lowest possible idle frequency minus 100.
+# Lowest possible idle frequency (user configurable).
 #
 
-baseFrequency=1500
+baseFrequency=1600
+
+#
+# Here are the other global variables defined.
+#
+
+systemType=0
+
+gACST_CPU0=13
+gACST_CPU1=7
+
+macModelIdentifier=""
+
+#
+# Change this label to "P00" when your tables use P000 instead oc CPU0.
+#
+
+gProcLabel="CPU"
+
+IVY_BRIDGE=4
+SANDY_BRIDGE=2
 
 #--------------------------------------------------------------------------------
 
@@ -62,7 +100,7 @@ function _printExternals()
 	currentCPU=0;
 
 	while [ $currentCPU -lt $1 ]; do
-		echo '    External (\_PR_.CPU'$currentCPU', DeviceObj)'             >> $ssdtPR
+		echo '    External (\_PR_.'$gProcLabel$currentCPU', DeviceObj)'     >> $ssdtPR
 		let currentCPU+=1
 	done
 
@@ -72,12 +110,27 @@ function _printExternals()
 
 #--------------------------------------------------------------------------------
 
+function _printDebugInfo()
+{
+	echo '    Store ("ssdtPRGen.sh version '$scriptVersion'", Debug)'       >> $ssdtPR
+	echo '    Store ("baseFrequency    : '$baseFrequency'", Debug)'         >> $ssdtPR
+	echo '    Store ("frequency        : '$frequency'", Debug)'             >> $ssdtPR
+	echo '    Store ("logicalCPUs      : '$logicalCPUs'", Debug)'           >> $ssdtPR
+	echo '    Store ("tdp              : '$tdp'", Debug)'                   >> $ssdtPR
+	echo '    Store ("packageLength    : '$packageLength'", Debug)'         >> $ssdtPR
+	echo '    Store ("turboStates      : '$turboStates'", Debug)'           >> $ssdtPR
+	echo '    Store ("maxTurboFrequency: '$maxTurboFrequency'", Debug)'     >> $ssdtPR
+	echo ''                                                                 >> $ssdtPR
+}
+
+#--------------------------------------------------------------------------------
+
 function _printProcessorDefinitions()
 {
 	currentCPU=0;
 
 	while [ $currentCPU -lt $1 ]; do
-		echo '    External (\_PR_.CPU'$currentCPU', DeviceObj)'             >> $ssdtPR
+		echo '    External (\_PR_.'$gProcLabel$currentCPU', DeviceObj)'     >> $ssdtPR
 		let currentCPU+=1
 	done
 
@@ -88,18 +141,18 @@ function _printProcessorDefinitions()
 
 function _printScopeStart()
 {
-	echo '    Scope (\_PR.CPU0)'                                            >> $ssdtPR
+	echo '    Scope (\_PR.'$gProcLabel'0)'                                  >> $ssdtPR
 	echo '    {'                                                            >> $ssdtPR
 
 	let packageLength=$2
 
 	#
-	# Do we need to create additional (Low Frequency) P-States for Ivybridge?
+	# Do we need to create additional (Low Frequency) P-States?
 	#
 
-	if [ $3 -eq 1 ];
+	if [ $bridgeType -eq $IVY_BRIDGE ];
 		then
-			let lowestFrequency=($baseFrequency+100)
+			let lowestFrequency=$baseFrequency
 			let lowFrequencyPStates=($lowestFrequency/100)-8
 			let packageLength=($2+$lowFrequencyPStates)
 
@@ -130,66 +183,51 @@ function _printScopeStart()
 
 function _printPackages()
 {
-	let tdp=($1*1000)
-	let maxNonTurboFrequency=$2
-	let frequency=$3
+	local frequency=$3
+	local maxNonTurboFrequency=$2
+	local lowestFrequency=$baseFrequency
+
+	let maxTDP=($1*1000)
 	let min_ratio=($baseFrequency/100)
 	let max_ratio=($frequency/100)
-	let lowFrequencyPStates=$4
-	let lowestFrequency=$baseFrequency
 
 	#
 	# Do we need to create additional (Low Frequency) P-States for Ivybridge?
 	#
 
-	if [ $lowFrequencyPStates -eq 1 ]
+	if [ $bridgeType -eq $IVY_BRIDGE ]
 		then
-			let lowestFrequency=(800-100)
+			let lowestFrequency=800
 	fi
 
-	while [ $frequency -gt $lowestFrequency ]; do
-		echo '            Package (0x06)'                                   >> $ssdtPR
-		echo '            {'                                                >> $ssdtPR
-
-		printf "                0x%04X" $frequency                          >> $ssdtPR
-
-		echo ','                                                            >> $ssdtPR
+	while [ $frequency -ge $lowestFrequency ];
+		do
+		printf "            Package (0x06) { 0x%04X, " $frequency           >> $ssdtPR
 
 		let ratio=$frequency/100
 
-		if [ $ratio -gt $min_ratio ]
+		if [ $ratio -ge $min_ratio ]
 			then
 				if [ $frequency -lt $maxNonTurboFrequency ];
 					then
-						power=$(echo "scale=6;m=((1.1-(($max_ratio-$ratio)*0.00625))/1.1);(($ratio/$max_ratio)*(m*m)*$tdp);" | bc | sed -e 's/.[0-9A-F]*$//')
+						power=$(echo "scale=6;m=((1.1-(($max_ratio-$ratio)*0.00625))/1.1);(($ratio/$max_ratio)*(m*m)*$maxTDP);" | bc | sed -e 's/.[0-9A-F]*$//')
 					else
-						power=$tdp
+						power=$maxTDP
 				fi
 
-				printf "                0x%08X" $power                      >> $ssdtPR
-				echo ','                                                    >> $ssdtPR
+				printf "0x%08X, " $power                                    >> $ssdtPR
 			else
-				echo '                Zero,'                                 >> $ssdtPR
+				printf '      Zero, '                                       >> $ssdtPR
 		fi
 
-		echo '                0x0A,'                                        >> $ssdtPR
-		echo '                0x0A,'                                        >> $ssdtPR
- 
-		printf "                0x%02X" $ratio                              >> $ssdtPR
-
-		echo '00,'                                                          >> $ssdtPR
-
-		printf "                0x%02X" $ratio                              >> $ssdtPR
-
-		echo '00'                                                           >> $ssdtPR
+		printf "0x0A, 0x0A, 0x%02X00, 0x%02X00 }" $ratio $ratio             >> $ssdtPR
 
 		let frequency-=100
 
-		if [ $frequency -eq $lowestFrequency ];
+		if [ $frequency -ge $lowestFrequency ];
 			then
-				echo '            }'                                        >> $ssdtPR
+				echo ','                                                    >> $ssdtPR
 			else
-				echo '            },'                                       >> $ssdtPR
 				echo ''                                                     >> $ssdtPR
 			fi
 	done
@@ -231,90 +269,188 @@ function _printIvybridgeMethods()
 
 function _printCSTScope()
 {
-	echo ''                                                                 >> $ssdtPR
-	echo '        Method (ACST, 0, NotSerialized)'                          >> $ssdtPR
-	echo '        {'                                                        >> $ssdtPR
-	echo '            Return (Package (0x06)'                               >> $ssdtPR
-	echo '            {'                                                    >> $ssdtPR
-	echo '                One,'                                             >> $ssdtPR
-	echo '                0x04,'                                            >> $ssdtPR
-	echo '                Package (0x04)'                                   >> $ssdtPR
-	echo '                {'                                                >> $ssdtPR
-	echo '                    ResourceTemplate ()'                          >> $ssdtPR
-	echo '                    {'                                            >> $ssdtPR
-	echo '                        Register (FFixedHW,'                      >> $ssdtPR
-	echo '                            0x01,               // Bit Width'		>> $ssdtPR
-	echo '                            0x02,               // Bit Offset'	>> $ssdtPR
-	echo '                            0x0000000000000000, // Address'		>> $ssdtPR
-	echo '                            0x01,               // Access Size'	>> $ssdtPR
-	echo '                            )'                                    >> $ssdtPR
-	echo '                    },'                                           >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                    One,'                                         >> $ssdtPR
-	echo '                    0x03,'                                        >> $ssdtPR
-	echo '                    0x03E8'                                       >> $ssdtPR
-	echo '                },'                                               >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                Package (0x04)'                                   >> $ssdtPR
-	echo '                {'                                                >> $ssdtPR
-	echo '                    ResourceTemplate ()'                          >> $ssdtPR
-	echo '                    {'                                            >> $ssdtPR
-	echo '                        Register (FFixedHW,'                      >> $ssdtPR
-	echo '                            0x01,               // Bit Width'		>> $ssdtPR
-	echo '                            0x02,               // Bit Offset'	>> $ssdtPR
-	echo '                            0x0000000000000010, // Address'		>> $ssdtPR
-	echo '                            0x03,               // Access Size'	>> $ssdtPR
-	echo '                            )'                                    >> $ssdtPR
-	echo '                    },'                                           >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                    0x03,'                                        >> $ssdtPR
-	echo '                    0xCD,'                                        >> $ssdtPR
-	echo '                    0x01F4'                                       >> $ssdtPR
-	echo '                },'                                               >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                Package (0x04)'                                   >> $ssdtPR
-	echo '                {'                                                >> $ssdtPR
-	echo '                    ResourceTemplate ()'                          >> $ssdtPR
-	echo '                    {'                                            >> $ssdtPR
-	echo '                        Register (FFixedHW,'                      >> $ssdtPR
-	echo '                            0x01,               // Bit Width'		>> $ssdtPR
-	echo '                            0x02,               // Bit Offset'	>> $ssdtPR
-	echo '                            0x0000000000000020, // Address'		>> $ssdtPR
-	echo '                            0x03,               // Access Size'	>> $ssdtPR
-	echo '                            )'                                    >> $ssdtPR
-	echo '                    },'                                           >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                    0x06,'                                        >> $ssdtPR
-	echo '                    0xF5,'                                        >> $ssdtPR
-	echo '                    0x015E'                                       >> $ssdtPR
-	echo '                },'                                               >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                Package (0x04)'                                   >> $ssdtPR
-	echo '                {'                                                >> $ssdtPR
-	echo '                    ResourceTemplate ()'                          >> $ssdtPR
-	echo '                    {'                                            >> $ssdtPR
-	echo '                        Register (FFixedHW,'                      >> $ssdtPR
-	echo '                            0x01,               // Bit Width'		>> $ssdtPR
-	echo '                            0x02,               // Bit Offset'	>> $ssdtPR
-	echo '                            0x0000000000000030, // Address'		>> $ssdtPR
-	echo '                            0x03,               // Access Size'	>> $ssdtPR
-	echo '                            )'                                    >> $ssdtPR
-	echo '                    },'                                           >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '                    0x07,'                                        >> $ssdtPR
-	echo '                    0xF5,'                                        >> $ssdtPR
-	echo '                    0xC8'                                         >> $ssdtPR
-	echo '                }'                                                >> $ssdtPR
-	echo '            })'                                                   >> $ssdtPR
-	echo '        }'                                                        >> $ssdtPR
+	let C1=0
+	let C2=0
+	let C3=0
+	let C6=0
+	let C7=0
+	local pkgLength=2
+	local numberOfCStates=0
+
+	echo ''                                                                     >> $ssdtPR
+	echo '        Method (ACST, 0, NotSerialized)'                              >> $ssdtPR
+	echo '        {'                                                            >> $ssdtPR
 
 	#
-	# We don't want a closing bracket here when we add methods for Ivybridge.
+	# Are we injecting C-States for CPU1?
 	#
-
-	if [ $lowFrequencyPStates -eq 0 ]
+	if [ $1 -eq 1 ];
 		then
-			echo '    }'                                                    >> $ssdtPR
+			# Yes (also used by CPU2, CPU3 and greater).
+			let targetCStates=$gACST_CPU1
+			latency_C1=0x03E8
+			latency_C2=0x94
+			latency_C3=0xA9
+			echo '            Store ("CPU1 C-States    : '$gACST_CPU1'", Debug)'>> $ssdtPR
+
+		else
+			# No (only used by CPU0).
+			let targetCStates=$gACST_CPU0
+			latency_C1=Zero
+			latency_C3=0xCD
+			latency_C6=0xF5
+			latency_C7=0xF5
+			echo '            Store ("CPU0 C-States    : '$gACST_CPU0'", Debug)'>> $ssdtPR
+	fi
+
+	#
+	# Checks to determine which C-State(s) we should inject.
+	#
+	if (($targetCStates & 1)); then
+		let C1=1
+		let numberOfCStates+=1
+		let pkgLength+=1
+	fi
+
+	if (($targetCStates & 2)); then
+		let C2=1
+		let numberOfCStates+=1
+		let pkgLength+=1
+	fi
+
+	if (($targetCStates & 4)); then
+		let C3=1
+		let numberOfCStates+=1
+		let pkgLength+=1
+	fi
+
+	if (($targetCStates & 8)); then
+		let C6=1
+		let numberOfCStates+=1
+		let pkgLength+=1
+	fi
+
+	if (($targetCStates & 16)); then
+		let C7=1
+		let numberOfCStates+=1
+		let pkgLength+=1
+	fi
+
+	echo ''                                                                     >> $ssdtPR
+	printf "            Return (Package (0x%02x)\n" $pkgLength                  >> $ssdtPR
+	echo '            {'                                                        >> $ssdtPR
+	echo '                One,'                                                 >> $ssdtPR
+	printf "                0x%02x,\n" $numberOfCStates                         >> $ssdtPR
+
+	echo '                Package (0x04)'                                       >> $ssdtPR
+	echo '                {'                                                    >> $ssdtPR
+	echo '                    ResourceTemplate ()'                              >> $ssdtPR
+	echo '                    {'                                                >> $ssdtPR
+	echo '                        Register (FFixedHW,'                          >> $ssdtPR
+	echo '                            0x01,               // Bit Width'         >> $ssdtPR
+	echo '                            0x02,               // Bit Offset'        >> $ssdtPR
+	echo '                            0x0000000000000000, // Address'           >> $ssdtPR
+	echo '                            0x01,               // Access Size'       >> $ssdtPR
+	echo '                            )'                                        >> $ssdtPR
+	echo '                    },'                                               >> $ssdtPR
+	echo '                    One,'                                             >> $ssdtPR
+	echo '                    '$latency_C1','                                   >> $ssdtPR
+	echo '                    0x03E8'                                           >> $ssdtPR
+
+	if [ $C2 -eq 1 ]; then
+		echo '                },'                                               >> $ssdtPR
+		echo ''                                                                 >> $ssdtPR
+		echo '                Package (0x04)'                                   >> $ssdtPR
+		echo '                {'                                                >> $ssdtPR
+		echo '                    ResourceTemplate ()'                          >> $ssdtPR
+		echo '                    {'                                            >> $ssdtPR
+		echo '                        Register (FFixedHW,'                      >> $ssdtPR
+		echo '                            0x01,               // Bit Width'     >> $ssdtPR
+		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
+		echo '                            0x0000000000000010, // Address'       >> $ssdtPR
+		echo '                            0x03,               // Access Size'   >> $ssdtPR
+		echo '                            )'                                    >> $ssdtPR
+		echo '                    },'                                           >> $ssdtPR
+		echo '                    0x02,'                                        >> $ssdtPR
+		echo '                    '$latency_C2','                               >> $ssdtPR
+		echo '                    0x01F4'                                       >> $ssdtPR
+	fi
+
+	if (($C3)); then
+		echo '                },'                                               >> $ssdtPR
+		echo ''                                                                 >> $ssdtPR
+		echo '                Package (0x04)'                                   >> $ssdtPR
+		echo '                {'                                                >> $ssdtPR
+		echo '                    ResourceTemplate ()'                          >> $ssdtPR
+		echo '                    {'                                            >> $ssdtPR
+		echo '                        Register (FFixedHW,'                      >> $ssdtPR
+		echo '                            0x01,               // Bit Width'     >> $ssdtPR
+		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
+		echo '                            0x0000000000000010, // Address'       >> $ssdtPR
+		echo '                            0x03,               // Access Size'   >> $ssdtPR
+		echo '                            )'                                    >> $ssdtPR
+		echo '                    },'                                           >> $ssdtPR
+		echo '                    0x03,'                                        >> $ssdtPR
+		echo '                    '$latency_C3','                               >> $ssdtPR
+		echo '                    0x01F4'                                       >> $ssdtPR
+	fi
+
+	if [ $C6 -eq 1 ]; then
+		echo '                },'                                               >> $ssdtPR
+		echo ''                                                                 >> $ssdtPR
+		echo '                Package (0x04)'                                   >> $ssdtPR
+		echo '                {'                                                >> $ssdtPR
+		echo '                    ResourceTemplate ()'                          >> $ssdtPR
+		echo '                    {'                                            >> $ssdtPR
+		echo '                        Register (FFixedHW,'                      >> $ssdtPR
+		echo '                            0x01,               // Bit Width'     >> $ssdtPR
+		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
+		echo '                            0x0000000000000020, // Address'       >> $ssdtPR
+		echo '                            0x03,               // Access Size'   >> $ssdtPR
+		echo '                            )'                                    >> $ssdtPR
+		echo '                    },'                                           >> $ssdtPR
+		echo '                    0x06,'                                        >> $ssdtPR
+		echo '                    '$latency_C6','                               >> $ssdtPR
+		echo '                    0x015E'                                       >> $ssdtPR
+	fi
+
+	if [ $C7 -eq 1 ]; then
+		echo '                },'                                               >> $ssdtPR
+		echo ''                                                                 >> $ssdtPR
+		echo '                Package (0x04)'                                   >> $ssdtPR
+		echo '                {'                                                >> $ssdtPR
+		echo '                    ResourceTemplate ()'                          >> $ssdtPR
+		echo '                    {'                                            >> $ssdtPR
+		echo '                        Register (FFixedHW,'                      >> $ssdtPR
+		echo '                            0x01,               // Bit Width'     >> $ssdtPR
+		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
+		echo '                            0x0000000000000030, // Address'       >> $ssdtPR
+		echo '                            0x03,               // Access Size'   >> $ssdtPR
+		echo '                            )'                                    >> $ssdtPR
+		echo '                    },'                                           >> $ssdtPR
+		echo '                    0x07,'                                        >> $ssdtPR
+		echo '                    '$latency_C7','                               >> $ssdtPR
+		echo '                    0xC8'                                         >> $ssdtPR
+	fi
+
+	echo '                }'                                                    >> $ssdtPR
+	echo '            })'                                                       >> $ssdtPR
+	echo '        }'                                                            >> $ssdtPR
+
+	if [ $1 -eq 1 ];
+		then
+			gACST_CPU1=$numberOfCStates
+		else
+			gACST_CPU0=$numberOfCStates
+	fi
+
+	#
+	# We don't want a closing bracket here when we add methods for Ivy Bridge.
+	#
+
+	if [ $bridgeType -eq $SANDY_BRIDGE ]
+		then
+			echo '    }'                                                        >> $ssdtPR
 	fi
 }
 
@@ -327,24 +463,22 @@ function _printCPUScopes()
 
 	while [ $currentCPU -lt $1 ]; do
 		echo ''                                                             >> $ssdtPR
-		echo '    Scope (\_PR.CPU'$currentCPU')'                            >> $ssdtPR
+		echo '    Scope (\_PR.'$gProcLabel$currentCPU')'                    >> $ssdtPR
 		echo '    {'                                                        >> $ssdtPR
-		echo '        Method (APSS, 0, NotSerialized)'                      >> $ssdtPR
-		echo '        {'                                                    >> $ssdtPR
-		echo '            Return (\_PR.CPU0.APSS)'                          >> $ssdtPR
-		echo '        }'                                                    >> $ssdtPR
-		echo ''                                                             >> $ssdtPR
+		echo '        Method (APSS, 0, NotSerialized) { Return (\_PR.'$gProcLabel'0.APSS) }' >> $ssdtPR
 
 		#
 		# IB CPUPM tries to parse/execute Method ACST (see debug data) and thus we add
 		# this method, conditionally, since SB CPUPM doesn't seem to care about it.
 		#
-		if [ $lowFrequencyPStates -eq 1 ]
+		if [ $bridgeType -eq $IVY_BRIDGE ]
 			then
-				echo '        Method (ACST, 0, NotSerialized)'              >> $ssdtPR
-				echo '        {'                                            >> $ssdtPR
-				echo '            Return (\_PR.CPU0.ACST ())'               >> $ssdtPR
-				echo '        }'                                            >> $ssdtPR
+				if [ $currentCPU -eq 1 ];
+					then
+						_printCSTScope 1
+					else
+						echo '        Method (ACST, 0, NotSerialized) { Return (\_PR.'$gProcLabel'1.ACST ()) }' >> $ssdtPR
+				fi
 		fi
 
 		echo '    }'                                                        >> $ssdtPR
@@ -361,7 +495,7 @@ function _getModelName()
 	#
 	# Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
 	#
-	echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *"*=*<*>*//g' -e 's/compatible*//'`
+	echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
 }
 
 #--------------------------------------------------------------------------------
@@ -371,7 +505,7 @@ function _getBoardID()
 	#
 	# Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
 	#
-	echo `ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *"*=*<*>*//g' -e 's/board-id*//'`
+	boardID=`ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//'`
 }
 
 #--------------------------------------------------------------------------------
@@ -381,7 +515,7 @@ function _getCPUtype()
 	#
 	# Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
 	#
-	local grepStr=`ioreg -p IODeviceTree -n CPU0@0 -k cpu-type | grep cpu-type | sed -e 's/.*[<]//' -e 's/0\{0\}>$//'`
+	local grepStr=`ioreg -p IODeviceTree -n CPU0@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g'`
 	#
 	# Swap bytes with help of ${str:pos:num}
 	#
@@ -390,106 +524,203 @@ function _getCPUtype()
 
 #--------------------------------------------------------------------------------
 
-function _getSandyMacModelByBoardID()
+function _getCPUModel()
 {
-	local boardID=$(_getBoardID)
-	local macModelIdentifier=""
-
-	case $boardID in
-		Mac-942B59F58194171B)
-			local macModelIdentifier="iMac12,1"
-			;;
-
-		Mac-942B5BF58194151B)
-			local macModelIdentifier="iMac12,2"
-			;;
-
-		Mac-8ED6AF5B48C039E1)
-			local macModelIdentifier="Macmini5,1"
-			;;
-
-		Mac-4BC72D62AD45599E)
-			local macModelIdentifier="Macmini5,2"
-			;;
-
-		Mac-7BA5B2794B2CDB12)
-			local macModelIdentifier="Macmini5,3"
-			;;
-
-		Mac-94245B3640C91C81)
-			local macModelIdentifier="MacBookPro8,1"
-			;;
-
-		Mac-94245A3940C91C80)
-			local macModelIdentifier="MacBookPro8,2"
-			;;
-
-		Mac-942459F5819B171B)
-			local macModelIdentifier="MacBookPro8,3"
-			;;
-
-		Mac-C08A6BB70A942AC2)
-			local macModelIdentifier="MacBookAir4,1"
-			;;
-
-		Mac-742912EFDBEE19B3)
-			local macModelIdentifier="MacBookAir4,2"
-			;;
-	esac
-
-	echo $macModelIdentifier
+	#
+	# Returns the hexadecimal value of machdep.cpu.model
+	#
+	echo 0x$(echo "obase=16; `sysctl machdep.cpu.model | sed -e 's/^machdep.cpu.model: //'`" | bc)
 }
 
 #--------------------------------------------------------------------------------
 
-function _getIvyMacModelByBoardID()
+function _getSystemType()
 {
-  local boardID=$(_getBoardID)
-  local macModelIdentifier=""
+	#
+	# Grab 'system-type' property from ioreg (stripped with sed / RegEX magic).
+	#
+	echo `ioreg -p IODeviceTree -d 2 -k system-type | grep system-type | sed -e 's/ *[-="<0a-z>]//g'`
+}
 
-  case $boardID in
-	Mac-00BE6ED71E35EB86)
-		local macModelIdentifier="iMac13,1"
-		;;
+#--------------------------------------------------------------------------------
 
-	Mac-FC02E91DDD3FA6A4)
-		local macModelIdentifier="iMac13,2"
-		;;
+function _checkSMCKeys()
+{
+	#
+	# TODO: Check SMC keys to see if they are there and properly initialized!
+	#
+	# Note: Do <i>not</i> dump SMC keys with HWSensors/iStat or other SMC plug-ins installed!
+	#
+	local filename="/System/Library/Extensions/FakeSMC.kext/Contents/Info.plist"
+	local data=`grep -so '<key>[a-zA-Z]*</key>' $filename | sed -e 's/<key>//' -e 's/<\/key>//g'`
 
-	Mac-031AEE4D24BFF0B1)
-		local macModelIdentifier="Macmini6,1"
-		;;
+	local status=`echo $data | grep -oe 'DPLM'`
 
-	Mac-F65AE981FFA204ED)
-		local macModelIdentifier="Macmini6,2"
-		;;
+	if [ $status == 'XPLM' ]; then
+		# DPLM  [{lim]  (bytes 00 00 00 00 00)
+		echo "SMC key 'DPLM' found (OK)"
+	fi
+set -x
+	local status=`echo $data | grep -oe 'MSAL'`
 
-	Mac-4B7AC7E43945597E)
-		local macModelIdentifier="MacBookPro9,1"
-		;;
+	if [ $status == 'MSAL' ]; then
+		# MSAL  [hex_]  (bytes 4b)
+		echo "SMC key 'MSAL' found (OK)"
+	fi
+}
 
-	Mac-6F01561E16C75D06)
-		local macModelIdentifier="MacBookPro9,2"
-		;;
+#--------------------------------------------------------------------------------
 
-	Mac-C3EC7CD22292981F)
-		local macModelIdentifier="MacBookPro10,1"
-		;;
+function _initSandyBridgeSetup()
+{
+	case $boardID in
+		Mac-942B59F58194171B)
+			systemType=1
+			macModelIdentifier="iMac12,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-	Mac-AFD8A9D944EA4843)
-		local macModelIdentifier="MacBookPro10,2"
-		;;
+		Mac-942B5BF58194151B)
+			systemType=1
+			macModelIdentifier="iMac12,2"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-	Mac-66F35F19FE2A0D05)
-		local macModelIdentifier="MacBookAir5,1"
-		;;
+		Mac-8ED6AF5B48C039E1)
+			systemType=1
+			macModelIdentifier="Macmini5,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-	Mac-2E6FAB96566FE58C)
-		local macModelIdentifier="MacBookAir5,2"
-		;;
-  esac
+		Mac-4BC72D62AD45599E)
+			systemType=1
+			macModelIdentifier="Macmini5,2"
+			gACST_CPU0=13   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-  echo $macModelIdentifier
+		Mac-7BA5B2794B2CDB12)
+			systemType=1
+			macModelIdentifier="Macmini5,3"
+			gACST_CPU0=13   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-94245B3640C91C81)
+			systemType=2
+			macModelIdentifier="MacBookPro8,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-94245A3940C91C80)
+			systemType=2
+			macModelIdentifier="MacBookPro8,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-942459F5819B171B)
+			systemType=2
+			macModelIdentifier="MacBookPro8,3"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-C08A6BB70A942AC2)
+			systemType=2
+			macModelIdentifier="MacBookAir4,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-742912EFDBEE19B3)
+			systemType=2
+			macModelIdentifier="MacBookAir4,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+	esac
+}
+
+#--------------------------------------------------------------------------------
+
+function _initIvyBridgeSetup()
+{
+	case $boardID in
+		Mac-00BE6ED71E35EB86)
+			systemType=1
+			macModelIdentifier="iMac13,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-FC02E91DDD3FA6A4)
+			systemType=1
+			macModelIdentifier="iMac13,2"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-031AEE4D24BFF0B1)
+			systemType=1
+			macModelIdentifier="Macmini6,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-F65AE981FFA204ED)
+			systemType=1
+			macModelIdentifier="Macmini6,2"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-4B7AC7E43945597E)
+			systemType=2
+			macModelIdentifier="MacBookPro9,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-6F01561E16C75D06)
+			systemType=2
+			macModelIdentifier="MacBookPro9,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-C3EC7CD22292981F)
+			systemType=2
+			macModelIdentifier="MacBookPro10,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-AFD8A9D944EA4843)
+			systemType=2
+			macModelIdentifier="MacBookPro10,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-66F35F19FE2A0D05)
+			systemType=2
+			macModelIdentifier="MacBookAir5,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+
+		Mac-2E6FAB96566FE58C)
+			systemType=2
+			macModelIdentifier="MacBookAir5,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+	esac
 }
 
 #--------------------------------------------------------------------------------
@@ -513,25 +744,78 @@ function _isRoot()
 
 function main()
 {
+	echo ''
+
+	#
+	# Get CPU type and model.
+	#
+
+	local model=$(_getCPUModel)
+
+	case $model in
+		0x2A)
+			echo "Sandy Bridge Core processor detected"
+			let tdp=95
+			let bridgeType=2
+			;;
+
+		0x2D)
+			echo "Sandy Bridge Core processor detected"
+			let tdp=95
+			let bridgeType=2
+			;;
+
+		0x3A)
+			echo "Ivy Bridge Core processor detected"
+			let tdp=77
+			let bridgeType=4
+			;;
+
+		0x3B)
+			echo "Ivy Bridge Core processor detected"
+			let tdp=77
+			let bridgeType=4
+			;;
+	esac
+
     #
     # Command line arguments.
     #
 
-    let tdp=$1
-    let maxTurboFrequency=$2
-	# let lowFrequencyPStates=$3
+	let maxTurboFrequency=$1
+
+	if [ $# -eq 2 ];
+		then
+			let tdp=$2
+			echo "Max TDP override, now using: $tdp Watt"
+		else
+			echo "Using the default max TDP of: $tdp Watt"
+	fi
+
+	if [ $# -eq 3 ];
+		then
+			if [ $3 -eq 0 ];
+				then
+					let bridgeType=2
+					echo "CPU type override, now using: Sandy Bridge"
+				else
+					let bridgeType=4
+					echo "CPU type override, now using: Ivy Bridge"
+			fi
+	fi
 
     #
     # Do not change anything below this line!
     #
 
 	#let logicalCPUs=$(echo `sysctl hw.logicalcpu` | sed -e 's/^hw.logicalcpu: //')
-    let logicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
-
+    local logicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
 	let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
     let frequency=($frequency / 1000000)
 
-    #
+	echo "$logicalCPUs logical CPU's detected with a Core Frequency of $frequency MHz"
+
+	#
     # Get number of Turbo states.
     #
 
@@ -546,59 +830,60 @@ function main()
             let turboStates=0
     fi
 
-    let packageLength=$(echo "(($maxTurboFrequency - $baseFrequency) / 100)" | bc)
+	echo "Number of Turbo States: $turboStates ($frequency-$maxTurboFrequency MHz)"
+
+    local packageLength=$(echo "((($maxTurboFrequency - $baseFrequency)+100) / 100)" | bc)
+
+	echo "Number of P-States: $packageLength ($baseFrequency-$maxTurboFrequency)"
 
     _printHeader
 	_printExternals $logicalCPUs
-	_printScopeStart $turboStates $packageLength $3
-	_printPackages $tdp $frequency $maxTurboFrequency $3
-	_printCSTScope
+	_printDebugInfo $logicalCPUs $tdp $packageLength $turboStates $maxTurboFrequency
+	_printScopeStart $turboStates $packageLength
+	_printPackages $tdp $frequency $maxTurboFrequency
+
+	_getBoardID
 
 	local modelID=$(_getModelName)
-	local usedBoardID=$(_getBoardID)
 	local typeCPU=$(_getCPUtype)
+	local currentSystemType=$(_getSystemType)
 
-	if [ $3 -eq 1 ]
+	if [ $bridgeType -eq $IVY_BRIDGE ];
 		then
-			local targetModelID=$(_getIvyMacModelByBoardID)
+			local cpuTypeString="04"
+			local bridgeTypeString="Ivy Bridge"
 
-			_printIvybridgeMethods $usedBoardID $targetModelID
+			_initIvyBridgeSetup
+			_printCSTScope 0
+			_printIvybridgeMethods
 			_printCPUScopes $logicalCPUs
-
-			if [ "$targetModelID" == "" ]
-				then
-					echo "Warning: Used board-id [$usedBoardID] is not supported by Ivybridge PM"
-				else
-					if [ "$targetModelID" != "$modelID" ]
-						then
-							echo "Error: board-id [$usedBoardID] and model [$modelID] mismatch"
-					fi
-			fi
-
-			if [ "${typeCPU:2:2}" != "04" ]
-				then
-					echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}04)"
-			fi
 		else
-			local targetModelID=$(_getSandyMacModelByBoardID)
+			local cpuTypeString="02"
+			local bridgeTypeString="Sandy Bridge"
 
+			_initSandyBridgeSetup
+			_printCSTScope 0
 			_printCPUScopes $logicalCPUs
+	fi
 
-			if [ "$targetModelID" == "" ]
-				then
-					echo "Warning: Used board-id [$usedBoardID] is not supported by Sandybridge PM"
-				else
-					if [ "$targetModelID" != "$modelID" ]
-						then
-							echo "Error: board-id [$usedBoardID] and model [$modelID] mismatch"
-					fi
+	printf "Number of C-States for "$gProcLabel"0: $gACST_CPU0\n"
+	printf "Number of C-States for "$gProcLabel"1: $gACST_CPU1\n"
+
+	if [ ${typeCPU:2:2} -ne $cpuTypeString ]; then
+		echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}$cpuTypeString)"
+	fi
+
+	if [ $systemType -eq 0 ];
+		then
+			echo "Warning: Used board-id [$boardID] is not supported by $bridgeTypeString PM"
+		else
+			if [ "$macModelIdentifier" != "$modelID" ]; then
+				echo "Error: board-id [$boardID] and model [$modelID] mismatch"
 			fi
 
-			if [ "${typeCPU:2:2}" != "02" ]
-				then
-					echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}02)"
-			fi
-
+			if [ $currentSystemType -ne $systemType ]; then
+				echo "Warning: system-type may be set improperly ($currentSystemType instead of $systemType)"
+		fi
 	fi
 }
 
@@ -609,11 +894,12 @@ function main()
 # Check number of arguments.
 #
 
-if [ $# -eq 3 ];
+if [ $# -gt 0 ];
     then
         main $1 $2 $3
+        open $ssdtPR
     else
-        echo "Usage: $0 TDP MaxTurboFrequency (0 for SandyBridge / 1 for IvyBridge)"
+        echo "Usage: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
         exit 1
 fi
 
