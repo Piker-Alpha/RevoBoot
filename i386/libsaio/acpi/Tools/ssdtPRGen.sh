@@ -24,7 +24,7 @@
 #			- ACST injection for all logical processors (Pike, Februari, 2013)
 #
 # Contributors:
-#			- Thanks to Dave and Toleda for their help (bug fixes and other improvements).
+#			- Thanks to Dave and toleda for their help (bug fixes and other improvements).
 #
 
 # set -x # Used for tracing errors (can be used anywhere in the script).
@@ -59,7 +59,7 @@ gACST_CPU1=7
 macModelIdentifier=""
 
 #
-# Change this label to "P00" when your tables use P000 instead oc CPU0.
+# Change this label to "P00" when your tables use P00n instead of CPUn.
 #
 
 gProcLabel="CPU"
