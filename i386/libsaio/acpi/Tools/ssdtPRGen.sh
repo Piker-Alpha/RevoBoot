@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 2.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 2.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -24,6 +24,7 @@
 #			- ACST injection for all logical processors (Pike, Februari, 2013)
 #			- ACST hintcode error fixed (Pike, Februari, 2013)
 #			- Introducing a stand-alone version of method _DSM (Pike, Februari, 2013)
+#			- Fix incorrect turbo range (Pike, Februari, 2013)
 #
 # Contributors:
 #			- Thanks to Dave and toleda for their help (bug fixes and other improvements).
@@ -33,7 +34,7 @@
 
 #================================= GLOBAL VARS ==================================
 
-scriptVersion=2.3
+scriptVersion=2.4
 
 
 #
@@ -345,7 +346,9 @@ function _printPackages()
 
 function _printIvybridgeMethods()
 {
-    // New stand-alone version of Method _DSM - Copyright (c) 2009 by Master Chief
+    #
+    # New stand-alone version of Method _DSM - Copyright (c) 2009 by Master Chief
+    #
     echo ''                                                                 >> $ssdtPR
     echo '        Method (_DSM, 4, NotSerialized)'                          >> $ssdtPR
     echo '        {'                                                        >> $ssdtPR
@@ -1012,7 +1015,8 @@ function main()
         let turboStates=0
     fi
 
-    echo "Number of Turbo States: $turboStates ($frequency-$maxTurboFrequency MHz)"
+    let minTurboFrequency=($frequency+100)
+    echo "Number of Turbo States: $turboStates ($minTurboFrequency-$maxTurboFrequency MHz)"
 
     local packageLength=$(echo "((($maxTurboFrequency - $baseFrequency)+100) / 100)" | bc)
 
