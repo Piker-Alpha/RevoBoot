@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 2.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 2.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -33,7 +33,8 @@
 
 #================================= GLOBAL VARS ==================================
 
-scriptVersion=2.0
+scriptVersion=2.3
+
 
 #
 # Path and filename setup.
@@ -55,7 +56,7 @@ baseFrequency=1600
 
 systemType=0
 
-gACST_CPU0=13
+gACST_CPU0=29
 gACST_CPU1=7
 
 macModelIdentifier=""
@@ -68,6 +69,108 @@ gProcLabel="CPU"
 
 IVY_BRIDGE=4
 SANDY_BRIDGE=2
+
+typeCPU=0
+processorData="Unknown CPU"
+processorNumber=""
+
+#
+# Processor Number, Max TDP, Clock Speed, Max Turbo Frequency, Number of Cores, Number of Threads
+#
+
+desktopIvyBridgeCPUList=(
+# i7-3700 Desktop Processor Series
+i7-3770T,45,2500,3700,4,8
+i7-3770S,65,3100,3900,4,8
+i7-3770K,77,3500,3900,4,8
+i7-3770,77,3400,3900,4,8
+# i5-3500 Desktop Processor Series
+i5-3570T,45,2300,3300,4,4
+i5-3570K,77,3400,3800,4,4
+i5-3570S,65,3100,3800,4,4
+i5-3570,77,3400,3800,4,4
+i5-3550S,65,3000,3700,4,4
+i5-3550,77,3300,3700,4,4
+# i5-3400 Desktop Processor Series
+i5-3475S,65,2900,3600,4,4
+i5-3470S,65,2900,3600,4,4
+i5-3470,77,3200,3600,4,4
+i5-3470T,35,2900,3600,2,4
+i5-3450S,65,2800,3500,4,4
+i5-3450,77,3100,3500,4,4
+# i5-3300 Desktop Processor Series
+i5-3350P,69,3100,3300,4,4
+i5-3330S,65,2700,3200,4,4
+i5-3330,77,3000,3200,4,4
+# i3-3200 Desktop Processor Series
+i3-3240,55,3400,0,2,4
+i3-3240T,35,2900,0,2,4
+i3-3225,55,3300,0,2,4
+i3-3220,55,3300,0,2,4
+i3-3220T,35,2800,0,2,4
+i3-3210,55,3200,0,2,4
+)
+
+#
+# Processor Number, Max TDP, Clock Speed, Max Turbo Frequency, Number of Cores, Number of Threads
+#
+
+mobileIvyBridgeCPUList=(
+# i7-3800 Mobile Processor Series
+i7-3840QM,45,2800,3800,4,8
+i7-3820QM,45,2700,3700,4,8
+# i7-3700 Mobile Processor Series
+i7-3740QM,45,2700,3700,4,8
+i7-3720QE,45,2600,3600,4,8
+# i7-3600 Mobile Processor Series
+i7-3689Y,13,1500,2600,2,4
+i7-3687U,17,2100,3300,2,4
+i7-3667U,17,2000,3200,2,4
+i7-3635QM,45,2400,3400,4,8
+i7-3620QM,35,2200,3200,4,8
+i7-3632QM,35,2200,3200,4,8
+i7-3630QM,45,2400,3400,4,8
+i7-3615QM,45,2300,3300,4,8
+i7-3615QE,45,2300,3300,4,8
+i7-3612QM,35,2100,3100,4,8
+i7-3612QE,35,2100,3100,4,8
+i7-3610QM,45,2300,3300,4,8
+i7-3610QE,45,2300,3300,4,8
+# i7-3500 Mobile Processor Series
+i7-3555LE,25,2500,3200,2,4
+i7-3540M,35,3000,3700,2,4
+i7-3537U,17,2000,3100,2,4
+i7-3520M,35,2900,3600,2,4
+i7-3517UE,17,1700,2800,2,4
+i7-3517U,17,1900,3000,2,4
+# i5-3600 Mobile Processor Series
+i5-3610ME,35,2700,3300,2,4
+# i5-3400 Mobile Processor Series
+i5-3439Y,13,1500,2300,2,4
+i5-3437U,17,1900,2900,2,4
+i5-3427U,17,1800,2800,2,4
+# i5-3300 Mobile Processor Series
+i5-3380M,35,2900,3600,2,4
+i5-3360M,35,2800,3500,2,4
+i5-3340M,35,2700,3400,2,4
+i5-3339Y,13,1500,2000,2,4
+i5-3337U,17,1800,2700,2,4
+i5-3320M,35,2600,3300,2,4
+i5-3317U,17,1700,2600,2,4
+# i5-3200 Mobile Processor Series
+i5-3230M,35,2600,3200,2,4
+i5-3210M,35,2500,3100,2,4
+# i3-3200 Mobile Processor Series
+i3-3239Y,13,1400,0,2,4
+i3-3227U,17,1900,0,2,4
+i3-3217UE,17,1600,0,2,4
+i3-3217U,17,1800,0,2,4
+# i3-3100 Mobile Processor Series
+i3-3130M,35,2600,0,2,4
+i3-3120ME,35,2400,0,2,4
+i3-3120M,35,2500,0,2,4
+i3-3110M,35,2400,0,2,4
+)
 
 #--------------------------------------------------------------------------------
 
@@ -501,54 +604,126 @@ function _printCPUScopes()
 
 function _getModelName()
 {
-	#
-	# Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
-	#
-	echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
+    #
+    # Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
+    #
+    echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
 }
 
 #--------------------------------------------------------------------------------
 
 function _getBoardID()
 {
-	#
-	# Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
-	#
-	boardID=`ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//'`
+    #
+    # Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
+    #
+    boardID=`ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//'`
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUtype()
 {
-	#
-	# Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
-	#
-	local grepStr=`ioreg -p IODeviceTree -n CPU0@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g'`
-	#
-	# Swap bytes with help of ${str:pos:num}
-	#
-	echo ${grepStr:2:2}${grepStr:0:2}
+    #
+    # Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
+    #
+    local grepStr=`ioreg -p IODeviceTree -n CPU0@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g'`
+    #
+    # Swap bytes with help of ${str:pos:num}
+    #
+    echo ${grepStr:2:2}${grepStr:0:2}
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUModel()
 {
-	#
-	# Returns the hexadecimal value of machdep.cpu.model
-	#
-	echo 0x$(echo "obase=16; `sysctl machdep.cpu.model | sed -e 's/^machdep.cpu.model: //'`" | bc)
+    #
+    # Returns the hexadecimal value of machdep.cpu.model
+    #
+    echo 0x$(echo "obase=16; `sysctl machdep.cpu.model | sed -e 's/^machdep.cpu.model: //'`" | bc)
 }
 
 #--------------------------------------------------------------------------------
 
 function _getSystemType()
 {
-	#
-	# Grab 'system-type' property from ioreg (stripped with sed / RegEX magic).
-	#
-	echo `ioreg -p IODeviceTree -d 2 -k system-type | grep system-type | sed -e 's/ *[-="<0a-z>]//g'`
+    #
+    # Grab 'system-type' property from ioreg (stripped with sed / RegEX magic).
+    #
+    echo `ioreg -p IODeviceTree -d 2 -k system-type | grep system-type | sed -e 's/ *[-="<0a-z>]//g'`
+}
+
+#--------------------------------------------------------------------------------
+
+function _getCPUNumberFromBrandString
+{
+    #
+    # Get CPU brandstring
+    #
+    local brandString=$(echo `sysctl machdep.cpu.brand_string` | sed -e 's/machdep.cpu.brand_string: //')
+    #
+    # Save default (0) delimiter
+    #
+    local ifs=$IFS
+    #
+    # Change delimiter to a space character
+    #
+    IFS=" "
+    #
+    # Split brandstring into array (data)
+    #
+    local data=($brandString)
+    # echo "${data[0]}" # Intel(R)
+    # echo "${data[1]}" # Core(TM)
+    # echo "${data[2]}" # i5-2500K
+    # echo "${data[3]}" # CPU
+    # echo "${data[4]}" # @
+    # echo "${data[5]}" # 3.30GHz
+    #
+    # Restore the default delimiter
+    #
+    IFS=$ifs
+
+    processorNumber="${data[2]}"
+    # processorNumber="i7-3740QM"
+}
+
+#--------------------------------------------------------------------------------
+
+function _getCPUDataByProcessorNumber
+{
+    local ifs=$IFS
+
+    for cpuData in "${desktopIvyBridgeCPUList[@]}";
+    do
+        IFS=","
+        data=($cpuData)
+
+        if [ ${data[0]} == $processorNumber ]; then
+            processorData="$cpuData"
+            typeCPU=1
+            return # break
+        fi
+    done
+
+    if [ $processorData == "Unknown CPU" ]; then
+        IFS=$ifs
+
+        for cpuData in ${mobileIvyBridgeCPUList[@]};
+        do
+            IFS=","
+            data=($cpuData)
+
+            if [ ${data[0]} == $processorNumber ]; then
+                processorData="$cpuData"
+                typeCPU=2
+                return # break
+            fi
+        done
+    fi
+
+    IFS=$ifs
 }
 
 #--------------------------------------------------------------------------------
@@ -753,76 +928,75 @@ function _isRoot()
 
 function main()
 {
-	echo ''
-
-	#
-	# Get CPU type and model.
-	#
-
-	local model=$(_getCPUModel)
-
-	case $model in
-		0x2A)
-			echo "Sandy Bridge Core processor detected"
-			let tdp=95
-			let bridgeType=2
-			;;
-
-		0x2D)
-			echo "Sandy Bridge Core processor detected"
-			let tdp=95
-			let bridgeType=2
-			;;
-
-		0x3A)
-			echo "Ivy Bridge Core processor detected"
-			let tdp=77
-			let bridgeType=4
-			;;
-
-		0x3B)
-			echo "Ivy Bridge Core processor detected"
-			let tdp=77
-			let bridgeType=4
-			;;
-	esac
+    echo ''
 
     #
-    # Command line arguments.
+    # Get installed CPU model, set bridge type and default TDP.
+    #
+    local model=$(_getCPUModel)
+
+    _getCPUNumberFromBrandString
+
+    if (($model==0x12A || $model==0x12D));
+        then
+            let tdp=95
+            let bridgeType=2
+            local bridgeTypeString="Sandy Bridge"
+        else
+			let tdp=77
+            let bridgeType=4
+            local bridgeTypeString="Ivy Bridge"
+
+            if (($model==0x2A || $model==0x3B)); then
+                _getCPUDataByProcessorNumber
+            fi
+    fi
+
+    echo "$bridgeTypeString Core $processorNumber processor detected"
+
+    if (($typeCPU)); then
+        local ifs=$IFS
+        IFS=","
+		local cpuData=($processorData)
+	    let tdp=${cpuData[1]}
+        IFS=$ifs
+    fi
+
+    #
+    # Command line (override) arguments.
     #
 
-	let maxTurboFrequency=$1
+    let maxTurboFrequency=$1
 
-	if [ $# -eq 2 ];
-		then
-			let tdp=$2
-			echo "Max TDP override, now using: $tdp Watt"
-		else
-			echo "Using the default max TDP of: $tdp Watt"
-	fi
+    if [ $# -ge 2 ];
+        then
+            let tdp=$2
+            echo "Max TDP override, now using: $tdp Watt"
+        else
+            echo "Using the default max TDP of: $tdp Watt"
+    fi
 
-	if [ $# -eq 3 ];
-		then
-			if [ $3 -eq 0 ];
-				then
-					let bridgeType=2
-					echo "CPU type override, now using: Sandy Bridge"
-				else
-					let bridgeType=4
-					echo "CPU type override, now using: Ivy Bridge"
-			fi
-	fi
+    if [ $# -eq 3 ]; then
+        if [ $3 -eq 0 ];
+            then
+                let bridgeType=2
+                echo "CPU type override, now using: Sandy Bridge"
+            else
+                let bridgeType=4
+                echo "CPU type override, now using: Ivy Bridge"
+         fi
+    fi
 
     #
     # Do not change anything below this line!
     #
 
-	#let logicalCPUs=$(echo `sysctl hw.logicalcpu` | sed -e 's/^hw.logicalcpu: //')
+    #let logicalCPUs=$(echo `sysctl hw.logicalcpu` | sed -e 's/^hw.logicalcpu: //')
     local logicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
-	let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
+    let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
     let frequency=($frequency / 1000000)
 
-	echo "$logicalCPUs logical CPU's detected with a Core Frequency of $frequency MHz"
+    echo "$logicalCPUs logical CPU's detected with a Core Frequency of $frequency MHz"
 
 	#
     # Get number of Turbo states.
@@ -834,68 +1008,66 @@ function main()
     # Check number of Turbo states.
     #
 
-    if [ $turboStates -lt 0 ];
-        then
-            let turboStates=0
+    if [ $turboStates -lt 0 ]; then
+        let turboStates=0
     fi
 
-	echo "Number of Turbo States: $turboStates ($frequency-$maxTurboFrequency MHz)"
+    echo "Number of Turbo States: $turboStates ($frequency-$maxTurboFrequency MHz)"
 
     local packageLength=$(echo "((($maxTurboFrequency - $baseFrequency)+100) / 100)" | bc)
 
-	echo "Number of P-States: $packageLength ($baseFrequency-$maxTurboFrequency)"
+    echo "Number of P-States: $packageLength ($baseFrequency-$maxTurboFrequency)"
 
     _printHeader
-	_printExternals $logicalCPUs
-	_printDebugInfo $logicalCPUs $tdp $packageLength $turboStates $maxTurboFrequency
-	_printScopeStart $turboStates $packageLength
-	_printPackages $tdp $frequency $maxTurboFrequency
+    _printExternals $logicalCPUs
+    _printDebugInfo $logicalCPUs $tdp $packageLength $turboStates $maxTurboFrequency
+    _printScopeStart $turboStates $packageLength
+    _printPackages $tdp $frequency $maxTurboFrequency
 
-	_getBoardID
+    _getBoardID
 
-	local modelID=$(_getModelName)
-	local typeCPU=$(_getCPUtype)
-	local currentSystemType=$(_getSystemType)
+    local modelID=$(_getModelName)
+    local typeCPU=$(_getCPUtype)
+    local currentSystemType=$(_getSystemType)
 
-	if [ $bridgeType -eq $IVY_BRIDGE ];
-		then
-			local cpuTypeString="04"
-			local bridgeTypeString="Ivy Bridge"
+    if [ $bridgeType -eq $IVY_BRIDGE ];
+        then
+            local cpuTypeString="04"
 
-			_initIvyBridgeSetup
-			_printCSTScope 0
-			_printIvybridgeMethods
-			_printCPUScopes $logicalCPUs
-		else
-			local cpuTypeString="02"
-			local bridgeTypeString="Sandy Bridge"
+            _initIvyBridgeSetup
 
-			_initSandyBridgeSetup
-			_printCSTScope 0
-			_printCPUScopes $logicalCPUs
-	fi
+            _printCSTScope 0
+            _printIvybridgeMethods
+            _printCPUScopes $logicalCPUs
+        else
+            local cpuTypeString="04"
 
-	printf "Number of C-States for "$gProcLabel"0: $gACST_CPU0\n"
-	printf "Number of C-States for "$gProcLabel"1: $gACST_CPU1\n"
+            _initSandyBridgeSetup
 
-	if [ ${typeCPU:2:2} -ne $cpuTypeString ]; then
-		echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}$cpuTypeString)"
-	fi
+            _printCSTScope 0
+            _printCPUScopes $logicalCPUs
+    fi
 
-	if [ $systemType -eq 0 ];
-		then
-			echo "Warning: Used board-id [$boardID] is not supported by $bridgeTypeString PM"
-		else
-			if [ "$macModelIdentifier" != "$modelID" ]; then
-				echo "Error: board-id [$boardID] and model [$modelID] mismatch"
-			fi
+    printf "Number of C-States for "$gProcLabel"0: $gACST_CPU0\n"
+    printf "Number of C-States for "$gProcLabel"1: $gACST_CPU1\n"
 
-			if [ $currentSystemType -ne $systemType ]; then
-				echo "Warning: system-type may be set improperly ($currentSystemType instead of $systemType)"
-		fi
-	fi
+    if [ ${typeCPU:2:2} -ne $cpuTypeString ]; then
+        echo "Warning: cpu-type may be set improperly (0x$typeCPU instead of 0x${typeCPU:0:2}$cpuTypeString)"
+    fi
+
+    if [ $systemType -eq 0 ];
+        then
+            echo "Warning: board-id [$boardID] is not supported by $bridgeTypeString PM"
+        else
+            if [ "$macModelIdentifier" != "$modelID" ]; then
+                echo "Error: board-id [$boardID] and model [$modelID] mismatch"
+            fi
+
+            if [ $currentSystemType -ne $systemType ]; then
+                echo "Warning: system-type may be set improperly ($currentSystemType instead of $systemType)"
+            fi
+    fi
 }
-
 
 #==================================== START =====================================
  
@@ -906,6 +1078,7 @@ function main()
 if [ $# -gt 0 ];
     then
         main $1 $2 $3
+        iasl $ssdtPR
         open $ssdtPR
     else
         echo "Usage: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
