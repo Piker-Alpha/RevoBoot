@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 2.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 2.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -22,6 +22,7 @@
 #			- TDP and processor type are now optional arguments (Pike, Februari, 2013)
 #			- system-type check (used by X86PlatformPlugin) added (Pike, Februari, 2013)
 #			- ACST injection for all logical processors (Pike, Februari, 2013)
+#			- ACST hintcode error fixed (Pike, Februari, 2013)
 #
 # Contributors:
 #			- Thanks to Dave and toleda for their help (bug fixes and other improvements).
@@ -269,191 +270,202 @@ function _printIvybridgeMethods()
 
 function _printCSTScope()
 {
-	let C1=0
-	let C2=0
-	let C3=0
-	let C6=0
-	let C7=0
-	local pkgLength=2
-	local numberOfCStates=0
+    let C1=0
+    let C2=0
+    let C3=0
+    let C6=0
+    let C7=0
+    local pkgLength=2
+    local numberOfCStates=0
 
-	echo ''                                                                     >> $ssdtPR
-	echo '        Method (ACST, 0, NotSerialized)'                              >> $ssdtPR
-	echo '        {'                                                            >> $ssdtPR
+    echo ''                                                                         >> $ssdtPR
+    echo '        Method (ACST, 0, NotSerialized)'                                  >> $ssdtPR
+    echo '        {'                                                                >> $ssdtPR
 
-	#
-	# Are we injecting C-States for CPU1?
-	#
-	if [ $1 -eq 1 ];
-		then
-			# Yes (also used by CPU2, CPU3 and greater).
-			let targetCStates=$gACST_CPU1
-			latency_C1=0x03E8
-			latency_C2=0x94
-			latency_C3=0xA9
-			echo '            Store ("CPU1 C-States    : '$gACST_CPU1'", Debug)'>> $ssdtPR
+    #
+    # Are we injecting C-States for CPU1?
+    #
+    if [ $1 -eq 1 ];
+        then
+            # Yes (also used by CPU2, CPU3 and greater).
+            let targetCStates=$gACST_CPU1
+            latency_C1=0x03E8
+            latency_C2=0x94
+            latency_C3=0xA9
+            echo '            Store ("CPU1 C-States    : '$gACST_CPU1'", Debug)'    >> $ssdtPR
 
-		else
+        else
 			# No (only used by CPU0).
-			let targetCStates=$gACST_CPU0
-			latency_C1=Zero
-			latency_C3=0xCD
-			latency_C6=0xF5
-			latency_C7=0xF5
-			echo '            Store ("CPU0 C-States    : '$gACST_CPU0'", Debug)'>> $ssdtPR
-	fi
+            let targetCStates=$gACST_CPU0
+            latency_C1=Zero
+            latency_C3=0xCD
+            latency_C6=0xF5
+            latency_C7=0xF5
+            echo '            Store ("CPU0 C-States    : '$gACST_CPU0'", Debug)'    >> $ssdtPR
+    fi
 
-	#
-	# Checks to determine which C-State(s) we should inject.
-	#
-	if (($targetCStates & 1)); then
-		let C1=1
-		let numberOfCStates+=1
-		let pkgLength+=1
-	fi
+    #
+    # Checks to determine which C-State(s) we should inject.
+    #
+    if (($targetCStates & 1)); then
+        let C1=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-	if (($targetCStates & 2)); then
-		let C2=1
-		let numberOfCStates+=1
-		let pkgLength+=1
-	fi
+    if (($targetCStates & 2)); then
+        let C2=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-	if (($targetCStates & 4)); then
-		let C3=1
-		let numberOfCStates+=1
-		let pkgLength+=1
-	fi
+    if (($targetCStates & 4)); then
+        let C3=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-	if (($targetCStates & 8)); then
-		let C6=1
-		let numberOfCStates+=1
-		let pkgLength+=1
-	fi
+    if (($targetCStates & 8)); then
+        let C6=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-	if (($targetCStates & 16)); then
-		let C7=1
-		let numberOfCStates+=1
-		let pkgLength+=1
-	fi
+    if (($targetCStates & 16)); then
+        let C7=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-	echo ''                                                                     >> $ssdtPR
-	printf "            Return (Package (0x%02x)\n" $pkgLength                  >> $ssdtPR
-	echo '            {'                                                        >> $ssdtPR
-	echo '                One,'                                                 >> $ssdtPR
-	printf "                0x%02x,\n" $numberOfCStates                         >> $ssdtPR
+    let hintCode=0x00
 
-	echo '                Package (0x04)'                                       >> $ssdtPR
-	echo '                {'                                                    >> $ssdtPR
-	echo '                    ResourceTemplate ()'                              >> $ssdtPR
-	echo '                    {'                                                >> $ssdtPR
-	echo '                        Register (FFixedHW,'                          >> $ssdtPR
-	echo '                            0x01,               // Bit Width'         >> $ssdtPR
-	echo '                            0x02,               // Bit Offset'        >> $ssdtPR
-	echo '                            0x0000000000000000, // Address'           >> $ssdtPR
-	echo '                            0x01,               // Access Size'       >> $ssdtPR
-	echo '                            )'                                        >> $ssdtPR
-	echo '                    },'                                               >> $ssdtPR
-	echo '                    One,'                                             >> $ssdtPR
-	echo '                    '$latency_C1','                                   >> $ssdtPR
-	echo '                    0x03E8'                                           >> $ssdtPR
+    echo ''                                                                         >> $ssdtPR
+  printf "            Return (Package (0x%02x)\n" $pkgLength                        >> $ssdtPR
+    echo '            {'                                                            >> $ssdtPR
+    echo '                One,'                                                     >> $ssdtPR
+  printf "                0x%02x,\n" $numberOfCStates                               >> $ssdtPR
+    echo '                Package (0x04)'                                           >> $ssdtPR
+    echo '                {'                                                        >> $ssdtPR
+    echo '                    ResourceTemplate ()'                                  >> $ssdtPR
+    echo '                    {'                                                    >> $ssdtPR
+    echo '                        Register (FFixedHW,'                              >> $ssdtPR
+    echo '                            0x01,               // Bit Width'             >> $ssdtPR
+    echo '                            0x02,               // Bit Offset'            >> $ssdtPR
+  printf "                            0x%016x, // Address\n" $hintCode              >> $ssdtPR
+    echo '                            0x01,               // Access Size'           >> $ssdtPR
+    echo '                            )'                                            >> $ssdtPR
+    echo '                    },'                                                   >> $ssdtPR
+    echo '                    One,'                                                 >> $ssdtPR
+    echo '                    '$latency_C1','                                       >> $ssdtPR
+    echo '                    0x03E8'                                               >> $ssdtPR
 
-	if [ $C2 -eq 1 ]; then
-		echo '                },'                                               >> $ssdtPR
-		echo ''                                                                 >> $ssdtPR
-		echo '                Package (0x04)'                                   >> $ssdtPR
-		echo '                {'                                                >> $ssdtPR
-		echo '                    ResourceTemplate ()'                          >> $ssdtPR
-		echo '                    {'                                            >> $ssdtPR
-		echo '                        Register (FFixedHW,'                      >> $ssdtPR
-		echo '                            0x01,               // Bit Width'     >> $ssdtPR
-		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
-		echo '                            0x0000000000000010, // Address'       >> $ssdtPR
-		echo '                            0x03,               // Access Size'   >> $ssdtPR
-		echo '                            )'                                    >> $ssdtPR
-		echo '                    },'                                           >> $ssdtPR
-		echo '                    0x02,'                                        >> $ssdtPR
-		echo '                    '$latency_C2','                               >> $ssdtPR
-		echo '                    0x01F4'                                       >> $ssdtPR
-	fi
+    if (($C2)); then
+        let hintCode+=0x10
+        echo '                },'                                                   >> $ssdtPR
+        echo ''                                                                     >> $ssdtPR
+        echo '                Package (0x04)'                                       >> $ssdtPR
+        echo '                {'                                                    >> $ssdtPR
+        echo '                    ResourceTemplate ()'                              >> $ssdtPR
+        echo '                    {'                                                >> $ssdtPR
+        echo '                        Register (FFixedHW,'                          >> $ssdtPR
+        echo '                            0x01,               // Bit Width'         >> $ssdtPR
+        echo '                            0x02,               // Bit Offset'        >> $ssdtPR
+      printf "                            0x%016x, // Address\n" $hintCode          >> $ssdtPR
+        echo '                            0x03,               // Access Size'       >> $ssdtPR
+        echo '                            )'                                        >> $ssdtPR
+        echo '                    },'                                               >> $ssdtPR
+        echo '                    0x02,'                                            >> $ssdtPR
+        echo '                    '$latency_C2','                                   >> $ssdtPR
+        echo '                    0x01F4'                                           >> $ssdtPR
+    fi
 
-	if (($C3)); then
-		echo '                },'                                               >> $ssdtPR
-		echo ''                                                                 >> $ssdtPR
-		echo '                Package (0x04)'                                   >> $ssdtPR
-		echo '                {'                                                >> $ssdtPR
-		echo '                    ResourceTemplate ()'                          >> $ssdtPR
-		echo '                    {'                                            >> $ssdtPR
-		echo '                        Register (FFixedHW,'                      >> $ssdtPR
-		echo '                            0x01,               // Bit Width'     >> $ssdtPR
-		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
-		echo '                            0x0000000000000010, // Address'       >> $ssdtPR
-		echo '                            0x03,               // Access Size'   >> $ssdtPR
-		echo '                            )'                                    >> $ssdtPR
-		echo '                    },'                                           >> $ssdtPR
-		echo '                    0x03,'                                        >> $ssdtPR
-		echo '                    '$latency_C3','                               >> $ssdtPR
-		echo '                    0x01F4'                                       >> $ssdtPR
-	fi
+    if (($C3)); then
+        let hintCode+=0x10
+        echo '                },'                                                   >> $ssdtPR
+        echo ''                                                                     >> $ssdtPR
+        echo '                Package (0x04)'                                       >> $ssdtPR
+        echo '                {'                                                    >> $ssdtPR
+        echo '                    ResourceTemplate ()'                              >> $ssdtPR
+        echo '                    {'                                                >> $ssdtPR
+        echo '                        Register (FFixedHW,'                          >> $ssdtPR
+        echo '                            0x01,               // Bit Width'         >> $ssdtPR
+        echo '                            0x02,               // Bit Offset'        >> $ssdtPR
+      printf "                            0x%016x, // Address\n" $hintCode          >> $ssdtPR
+        echo '                            0x03,               // Access Size'       >> $ssdtPR
+        echo '                            )'                                        >> $ssdtPR
+        echo '                    },'                                               >> $ssdtPR
+        echo '                    0x03,'                                            >> $ssdtPR
+        echo '                    '$latency_C3','                                   >> $ssdtPR
+        echo '                    0x01F4'                                           >> $ssdtPR
+    fi
 
-	if [ $C6 -eq 1 ]; then
-		echo '                },'                                               >> $ssdtPR
-		echo ''                                                                 >> $ssdtPR
-		echo '                Package (0x04)'                                   >> $ssdtPR
-		echo '                {'                                                >> $ssdtPR
-		echo '                    ResourceTemplate ()'                          >> $ssdtPR
-		echo '                    {'                                            >> $ssdtPR
-		echo '                        Register (FFixedHW,'                      >> $ssdtPR
-		echo '                            0x01,               // Bit Width'     >> $ssdtPR
-		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
-		echo '                            0x0000000000000020, // Address'       >> $ssdtPR
-		echo '                            0x03,               // Access Size'   >> $ssdtPR
-		echo '                            )'                                    >> $ssdtPR
-		echo '                    },'                                           >> $ssdtPR
-		echo '                    0x06,'                                        >> $ssdtPR
-		echo '                    '$latency_C6','                               >> $ssdtPR
-		echo '                    0x015E'                                       >> $ssdtPR
-	fi
+    if (($C6)); then
+        let hintCode+=0x10
+        echo '                },'                                                   >> $ssdtPR
+        echo ''                                                                     >> $ssdtPR
+        echo '                Package (0x04)'                                       >> $ssdtPR
+        echo '                {'                                                    >> $ssdtPR
+        echo '                    ResourceTemplate ()'                              >> $ssdtPR
+        echo '                    {'                                                >> $ssdtPR
+        echo '                        Register (FFixedHW,'                          >> $ssdtPR
+        echo '                            0x01,               // Bit Width'         >> $ssdtPR
+        echo '                            0x02,               // Bit Offset'        >> $ssdtPR
+      printf "                            0x%016x, // Address\n" $hintCode          >> $ssdtPR
+        echo '                            0x03,               // Access Size'       >> $ssdtPR
+        echo '                            )'                                        >> $ssdtPR
+        echo '                    },'                                               >> $ssdtPR
+        echo '                    0x06,'                                            >> $ssdtPR
+        echo '                    '$latency_C6','                                   >> $ssdtPR
+        echo '                    0x015E'                                           >> $ssdtPR
+    fi
 
-	if [ $C7 -eq 1 ]; then
-		echo '                },'                                               >> $ssdtPR
-		echo ''                                                                 >> $ssdtPR
-		echo '                Package (0x04)'                                   >> $ssdtPR
-		echo '                {'                                                >> $ssdtPR
-		echo '                    ResourceTemplate ()'                          >> $ssdtPR
-		echo '                    {'                                            >> $ssdtPR
-		echo '                        Register (FFixedHW,'                      >> $ssdtPR
-		echo '                            0x01,               // Bit Width'     >> $ssdtPR
-		echo '                            0x02,               // Bit Offset'    >> $ssdtPR
-		echo '                            0x0000000000000030, // Address'       >> $ssdtPR
-		echo '                            0x03,               // Access Size'   >> $ssdtPR
-		echo '                            )'                                    >> $ssdtPR
-		echo '                    },'                                           >> $ssdtPR
-		echo '                    0x07,'                                        >> $ssdtPR
-		echo '                    '$latency_C7','                               >> $ssdtPR
-		echo '                    0xC8'                                         >> $ssdtPR
-	fi
+	if (($C7)); then
+        #
+        # If $hintCode is already 0x30 then use 0x31 otherwise 0x30
+        #
+        if [ $hintCode -eq 48 ];
+            then
+                let hintCode+=0x01
+            else
+                let hintCode+=0x10
+        fi
+        echo '                },'                                                   >> $ssdtPR
+        echo ''                                                                     >> $ssdtPR
+        echo '                Package (0x04)'                                       >> $ssdtPR
+        echo '                {'                                                    >> $ssdtPR
+        echo '                    ResourceTemplate ()'                              >> $ssdtPR
+        echo '                    {'                                                >> $ssdtPR
+        echo '                        Register (FFixedHW,'                          >> $ssdtPR
+        echo '                            0x01,               // Bit Width'         >> $ssdtPR
+        echo '                            0x02,               // Bit Offset'        >> $ssdtPR
+      printf "                            0x%016x, // Address\n" $hintCode          >> $ssdtPR
+        echo '                            0x03,               // Access Size'       >> $ssdtPR
+        echo '                            )'                                        >> $ssdtPR
+        echo '                    },'                                               >> $ssdtPR
+        echo '                    0x07,'                                            >> $ssdtPR
+        echo '                    '$latency_C7','                                   >> $ssdtPR
+        echo '                    0xC8'                                             >> $ssdtPR
+    fi
 
-	echo '                }'                                                    >> $ssdtPR
-	echo '            })'                                                       >> $ssdtPR
-	echo '        }'                                                            >> $ssdtPR
+    echo '                }'                                                        >> $ssdtPR
+    echo '            })'                                                           >> $ssdtPR
+    echo '        }'                                                                >> $ssdtPR
 
-	if [ $1 -eq 1 ];
-		then
-			gACST_CPU1=$numberOfCStates
-		else
+    if [ $1 -eq 1 ];
+        then
+            gACST_CPU1=$numberOfCStates
+        else
 			gACST_CPU0=$numberOfCStates
-	fi
+    fi
 
-	#
-	# We don't want a closing bracket here when we add methods for Ivy Bridge.
-	#
+    #
+    # We don't want a closing bracket here when we add methods for Ivy Bridge.
+    #
 
-	if [ $bridgeType -eq $SANDY_BRIDGE ]
-		then
-			echo '    }'                                                        >> $ssdtPR
-	fi
+    if [ $bridgeType -eq $SANDY_BRIDGE ]; then
+        echo '    }'                                                                >> $ssdtPR
+    fi
 }
-
 
 #--------------------------------------------------------------------------------
 
