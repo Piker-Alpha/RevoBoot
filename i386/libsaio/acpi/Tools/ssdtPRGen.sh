@@ -937,17 +937,17 @@ function main()
 
     _getCPUNumberFromBrandString
 
-    if (($model==0x12A || $model==0x12D));
+    if (($model==0x2A || $model==0x2D));
         then
             let tdp=95
             let bridgeType=2
             local bridgeTypeString="Sandy Bridge"
         else
-			let tdp=77
+            let tdp=77
             let bridgeType=4
             local bridgeTypeString="Ivy Bridge"
 
-            if (($model==0x2A || $model==0x3B)); then
+            if (($model==0x3A || $model==0x3B)); then
                 _getCPUDataByProcessorNumber
             fi
     fi
