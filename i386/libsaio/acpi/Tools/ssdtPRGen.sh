@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 2.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 2.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -23,6 +23,7 @@
 #			- system-type check (used by X86PlatformPlugin) added (Pike, Februari, 2013)
 #			- ACST injection for all logical processors (Pike, Februari, 2013)
 #			- ACST hintcode error fixed (Pike, Februari, 2013)
+#			- Introducing a stand-alone version of method _DSM (Pike, Februari, 2013)
 #
 # Contributors:
 #			- Thanks to Dave and toleda for their help (bug fixes and other improvements).
@@ -241,29 +242,25 @@ function _printPackages()
 
 function _printIvybridgeMethods()
 {
-	echo ''                                                                 >> $ssdtPR
-	echo '        Method (MCDP, 2, NotSerialized)'                          >> $ssdtPR
-	echo '        {'                                                        >> $ssdtPR
-	echo '            If (LEqual (Arg0, Zero))'                             >> $ssdtPR
-	echo '            {'                                                    >> $ssdtPR
-	echo '                Store (Buffer (One)'                              >> $ssdtPR
-	echo '                {'                                                >> $ssdtPR
-	echo '                    0x03'                                         >> $ssdtPR
-	echo '                }, Arg1)'                                         >> $ssdtPR
-	echo '            }'                                                    >> $ssdtPR
-	echo '        }'                                                        >> $ssdtPR
-	echo ''                                                                 >> $ssdtPR
-	echo '        Method (_DSM, 4, NotSerialized)'                          >> $ssdtPR
-	echo '        {'                                                        >> $ssdtPR
-	echo '            Store (Package (0x02)'                                >> $ssdtPR
-	echo '            {'                                                    >> $ssdtPR
-	echo '                "plugin-type",'                                   >> $ssdtPR
-	echo '                One'                                              >> $ssdtPR
-	echo '            }, Local0)'                                           >> $ssdtPR
-	echo '            MCDP (Arg2, RefOf (Local0))'                          >> $ssdtPR
-	echo '            Return (Local0)'                                      >> $ssdtPR
-	echo '        }'                                                        >> $ssdtPR
-	echo '    }'                                                            >> $ssdtPR
+    // New stand-alone version of Method _DSM - Copyright (c) 2009 by Master Chief
+    echo ''                                                                 >> $ssdtPR
+    echo '        Method (_DSM, 4, NotSerialized)'                          >> $ssdtPR
+    echo '        {'                                                        >> $ssdtPR
+    echo '            If (LEqual (Arg2, Zero))'                             >> $ssdtPR
+    echo '            {'                                                    >> $ssdtPR
+    echo '                Return (Buffer (One)'                             >> $ssdtPR
+    echo '                {'                                                >> $ssdtPR
+    echo '                    0x03'                                         >> $ssdtPR
+    echo '                })'                                               >> $ssdtPR
+    echo '            }'                                                    >> $ssdtPR
+    echo ''                                                                 >> $ssdtPR
+    echo '            Return (Package (0x02)'                               >> $ssdtPR
+    echo '            {'                                                    >> $ssdtPR
+    echo '                "plugin-type",'                                   >> $ssdtPR
+    echo '                One'                                              >> $ssdtPR
+    echo '            })'                                                   >> $ssdtPR
+    echo '        }'                                                        >> $ssdtPR
+    echo '    }'                                                            >> $ssdtPR
 }
 
 #--------------------------------------------------------------------------------
