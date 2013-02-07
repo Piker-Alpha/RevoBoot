@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 2.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 2.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January, 2013)
@@ -25,6 +25,7 @@
 #			- ACST hintcode error fixed (Pike, Februari, 2013)
 #			- Introducing a stand-alone version of method _DSM (Pike, Februari, 2013)
 #			- Fix incorrect turbo range (Pike, Februari, 2013)
+#			- Restore IFS before return (Pike, Februari, 2013)
 #
 # Contributors:
 #			- Thanks to Dave and toleda for their help (bug fixes and other improvements).
@@ -34,7 +35,7 @@
 
 #================================= GLOBAL VARS ==================================
 
-scriptVersion=2.4
+scriptVersion=2.5
 
 
 #
@@ -706,7 +707,8 @@ function _getCPUDataByProcessorNumber
         if [ ${data[0]} == $processorNumber ]; then
             processorData="$cpuData"
             typeCPU=1
-            return # break
+            IFS=$ifs
+            return
         fi
     done
 
@@ -721,12 +723,11 @@ function _getCPUDataByProcessorNumber
             if [ ${data[0]} == $processorNumber ]; then
                 processorData="$cpuData"
                 typeCPU=2
-                return # break
+                IFS=$ifs
+                return
             fi
         done
     fi
-
-    IFS=$ifs
 }
 
 #--------------------------------------------------------------------------------
