@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -46,7 +46,7 @@ gDebug=0
 #
 # A value of 1 will make this script call iasl (compiles SSDT_PR.dsl)
 #
-gCallIasl=1
+gCallIasl=0
 
 #
 # A value of 1 will make this script open SSDT_PR.dsl in the editor of your choice. 
@@ -74,7 +74,7 @@ gProcLabel="CPU"
 # Global variables.
 #
 
-gScriptVersion=3.1
+gScriptVersion=3.2
 
 #
 # Path and filename setup.
@@ -106,7 +106,7 @@ gProcessorNumber=""
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
 #
 
-gServerSandyBridgeCPUList=(
+gSandyBridgeCPUList=(
 # E3-1200 Xeon Processor Series
 E3-1290,95,0,3600,4000,4,8
 E3-1280,95,0,3500,3900,4,8
@@ -122,21 +122,25 @@ E3-1220L,20,0,2200,3400,2,4
 E3-1220,80,0,3100,3400,4,4
 )
 
+#
+# Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
+#
+
 gServerIvyBridgeCPUList=(
 # E3-1200 Xeon Processor Series
-E3-1290 V2,87,0,3700,4100,4,8
-E3-1285 V2,65,0,3600,4000,
-E3-1285L V2,0,0,3200,3900,
-E3-1280 V2,69,0,3600,4000,4,8
-E3-1275 V2,77,0,3500,3900,4,8
-E3-1270 V2,69,0,3500,3900,4,8
-E3-1265L V2,45,0,2500,3500,4,8
-E3-1245 V2,77,0,3400,3800,4,8
-E3-1240 V2,69,0,3400,3800,4,8
-E3-1230 V2,69,0,3300,3700,4,8
-E3-1225 V2,77,0,3200,3600,4,4
-E3-1220 V2,69,0,3100,3500,4,4
-E3-1220L V2,17,0,2300,3500,2,4
+'E3-1290 V2',87,0,3700,4100,4,8
+'E3-1285 V2',65,0,3600,4000,
+'E3-1285L V2',0,0,3200,3900,
+'E3-1280 V2',69,0,3600,4000,4,8
+'E3-1275 V2',77,0,3500,3900,4,8
+'E3-1270 V2',69,0,3500,3900,4,8
+'E3-1265L V2',45,0,2500,3500,4,8
+'E3-1245 V2',77,0,3400,3800,4,8
+'E3-1240 V2',69,0,3400,3800,4,8
+'E3-1230 V2',69,0,3300,3700,4,8
+'E3-1225 V2',77,0,3200,3600,4,4
+'E3-1220 V2',69,0,3100,3500,4,4
+'E3-1220L V2',17,0,2300,3500,2,4
 )
 
 gDesktopIvyBridgeCPUList=(
@@ -770,6 +774,19 @@ function _getSystemType()
 
 #--------------------------------------------------------------------------------
 
+function _findIasl()
+{
+    if ((gCallIasl)); then
+        iasl=`find /Applications -name iasl -print -quit`
+
+        if [ $iasl == "" ]; then
+            gCallIasl=0
+        fi
+    fi
+}
+
+#--------------------------------------------------------------------------------
+
 function _getCPUNumberFromBrandString
 {
     #
@@ -788,6 +805,8 @@ function _getCPUNumberFromBrandString
     # Split brandstring into array (data)
     #
     local data=($brandString)
+#   local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "V2" "@" "2.5GHz")
+#   local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "@" "2.5GHz")
     #
     # Example from a MacBookPro10,2
     #
@@ -797,26 +816,36 @@ function _getCPUNumberFromBrandString
     # echo "${data[3]}" # CPU
     # echo "${data[4]}" # @
     # echo "${data[5]}" # 2.50GHz
-
-    # or:
+    #
+    # or: "Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz"
+    #
     # echo "${data[0]}" # Intel(R)
-    # echo "${data[1]}" # Core(TM)
+    # echo "${data[1]}" # Xeon(R)
     # echo "${data[2]}" # CPU
     # echo "${data[3]}" # E3-12XX
     # echo "${data[4]}" # V2
     # echo "${data[5]}" # @
     # echo "${data[6]}" # 3.30GHz
 
-    if ((${#data[@]} == 7)); then
-       echo "TODO: Jeroen, look at what Francis said about V2 and fix this a.s.a.p!"
-    fi
-
     #
     # Restore the default delimiter
     #
     IFS=$ifs
 
-    gProcessorNumber="${data[2]}"
+    let length=${#data[@]}
+
+    if ((length > 6)); then
+        echo 'Warning: Unexpected brandstring > "'${data[@]}'"'
+    fi
+
+    if [[ ${data[1]} == "Xeon(R)" && ${data[4]} == "V2" ]];
+        then
+            gProcessorNumber="${data[3]} ${data[4]}"
+        else
+            gProcessorNumber="${data[2]}"
+    fi
+
+#   echo $gProcessorNumber
 }
 
 #--------------------------------------------------------------------------------
@@ -831,7 +860,7 @@ function _getCPUDataByProcessorNumber
         local ifs=$IFS
         local targetCPUList=("${!1}")
 
-        for cpuData in ${targetCPUList[@]}
+        for cpuData in "${targetCPUList[@]}"
         do
             IFS=","
             data=($cpuData)
@@ -857,8 +886,10 @@ function _getCPUDataByProcessorNumber
     fi
 
     if (!(($gTypeCPU))); then
-        __searchList gServerIvyBridgeCPUList[@] $gServerCPU
+        __searchList "gServerIvyBridgeCPUList[@]" $gServerCPU
     fi
+
+#   echo "gTypeCPU is $gTypeCPU"
 }
 
 #--------------------------------------------------------------------------------
@@ -1106,18 +1137,28 @@ function main()
     printf "\nsdtPRGen.sh v$gScriptVersion Copyright (c) 2013 by Pike R. Alpha\n"
     echo   '-----------------------------------------------------'
 
+    let modelSpecified=0
+    let maxTurboFrequency=0
+
     #
     # Get installed CPU model, set bridge type and default TDP.
     #
-    let modelSpecified=0
     local model=$(_getCPUModel)
+
     _getCPUNumberFromBrandString
 
     if [[ $# -eq 1 ]]; then
-        if (((${1:0:1} == "i") || (${1:0:1} == "E"))); then
-            let model=0x3A
-            let modelSpecified=1
-            gProcessorNumber=$1
+        if [[ $1 == "" ]];
+            then
+                if [[ $gProcessorNumber != 0 ]]; then
+                    let model=0x3A
+                fi
+            else
+                if (( ("${1:0:4}" == "i3-3") || (${1:0:4} == "i5-3") || (${1:0:4} == "i7-3") || (${1:0:1} == "E") )); then
+                    let model=0x3A
+                    let modelSpecified=1
+                    gProcessorNumber=$1
+                fi
         fi
     fi
 
@@ -1127,7 +1168,7 @@ function main()
             let gBridgeType=2
             local bridgeTypeString="Sandy Bridge"
         else
-			let gTdp=77
+            let gTdp=77
             let gBridgeType=4
             local bridgeTypeString="Ivy Bridge"
 
@@ -1145,10 +1186,10 @@ function main()
         then
             local ifs=$IFS
             IFS=","
-            local cpuData=($gProcessorData)
-            let gTdp=${cpuData[1]}
-            let lfm=${cpuData[2]}
-            let frequency=${cpuData[3]}
+    		local cpuData=($gProcessorData)
+	        let gTdp=${cpuData[1]}
+		    let lfm=${cpuData[2]}
+		    let frequency=${cpuData[3]}
             let maxTurboFrequency=${cpuData[4]}
             let logicalCPUs=${cpuData[6]}
             IFS=$ifs
@@ -1180,7 +1221,7 @@ function main()
         #
         # Command line arguments (used as override values).
         #
-        if [ $# -ge 1 ]; then
+        if [[ $# -ge 1 && $1 != "" ]]; then
             let maxTurboFrequency=$1
         fi
 
@@ -1203,21 +1244,28 @@ function main()
 
     echo "$logicalCPUs logical CPU's detected with a Core Frequency of $frequency MHz"
 
+    #
+	# Check maxTurboFrequency
+	#
+    if [ $maxTurboFrequency == 0 ]; then
+        printf "\nError: Unknown processor number... exiting\n"
+          echo "Try: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
+        exit 1
+    fi
+
 	#
     # Get number of Turbo states.
     #
-
     let turboStates=$(echo "(($maxTurboFrequency - $frequency) / 100)" | bc)
 
     #
     # Check number of Turbo states.
     #
-
     if [ $turboStates -lt 0 ]; then
         let turboStates=0
     fi
 
-	let minTurboFrequency=($frequency+100)
+    let minTurboFrequency=($frequency+100)
     echo "Number of Turbo States: $turboStates ($minTurboFrequency-$maxTurboFrequency MHz)"
 
     local packageLength=$(echo "((($maxTurboFrequency - $gBaseFrequency)+100) / 100)" | bc)
@@ -1283,10 +1331,12 @@ function main()
 
 if [ $# -ge 0 ];
     then
-        main $1 $2 $3
+        main "$1" $2 $3
+
+        _findIasl
 
         if ((gCallIasl)); then
-            iasl $gSsdtPR
+            $iasl $gSsdtPR
         fi
 
         if ((gCallOpen)); then
