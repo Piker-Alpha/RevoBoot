@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -74,7 +74,7 @@ gProcLabel="CPU"
 # Global variables.
 #
 
-gScriptVersion=3.0
+gScriptVersion=3.1
 
 #
 # Path and filename setup.
@@ -106,38 +106,38 @@ gProcessorNumber=""
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
 #
 
-gServerIvyBridgeCPUList=(
+gServerSandyBridgeCPUList=(
 # E3-1200 Xeon Processor Series
-E3-1290v2,87,0,3700,4100,4,8
 E3-1290,95,0,3600,4000,4,8
-E3-1285v2,65,0,3600,4000,
-E3-1285Lv2,0,0,3200,3900,
-E3-1280v2,69,0,3600,4000,4,8
 E3-1280,95,0,3500,3900,4,8
-E3-1275v2,77,0,3500,3900,4,8
 E3-1275,95,0,3400,3800,4,8
-E3-1270v2,69,0,3500,3900,4,8
 E3-1270,80,0,3400,3800,4,8
-E3-1265Lv2,45,0,2500,3500,4,8
 E3-1260L,45,0,2400,3300,4,8
-E3-1245v2,77,0,3400,3800,4,8
 E3-1245,95,0,3300,3700,4,8
-E3-1240v2,69,0,3400,3800,4,8
 E3-1240,80,0,3300,3700,4,8
 E3-1235,95,0,3200,3600,4,8
-E3-1230v2,69,0,3300,3700,4,8
 E3-1230,80,0,3200,3600,4,8
-E3-1225v2,77,0,3200,3600,4,4
 E3-1225,95,0,3100,3400,4,4
-E3-1220v2,69,0,3100,3500,4,4
-E3-1220Lv2,80,0,3100,3400,4,4
 E3-1220L,20,0,2200,3400,2,4
-E3-1220Lv2,17,0,2300,3500,2,4
+E3-1220,80,0,3100,3400,4,4
 )
 
-#
-# Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
-#
+gServerIvyBridgeCPUList=(
+# E3-1200 Xeon Processor Series
+E3-1290 V2,87,0,3700,4100,4,8
+E3-1285 V2,65,0,3600,4000,
+E3-1285L V2,0,0,3200,3900,
+E3-1280 V2,69,0,3600,4000,4,8
+E3-1275 V2,77,0,3500,3900,4,8
+E3-1270 V2,69,0,3500,3900,4,8
+E3-1265L V2,45,0,2500,3500,4,8
+E3-1245 V2,77,0,3400,3800,4,8
+E3-1240 V2,69,0,3400,3800,4,8
+E3-1230 V2,69,0,3300,3700,4,8
+E3-1225 V2,77,0,3200,3600,4,4
+E3-1220 V2,69,0,3100,3500,4,4
+E3-1220L V2,17,0,2300,3500,2,4
+)
 
 gDesktopIvyBridgeCPUList=(
 # i7-3700 Desktop Processor Series
@@ -173,10 +173,6 @@ i3-3220,55,1600,3300,0,2,4
 i3-3220T,35,1600,2800,0,2,4
 i3-3210,55,1600,3200,0,2,4
 )
-
-#
-# Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
-#
 
 gMobileIvyBridgeCPUList=(
 # i7-3800 Mobile Processor Series
@@ -801,6 +797,11 @@ function _getCPUNumberFromBrandString
     # echo "${data[3]}" # CPU
     # echo "${data[4]}" # @
     # echo "${data[5]}" # 2.50GHz
+
+    if ((${#data[@]} == 7)); then
+       echo "TODO: Jeroen, look at what Francis said about V2 and fix this a.s.a.p!"
+    fi
+
     #
     # Restore the default delimiter
     #
@@ -1096,19 +1097,19 @@ function main()
     printf "\nsdtPRGen.sh v$gScriptVersion Copyright (c) 2013 by Pike R. Alpha\n"
     echo   '-----------------------------------------------------'
 
+    #
+    # Get installed CPU model, set bridge type and default TDP.
+    #
     let modelSpecified=0
+    local model=$(_getCPUModel)
+    _getCPUNumberFromBrandString
 
-    if (((${1:0:1} == "i") || (${1:0:1} == "E")));
-        then
+    if [[ $# -eq 1 ]]; then
+        if (((${1:0:1} == "i") || (${1:0:1} == "E"))); then
             let model=0x3A
             let modelSpecified=1
             gProcessorNumber=$1
-        else
-            #
-            # Get installed CPU model, set bridge type and default TDP.
-            #
-            local model=$(_getCPUModel)
-            _getCPUNumberFromBrandString
+        fi
     fi
 
     if (($model==0x2A || $model==0x2D));
@@ -1135,10 +1136,10 @@ function main()
         then
             local ifs=$IFS
             IFS=","
-    		local cpuData=($gProcessorData)
-	        let gTdp=${cpuData[1]}
-		    let lfm=${cpuData[2]}
-		    let frequency=${cpuData[3]}
+            local cpuData=($gProcessorData)
+            let gTdp=${cpuData[1]}
+            let lfm=${cpuData[2]}
+            let frequency=${cpuData[3]}
             let maxTurboFrequency=${cpuData[4]}
             let logicalCPUs=${cpuData[6]}
             IFS=$ifs
