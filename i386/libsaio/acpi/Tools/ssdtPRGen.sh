@@ -798,6 +798,15 @@ function _getCPUNumberFromBrandString
     # echo "${data[4]}" # @
     # echo "${data[5]}" # 2.50GHz
 
+    # or:
+    # echo "${data[0]}" # Intel(R)
+    # echo "${data[1]}" # Core(TM)
+    # echo "${data[2]}" # CPU
+    # echo "${data[3]}" # E3-12XX
+    # echo "${data[4]}" # V2
+    # echo "${data[5]}" # @
+    # echo "${data[6]}" # 3.30GHz
+
     if ((${#data[@]} == 7)); then
        echo "TODO: Jeroen, look at what Francis said about V2 and fix this a.s.a.p!"
     fi
