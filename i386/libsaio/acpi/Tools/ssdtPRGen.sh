@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -28,9 +28,11 @@
 #			- Better/more complete feedback added (Jeroen, Februari 2013)
 #			- Processor data for desktop/mobile and server CPU's added (Jeroen, Februari 2013)
 #			- Improved power calculation, matching Apple's new algorithm (Pike, Februari 2013)
+#			- Fix iMac13,N latency and power values for C3 (Jeroen/Pike, Februari 2013)
+#			- IASL failed to launch when path included spaces (Pike, Februari 2013)
 #
 # Contributors:
-#			- Thanks to Dave and toleda for their help (bug fixes and other improvements).
+#			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
 #			- Many thanks to Jeroen for the CPU data, cleanups and renaming stuff.
 #
 
@@ -39,19 +41,19 @@
 #================================= GLOBAL VARS ==================================
 
 #
-# Change this to 1 to inject debug data.
+# Change this to 0 to stop it from injecting debug data.
 #
-gDebug=0
+gDebug=1
 
 #
 # A value of 1 will make this script call iasl (compiles SSDT_PR.dsl)
 #
-gCallIasl=0
+gCallIasl=1
 
 #
 # A value of 1 will make this script open SSDT_PR.dsl in the editor of your choice. 
 #
-gCallOpen=1
+gCallOpen=0
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -74,7 +76,7 @@ gProcLabel="CPU"
 # Global variables.
 #
 
-gScriptVersion=3.2
+gScriptVersion=3.3
 
 #
 # Path and filename setup.
@@ -498,7 +500,7 @@ function _printScopeACST()
             let targetCStates=$gACST_CPU1
             latency_C1=0x03E8
             latency_C2=0x94
-            latency_C3=0xA9
+            latency_C3=0xC6
 
             if ((gDebug)); then
                 echo '            Store ("CPU1 C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
@@ -603,6 +605,21 @@ function _printScopeACST()
 
     if (($C3)); then
         let hintCode+=0x10
+        local power_C3=0x01F4
+        #
+        # Is this for CPU1?
+        #
+        if (($1)); then
+            if [[ ${modelID:0:7} == "iMac13," ]];
+                then
+                    local power_C3=0x15E
+                    latency_C3=0xA9
+                else
+                    local power_C3=0xC8
+                    let hintCode+=0x10
+            fi
+        fi
+
         echo '                },'                                                       >> $gSsdtPR
         echo ''                                                                         >> $gSsdtPR
         echo '                Package (0x04)'                                           >> $gSsdtPR
@@ -618,7 +635,7 @@ function _printScopeACST()
         echo '                    },'                                                   >> $gSsdtPR
         echo '                    0x03,'                                                >> $gSsdtPR
         echo '                    '$latency_C3','                                       >> $gSsdtPR
-        echo '                    0x01F4'                                               >> $gSsdtPR
+        echo '                    '$power_C3                                            >> $gSsdtPR
     fi
 
     if (($C6)); then
@@ -724,6 +741,7 @@ function _getModelName()
     # Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
     #
     echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
+#   echo "iMac13,2"
 }
 
 #--------------------------------------------------------------------------------
@@ -779,7 +797,7 @@ function _findIasl()
     if ((gCallIasl)); then
         iasl=`find /Applications -name iasl -print -quit`
 
-        if [ $iasl == "" ]; then
+        if [ "$iasl" == "" ]; then
             gCallIasl=0
         fi
     fi
@@ -1186,10 +1204,10 @@ function main()
         then
             local ifs=$IFS
             IFS=","
-    		local cpuData=($gProcessorData)
-	        let gTdp=${cpuData[1]}
-		    let lfm=${cpuData[2]}
-		    let frequency=${cpuData[3]}
+            local cpuData=($gProcessorData)
+            let gTdp=${cpuData[1]}
+            let lfm=${cpuData[2]}
+            let frequency=${cpuData[3]}
             let maxTurboFrequency=${cpuData[4]}
             let logicalCPUs=${cpuData[6]}
             IFS=$ifs
@@ -1245,8 +1263,8 @@ function main()
     echo "$logicalCPUs logical CPU's detected with a Core Frequency of $frequency MHz"
 
     #
-	# Check maxTurboFrequency
-	#
+    # Check maxTurboFrequency
+    #
     if [ $maxTurboFrequency == 0 ]; then
         printf "\nError: Unknown processor number... exiting\n"
           echo "Try: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
@@ -1336,7 +1354,7 @@ if [ $# -ge 0 ];
         _findIasl
 
         if ((gCallIasl)); then
-            $iasl $gSsdtPR
+            "$iasl" $gSsdtPR
         fi
 
         if ((gCallOpen)); then
