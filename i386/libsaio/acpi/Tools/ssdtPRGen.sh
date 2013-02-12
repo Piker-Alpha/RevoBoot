@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -30,6 +30,8 @@
 #			- Improved power calculation, matching Apple's new algorithm (Pike, Februari 2013)
 #			- Fix iMac13,N latency and power values for C3 (Jeroen/Pike, Februari 2013)
 #			- IASL failed to launch when path included spaces (Pike, Februari 2013)
+#			- Typo in cpu-type check fixed (Jeroen, Februari 2013)
+#			- Error in CPU data (i5-3317U) fixed (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -76,7 +78,7 @@ gProcLabel="CPU"
 # Global variables.
 #
 
-gScriptVersion=3.3
+gScriptVersion=3.4
 
 #
 # Path and filename setup.
@@ -221,7 +223,7 @@ i5-3340M,35,1200,2700,3400,2,4
 i5-3339Y,13,0,1500,2000,2,4
 i5-3337U,17,0,1800,2700,2,4
 i5-3320M,35,1200,2600,3300,2,4
-i5-3317U,17,1700,2600,2,4
+i5-3317U,17,0,1700,2600,2,4
 # i5-3200 Mobile Processor Series
 i5-3230M,35,1200,2600,3200,2,4
 i5-3210M,35,1200,2500,3100,2,4
@@ -1323,7 +1325,7 @@ function main()
 
     _showLowPowerStates
 
-    if [ ${cpu_type:2:2} -ne $cpuTypeString ]; then
+    if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
         echo "Warning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
     fi
 
