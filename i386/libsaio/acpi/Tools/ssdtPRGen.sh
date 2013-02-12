@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -32,6 +32,9 @@
 #			- IASL failed to launch when path included spaces (Pike, Februari 2013)
 #			- Typo in cpu-type check fixed (Jeroen, Februari 2013)
 #			- Error in CPU data (i5-3317U) fixed (Pike, Februari 2013)
+#			- Setting added for the target path/filename (Jeroen, Februari 2013)
+#			- Initial implementation of auto-copy (Jeroen, Februari 2013)
+#			- Additional checks added for cpu data/turbo modes (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -43,12 +46,31 @@
 #================================= GLOBAL VARS ==================================
 
 #
-# Change this to 0 to stop it from injecting debug data.
+# Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
 #
-gDebug=1
+gIvyWorkAround=1
+
+#
+# Change this to 1 when you want SSDT.aml to get copied to the target location.
+#
+gAutoCopy=0
+
+#
+# This is the target location that SSDT.aml will be copied to.
+#
+# Note: Do no change this - will be updated automatically for Clover/RevoBoot!
+#
+gDestinationPath="/Extra/"
+
+#
+# This is the filename used for the copy process
+#
+gDestinationFile="SSDT.aml"
 
 #
 # A value of 1 will make this script call iasl (compiles SSDT_PR.dsl)
+#
+# Note: Will be set to 0 when we failed to locate a copy of iasl!
 #
 gCallIasl=1
 
@@ -58,34 +80,32 @@ gCallIasl=1
 gCallOpen=0
 
 #
-# Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
+# Change this to 0 to stop it from injecting debug data.
 #
-gIvyWorkAround=1
+gDebug=1
 
 #
 # Lowest possible idle frequency (user configurable). Also known as Low Frequency Mode.
 #
-
 gBaseFrequency=1600
 
 #
 # Change this label to "P00" when your DSDT uses 'P00n' instead of 'CPUn'.
 #
-
 gProcLabel="CPU"
 
 #
-# Global variables.
+# Other global variables.
 #
 
-gScriptVersion=3.4
+gScriptVersion=3.5
 
 #
 # Path and filename setup.
 #
 
 gPath=~/Desktop
-gSsdtID=SSDT_PR
+gSsdtID=SSDT
 gSsdtPR=${gPath}/${gSsdtID}.dsl
 
 gDesktopCPU=1
@@ -348,7 +368,13 @@ function _printScopeStart()
 
     if [ $turboStates -eq 0 ];
         then
-            echo '        Name (APSN, Zero)'                                            >> $gSsdtPR
+            # TODO: Remove this when CPUPM for IB works properly!
+            if (($useWorkArounds));
+                then
+                    echo '        Name (APSN, One)'                                     >> $gSsdtPR
+                else
+                    echo '        Name (APSN, Zero)'                                    >> $gSsdtPR
+            fi
         else
           # TODO: Remove this when CPUPM for IB works properly!
           if ((useWorkArounds)); then
@@ -359,7 +385,7 @@ function _printScopeStart()
     fi
 
     # TODO: Remove this when CPUPM for IB works properly!
-    if ((useWorkArounds)); then
+    if (($useWorkArounds)); then
         let packageLength+=1
     fi
 
@@ -367,7 +393,7 @@ function _printScopeStart()
     echo '        {'                                                                    >> $gSsdtPR
 
     # TODO: Remove this when CPUPM for IB works properly!
-    if ((useWorkArounds)); then
+    if (($useWorkArounds)); then
         let extraF=($maxTurboFrequency+1)
         let maxTDP=($gTdp*1000)
         let extraR=($maxTurboFrequency/100)+1
@@ -397,7 +423,9 @@ function _printPackages()
         let minRatio=8
     fi
 
-    echo '            /* High Frequency Modes (turbo) */'                               >> $gSsdtPR
+    if (($turboStates)); then
+        echo '            /* High Frequency Modes (turbo) */'                           >> $gSsdtPR
+    fi
 
     while [ $ratio -ge $minRatio ];
         do
@@ -807,6 +835,25 @@ function _findIasl()
 
 #--------------------------------------------------------------------------------
 
+function _setDestinationPath
+{
+    #
+    # Checking for RevoBoot
+    #
+    if [ -d /EFI/ACPI ]; then
+        gDestinationPath="/Extra/ACPI/"
+    fi
+
+    #
+    # Checking for Clover
+    #
+    if [ -d /EFI/ACPI/patched ]; then
+        gDestinationPath="/EFI/ACPI/patched/"
+    fi
+}
+
+#--------------------------------------------------------------------------------
+
 function _getCPUNumberFromBrandString
 {
     #
@@ -1211,6 +1258,11 @@ function main()
             let lfm=${cpuData[2]}
             let frequency=${cpuData[3]}
             let maxTurboFrequency=${cpuData[4]}
+
+            if [ $maxTurboFrequency == 0 ]; then
+                let maxTurboFrequency=$frequency
+			fi
+
             let logicalCPUs=${cpuData[6]}
             IFS=$ifs
 
@@ -1269,7 +1321,7 @@ function main()
     #
     if [ $maxTurboFrequency == 0 ]; then
         printf "\nError: Unknown processor number... exiting\n"
-          echo "Try: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
+        echo "Try: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
         exit 1
     fi
 
@@ -1285,8 +1337,17 @@ function main()
         let turboStates=0
     fi
 
-    let minTurboFrequency=($frequency+100)
-    echo "Number of Turbo States: $turboStates ($minTurboFrequency-$maxTurboFrequency MHz)"
+    #
+    # Report number of Turbo States
+    #
+    if [ $turboStates -gt 0 ];
+        then
+            let minTurboFrequency=($frequency+100)
+            echo "Number of Turbo States: $turboStates ($minTurboFrequency-$maxTurboFrequency MHz)"
+
+        else
+            echo "Number of Turbo States: 0"
+    fi
 
     local packageLength=$(echo "((($maxTurboFrequency - $gBaseFrequency)+100) / 100)" | bc)
 
@@ -1345,28 +1406,30 @@ function main()
 
 #==================================== START =====================================
 
-#
-# Check number of arguments.
-#
+main "$1" $2 $3
 
-if [ $# -ge 0 ];
-    then
-        main "$1" $2 $3
+_findIasl
 
-        _findIasl
+if ((gCallIasl)); then
+    #
+    # Compile SSDT.dsl
+    #
+    "$iasl" $gSsdtPR
 
-        if ((gCallIasl)); then
-            "$iasl" $gSsdtPR
-        fi
+    #
+    # Copy SSDT_PR.aml to target location
+    #
+    if (($gAutoCopy)); then
+        _setDestinationPath
+        cp $gSsdtPR ${gDestinationPath}${gDestinationFile}
+    fi
 
-        if ((gCallOpen)); then
-            open $gSsdtPR
-        fi
-    else
-        echo "Usage: $0 MaxTurboFrequency [TDP (Watts) CPU (0=SandyBridge, 1=IvyBridge)]"
-        exit 1
 fi
 
-#================================================================================
+if ((gCallOpen)); then
+    open $gSsdtPR
+fi
 
 exit 0
+
+#================================================================================
