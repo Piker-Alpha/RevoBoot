@@ -1261,7 +1261,7 @@ function main()
 
             if [ $maxTurboFrequency == 0 ]; then
                 let maxTurboFrequency=$frequency
-			fi
+            fi
 
             let logicalCPUs=${cpuData[6]}
             IFS=$ifs
