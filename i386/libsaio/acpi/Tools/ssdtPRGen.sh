@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -35,6 +35,7 @@
 #			- Setting added for the target path/filename (Jeroen, Februari 2013)
 #			- Initial implementation of auto-copy (Jeroen, Februari 2013)
 #			- Additional checks added for cpu data/turbo modes (Jeroen, Februari 2013)
+#			- Undo filename change done by Jeroen (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -98,14 +99,14 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=3.5
+gScriptVersion=3.6
 
 #
 # Path and filename setup.
 #
 
 gPath=~/Desktop
-gSsdtID=SSDT
+gSsdtID=SSDT_PR
 gSsdtPR=${gPath}/${gSsdtID}.dsl
 
 gDesktopCPU=1
