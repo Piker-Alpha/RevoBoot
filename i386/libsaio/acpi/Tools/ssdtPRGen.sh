@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.8 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -38,6 +38,7 @@
 #			- Undo filename change done by Jeroen (Pike, Februari 2013)
 #			- Improved/faster search algorithm to locate iasl (Jeroen, Februari 2013)
 #			- Bug fix, automatic revision update and better feedback (Pike, Februari 2013)
+#			- Turned auto copy on (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -54,9 +55,9 @@
 gIvyWorkAround=1
 
 #
-# Change this to 1 when you want SSDT.aml to get copied to the target location.
+# Asks for your confirmation to copy SSDT_PR.aml to /Extra/SSDT.aml (example)
 #
-gAutoCopy=0
+gAutoCopy=1
 
 #
 # This is the target location that SSDT.aml will be copied to.
@@ -101,7 +102,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=3.8
+gScriptVersion=3.9
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1446,11 +1447,16 @@ if ((gCallIasl)); then
     "$iasl" $gSsdtPR
 
     #
-    # Copy SSDT_PR.aml to target location
+    # Copy SSDT_PR.aml to /Extra/SSDT.aml (example)
     #
     if (($gAutoCopy)); then
-        _setDestinationPath
-        cp $gSsdtPR ${gDestinationPath}${gDestinationFile}
+        if [ -f ${gPath}/${gSsdtID}.aml ]; then
+            read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
+            case "$choice" in
+                y|Y ) _setDestinationPath
+                      cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile};;
+            esac
+        fi
     fi
 
 fi
@@ -1460,5 +1466,4 @@ if ((gCallOpen)); then
 fi
 
 exit 0
-
 #================================================================================
