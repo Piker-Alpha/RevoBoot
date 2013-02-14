@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.7 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -36,6 +36,7 @@
 #			- Initial implementation of auto-copy (Jeroen, Februari 2013)
 #			- Additional checks added for cpu data/turbo modes (Jeroen, Februari 2013)
 #			- Undo filename change done by Jeroen (Pike, Februari 2013)
+#			- Improved/faster search algorithm to locate iasl (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -99,7 +100,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=3.6
+gScriptVersion=3.7
 
 #
 # Path and filename setup.
@@ -826,10 +827,40 @@ function _getSystemType()
 function _findIasl()
 {
     if ((gCallIasl)); then
-        iasl=`find /Applications -name iasl -print -quit`
+        #
+        # First we do a quick lookup of iasl (should be there after the first run)
+        #
+        if [ -f == /usr/local/bin/iasl ];
+            then
+                iasl=/usr/local/bin/iasl
+            else
+                #
+                # Search for 'iasl5' (used by MaciASL) in the /Applications folder
+                #
+                iasl=`find /Applications -name iasl5 -print -quit`
 
-        if [ "$iasl" == "" ]; then
-            gCallIasl=0
+                if [ "$iasl" == "" ];
+                    then
+                        #
+                        # Not found. Now search for 'iasl' in the /Applications folder
+                        #
+                        iasl=`find /Applications -name iasl -print -quit`
+
+                        if [ "$iasl" == "" ]; then
+                            #
+                            # No IASL found. Disable compiler feature
+                            #
+                            gCallIasl=0
+                        fi
+                fi
+
+                if ((gCallIasl)); then
+                    #
+                    # File found. Copy it to our target location
+                    #
+                    cp "$iasl" /usr/local/bin/iasl
+                    iasl=/usr/local/bin/iasl
+                fi
         fi
     fi
 }
