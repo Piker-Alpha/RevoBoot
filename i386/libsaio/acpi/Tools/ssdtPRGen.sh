@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.7 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 3.8 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -37,6 +37,7 @@
 #			- Additional checks added for cpu data/turbo modes (Jeroen, Februari 2013)
 #			- Undo filename change done by Jeroen (Pike, Februari 2013)
 #			- Improved/faster search algorithm to locate iasl (Jeroen, Februari 2013)
+#			- Bug fix, automatic revision update and better feedback (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -100,7 +101,9 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=3.7
+gScriptVersion=3.8
+
+gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
 #
 # Path and filename setup.
@@ -265,25 +268,25 @@ i3-3110M,35,0,2400,0,2,4
 
 function _printHeader()
 {
-    echo '/*'                                                                           >  $gSsdtPR
-    echo ' * Intel ACPI Component Architecture'                                         >> $gSsdtPR
-    echo ' * AML Disassembler version 20130210-00 [Feb 10 2013]'                        >> $gSsdtPR
-    echo ' * Copyright (c) 2000 - 2013 Intel Corporation'                               >> $gSsdtPR
-    echo ' * '                                                                          >> $gSsdtPR
-    echo ' * Original Table Header:'                                                    >> $gSsdtPR
-    echo ' *     Signature        "SSDT"'                                               >> $gSsdtPR
-    echo ' *     Length           0x0000036A (874)'                                     >> $gSsdtPR
-    echo ' *     Revision         0x01'                                                 >> $gSsdtPR
-    echo ' *     Checksum         0x00'                                                 >> $gSsdtPR
-    echo ' *     OEM ID           "APPLE "'                                             >> $gSsdtPR
-    echo ' *     OEM Table ID     "CpuPm"'                                              >> $gSsdtPR
-    echo ' *     OEM Revision     0x00003000 (4096)'                                    >> $gSsdtPR
-    echo ' *     Compiler ID      "INTL"'                                               >> $gSsdtPR
-    echo ' *     Compiler Version 0x20130210 (538116624)'                               >> $gSsdtPR
-    echo ' */'                                                                          >> $gSsdtPR
-    echo ''                                                                             >> $gSsdtPR
-    echo 'DefinitionBlock ("'$gSsdtID'.aml", "SSDT", 1, "APPLE ", "CpuPm", 0x00003000)' >> $gSsdtPR
-    echo '{'                                                                            >> $gSsdtPR
+    echo '/*'                                                                             >  $gSsdtPR
+    echo ' * Intel ACPI Component Architecture'                                           >> $gSsdtPR
+    echo ' * AML Disassembler version 20130210-00 [Feb 10 2013]'                          >> $gSsdtPR
+    echo ' * Copyright (c) 2000 - 2013 Intel Corporation'                                 >> $gSsdtPR
+    echo ' * '                                                                            >> $gSsdtPR
+    echo ' * Original Table Header:'                                                      >> $gSsdtPR
+    echo ' *     Signature        "SSDT"'                                                 >> $gSsdtPR
+    echo ' *     Length           0x0000036A (874)'                                       >> $gSsdtPR
+    echo ' *     Revision         0x01'                                                   >> $gSsdtPR
+    echo ' *     Checksum         0x00'                                                   >> $gSsdtPR
+    echo ' *     OEM ID           "APPLE "'                                               >> $gSsdtPR
+    echo ' *     OEM Table ID     "CpuPm"'                                                >> $gSsdtPR
+  printf ' *     OEM Revision     '$gRevision' (%d)\n' $gRevision                         >> $gSsdtPR
+    echo ' *     Compiler ID      "INTL"'                                                 >> $gSsdtPR
+    echo ' *     Compiler Version 0x20130210 (538116624)'                                 >> $gSsdtPR
+    echo ' */'                                                                            >> $gSsdtPR
+    echo ''                                                                               >> $gSsdtPR
+    echo 'DefinitionBlock ("'$gSsdtID'.aml", "SSDT", 1, "APPLE ", "CpuPm", '$gRevision')' >> $gSsdtPR
+    echo '{'                                                                              >> $gSsdtPR
 }
 
 
@@ -830,35 +833,29 @@ function _findIasl()
         #
         # First we do a quick lookup of iasl (should be there after the first run)
         #
-        if [ -f == /usr/local/bin/iasl ];
+        if [ -f /usr/local/bin/iasl ];
             then
                 iasl=/usr/local/bin/iasl
             else
-                #
-                # Search for 'iasl5' (used by MaciASL) in the /Applications folder
-                #
+                # Note: iasl5 is the name used by MaciASL
+                printf '\nSearching for iasl5 in the /Applications folder... '
                 iasl=`find /Applications -name iasl5 -print -quit`
 
                 if [ "$iasl" == "" ];
                     then
-                        #
-                        # Not found. Now search for 'iasl' in the /Applications folder
-                        #
+                        printf 'Not found.\nSearching for iasl in the /Applications folder... '
                         iasl=`find /Applications -name iasl -print -quit`
 
                         if [ "$iasl" == "" ]; then
-                            #
-                            # No IASL found. Disable compiler feature
-                            #
+                            printf 'Not found. Disabling compiler feature'
                             gCallIasl=0
                         fi
                 fi
 
                 if ((gCallIasl)); then
-                    #
-                    # File found. Copy it to our target location
-                    #
+                    printf 'IASL found. Copying file... '
                     cp "$iasl" /usr/local/bin/iasl
+                    printf 'Done.'
                     iasl=/usr/local/bin/iasl
                 fi
         fi
