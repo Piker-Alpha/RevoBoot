@@ -32,16 +32,30 @@
 // -------------------------------------------------------------------------------------
 	#define SMB_FAMILY	"iMac"
 
+<<<<<<< HEAD
 	#if (TARGET_MODEL == IMAC_131)
 		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
 		#define SMB_PRODUCT_NAME	"iMac13,1"
 		#define SMB_BOARD_PRODUCT	"Mac-00BE6ED71E35EB86"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '1' }
+=======
+	#if (TARGET_MODEL == IMAC_111)
+		#define SMB_BIOS_VERSION	"IM111.88Z.0034.B00.0910301727"
+		#define SMB_PRODUCT_NAME	"iMac11,1"
+		#define SMB_BOARD_PRODUCT	"Mac-F2268DAE"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '1', ',', '1' }
+	#elif // Defaults to iMac12,1
+		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B1D.1110171110"
+		#define SMB_PRODUCT_NAME	"iMac12,1"
+		#define SMB_BOARD_PRODUCT	"Mac-942B59F58194171B"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '2', ',', '1' }
+>>>>>>> Jeroen testing with Pike's account
 	#elif (TARGET_MODEL == IMAC_122)
 		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B1D.1110171110"
 		#define SMB_PRODUCT_NAME	"iMac12,2"
 		#define SMB_BOARD_PRODUCT	"Mac-942B5BF58194151B"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '2', ',', '2' }
+<<<<<<< HEAD
     #elif (TARGET_MODEL == IMAC_121)
         #define SMB_BIOS_VERSION	"IM121.88Z.0047.B1D.1110171110"
         #define SMB_PRODUCT_NAME	"iMac12,1"
@@ -57,6 +71,18 @@
         #define SMB_PRODUCT_NAME	"iMac13,2"
         #define SMB_BOARD_PRODUCT	"Mac-FC02E91DDD3FA6A4"
         #define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '2' }
+=======
+	#elif (TARGET_MODEL == IMAC_131)
+		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
+		#define SMB_PRODUCT_NAME	"iMac13,1"
+		#define SMB_BOARD_PRODUCT	"Mac-00BE6ED71E35EB86"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '1' }
+	#else // Defaults to iMac13,2
+		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
+		#define SMB_PRODUCT_NAME	"iMac13,2"
+		#define SMB_BOARD_PRODUCT	"Mac-FC02E91DDD3FA6A4"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '2' }
+>>>>>>> Jeroen testing with Pike's account
 	#endif
 // -------------------------------------------------------------------------------------
 #endif

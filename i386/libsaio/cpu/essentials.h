@@ -73,7 +73,7 @@
 // Sandy Bridge & JakeTown specific 'Running Average Power Limit' MSR's.
 #define MSR_RAPL_POWER_UNIT			0x606
 
-#define MSR_PKG_RAPL_POWER_LIMIT	0x610
+#define MSR_PKG_POWER_LIMIT			0x610
 #define MSR_PKG_ENERGY_STATUS		0x611
 #define MSR_PKG_PERF_STATUS			0x613
 #define MSR_PKG_POWER_INFO			0x614

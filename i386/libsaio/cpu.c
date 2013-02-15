@@ -25,7 +25,7 @@
 uint8_t getTDP(void)
 {
 	uint8_t		powerUnit = bitfield32(rdmsr64(MSR_RAPL_POWER_UNIT), 3, 0);
-	uint32_t	powerLimit = bitfield32(rdmsr64(MSR_PKG_RAPL_POWER_LIMIT), 14, 0);
+	uint32_t	powerLimit = bitfield32(rdmsr64(MSR_PKG_POWER_LIMIT), 14, 0);
 
 	uint8_t		tdp = (powerLimit / (1 << powerUnit));
 

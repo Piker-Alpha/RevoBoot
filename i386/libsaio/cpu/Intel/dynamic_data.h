@@ -187,12 +187,11 @@ void initCPUStruct(void)
 
 	printf("C-State limit   : %d\n", (msr & 7));
 
-	printf("C1-State enabled: %s\n", ((getCachedCPUID(LEAF_5, edx) >>  4) & 0xf) ? "true" : "false"); // C1
-	printf("C3-State enabled: %s\n", ((getCachedCPUID(LEAF_5, edx) >>  8) & 0xf) ? "true" : "false"); // C3
-	printf("C6-State enabled: %s\n", ((getCachedCPUID(LEAF_5, edx) >> 12) & 0xf) ? "true" : "false"); // C6
-	printf("C7-State enabled: %s\n", ((getCachedCPUID(LEAF_5, edx) >> 16) & 0xf) ? "true" : "false"); // C7
-
-	printf("MWAIT supported : %s\n", (getCachedCPUID(LEAF_5, ecx) & 1) ? "true" : "false");
+	printf("Number of C0 sub C-states supported using MWAIT: %d\n", ( getCachedCPUID(LEAF_5, edx)        & 0xf));
+	printf("Number of C1 sub C-states supported using MWAIT: %d\n", ((getCachedCPUID(LEAF_5, edx) >>  4) & 0xf));
+	printf("Number of C2 sub C-states supported using MWAIT: %d\n", ((getCachedCPUID(LEAF_5, edx) >>  8) & 0xf));
+	printf("Number of C3 sub C-states supported using MWAIT: %d\n", ((getCachedCPUID(LEAF_5, edx) >> 12) & 0xf));
+	printf("Number of C4 sub C-states supported using MWAIT: %d\n", ((getCachedCPUID(LEAF_5, edx) >> 16) & 0xf));
 
 	_CPU_DEBUG_SLEEP(5);
 #endif
@@ -406,11 +405,18 @@ void initCPUStruct(void)
 #endif
 					qpiSpeed = 0; // No QPI but DMI for Sandy Bridge processors.
 					
+					// Disable C1/C3 state auto demotion i.e. it won't change C3/C6/C7 requests to C1/C3.
+					wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x18000003ULL);
+
 					// Disable EIST Hardware coordination (letting AICPUPM.kext handle it).
 					msr = rdmsr64(MSR_MISC_PWR_MGMT);
-					wrmsr64(MSR_MISC_PWR_MGMT, msr | 1);
+					wrmsr64(MSR_MISC_PWR_MGMT, (msr | 1));
 
-					checkFlexRatioMSR(); 
+					// Disable I/O MWAIT Redirection.
+					// msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);
+					// wrmsr64(MSR_MISC_PWR_MGMT, (msr & 0xFFFEFBFF));
+
+					checkFlexRatioMSR();
 				}
 #endif // #if INTEL_CORE_TECHNOLOGY
 				fsbFrequency = ((tscFrequency / maxBusRatio) - OC_BUSRATIO_CORRECTION);
