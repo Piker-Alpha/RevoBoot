@@ -870,7 +870,7 @@ function _setDestinationPath
     #
     # Checking for RevoBoot
     #
-    if [ -d /EFI/ACPI ]; then
+    if [ -d /Extra/ACPI ]; then
         gDestinationPath="/Extra/ACPI/"
     fi
 
