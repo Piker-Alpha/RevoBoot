@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 3.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -39,6 +39,7 @@
 #			- Improved/faster search algorithm to locate iasl (Jeroen, Februari 2013)
 #			- Bug fix, automatic revision update and better feedback (Pike, Februari 2013)
 #			- Turned auto copy on (Jeroen, Februari 2013)
+#			- IASL search in ~/ssdtPRGen.app added (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -102,7 +103,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=3.9
+gScriptVersion=4.0
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -137,6 +138,9 @@ gProcessorNumber=""
 #
 
 gSandyBridgeCPUList=(
+i5-2500K,95,1600,3300,3700,4,4
+i7-2600K,95,1600,3400,3800,4,8
+i7-2700K,95,1600,3500,3900,4,8
 # E3-1200 Xeon Processor Series
 E3-1290,95,0,3600,4000,4,8
 E3-1280,95,0,3500,3900,4,8
@@ -834,32 +838,15 @@ function _findIasl()
         #
         # First we do a quick lookup of iasl (should be there after the first run)
         #
-        if [ -f /usr/local/bin/iasl ];
-            then
-                iasl=/usr/local/bin/iasl
-            else
-                # Note: iasl5 is the name used by MaciASL
-                printf '\nSearching for iasl5 in the /Applications folder... '
-                iasl=`find /Applications -name iasl5 -print -quit`
-
-                if [ "$iasl" == "" ];
-                    then
-                        printf 'Not found.\nSearching for iasl in the /Applications folder... '
-                        iasl=`find /Applications -name iasl -print -quit`
-
-                        if [ "$iasl" == "" ]; then
-                            printf 'Not found. Disabling compiler feature'
-                            gCallIasl=0
-                        fi
-                fi
-
-                if ((gCallIasl)); then
-                    printf 'IASL found. Copying file... '
-                    cp "$iasl" /usr/local/bin/iasl
-                    printf 'Done.'
-                    iasl=/usr/local/bin/iasl
-                fi
+        if [ ! -f /usr/local/bin/iasl ]; then
+            echo -e
+            echo 'IASL not found. Downloading iasl...'
+            curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
+            chmod +x /usr/local/bin/iasl
+            echo 'Done.'
         fi
+
+        iasl=/usr/local/bin/iasl
     fi
 }
 
@@ -986,7 +973,9 @@ function _getCPUDataByProcessorNumber
         __searchList "gServerIvyBridgeCPUList[@]" $gServerCPU
     fi
 
-#   echo "gTypeCPU is $gTypeCPU"
+    if (!(($gTypeCPU))); then
+        __searchList "gSandyBridgeCPUList[@]" $gServerCPU
+    fi
 }
 
 #--------------------------------------------------------------------------------
@@ -1451,6 +1440,7 @@ if ((gCallIasl)); then
     #
     if (($gAutoCopy)); then
         if [ -f ${gPath}/${gSsdtID}.aml ]; then
+            echo -e
             read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
             case "$choice" in
                 y|Y ) _setDestinationPath
