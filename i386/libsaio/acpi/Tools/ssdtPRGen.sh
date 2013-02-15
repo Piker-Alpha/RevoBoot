@@ -39,7 +39,7 @@
 #			- Improved/faster search algorithm to locate iasl (Jeroen, Februari 2013)
 #			- Bug fix, automatic revision update and better feedback (Pike, Februari 2013)
 #			- Turned auto copy on (Jeroen, Februari 2013)
-#			- IASL search in ~/ssdtPRGen.app added (Jeroen, Februari 2013)
+#			- Download IASL if it isn't there where we expect it (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
