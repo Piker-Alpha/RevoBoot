@@ -841,8 +841,8 @@ function _findIasl()
         if [ ! -f /usr/local/bin/iasl ]; then
             echo -e
             echo 'IASL not found. Downloading iasl...'
-            curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
-            chmod +x /usr/local/bin/iasl
+            sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
+            sudo chmod +x /usr/local/bin/iasl
             echo 'Done.'
         fi
 
@@ -1444,7 +1444,7 @@ if ((gCallIasl)); then
             read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
             case "$choice" in
                 y|Y ) _setDestinationPath
-                      cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile};;
+                      sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile};;
             esac
         fi
     fi
