@@ -116,9 +116,10 @@ gPath=~/Desktop
 gSsdtID=SSDT_PR
 gSsdtPR=${gPath}/${gSsdtID}.dsl
 
-gDesktopCPU=1
-gMobileCPU=2
-gServerCPU=3
+gSandyCPU=1
+gDesktopCPU=2
+gMobileCPU=3
+gServerCPU=4
 
 let gSystemType=0
 
@@ -975,7 +976,7 @@ function _getCPUDataByProcessorNumber
     fi
 
     if (!(($gTypeCPU))); then
-        __searchList "gSandyBridgeCPUList[@]" $gServerCPU
+        __searchList "gSandyBridgeCPUList[@]" $gSandyCPU
     fi
 }
 
@@ -1234,19 +1235,15 @@ function main()
 
     _getCPUNumberFromBrandString
 
-    if [[ $# -eq 1 ]]; then
-        if [[ $1 == "" ]];
-            then
-                if [[ $gProcessorNumber != 0 ]]; then
-                    let model=0x3A
-                fi
-            else
+    if [[ $# -eq 1 ]];
+        then
+            if [[ $1 != "" ]]; then
                 if (( ("${1:0:4}" == "i3-3") || (${1:0:4} == "i5-3") || (${1:0:4} == "i7-3") || (${1:0:1} == "E") )); then
                     let model=0x3A
                     let modelSpecified=1
                     gProcessorNumber=$1
                 fi
-        fi
+            fi
     fi
 
     if (($model==0x2A || $model==0x2D));
@@ -1254,6 +1251,8 @@ function main()
             let gTdp=95
             let gBridgeType=2
             local bridgeTypeString="Sandy Bridge"
+
+            _getCPUDataByProcessorNumber
         else
             let gTdp=77
             let gBridgeType=4
@@ -1406,20 +1405,26 @@ function main()
 
     _showLowPowerStates
 
-    if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
-        echo "Warning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
-    fi
-
-    if [ $gSystemType -eq 0 ];
+    #
+    # Some IB CPUPM specific configuration checks
+    #
+    if [ $gBridgeType -eq $IVY_BRIDGE ];
         then
-            echo "Warning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
-        else
-            if [ "$gMacModelIdentifier" != "$modelID" ]; then
-                echo "Error: board-id [$boardID] and model [$modelID] mismatch"
+            if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
+                echo "Warning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
             fi
 
-            if [ $currentSystemType -ne $gSystemType ]; then
-                echo "Warning: 'system-type' may be set improperly ($currentSystemType instead of $gSystemType)"
+            if [ $gSystemType -eq 0 ];
+                then
+                    echo "Warning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
+                else
+                    if [ "$gMacModelIdentifier" != "$modelID" ]; then
+                        echo "Error: board-id [$boardID] and model [$modelID] mismatch"
+                    fi
+
+                    if [ $currentSystemType -ne $gSystemType ]; then
+                        echo "Warning: 'system-type' may be set improperly ($currentSystemType instead of $gSystemType)"
+                    fi
             fi
     fi
 }
