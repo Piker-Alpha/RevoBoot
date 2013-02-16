@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -40,6 +40,7 @@
 #			- Bug fix, automatic revision update and better feedback (Pike, Februari 2013)
 #			- Turned auto copy on (Jeroen, Februari 2013)
 #			- Download IASL if it isn't there where we expect it (Pike, Februari 2013)
+#			- A sweet dreams update for Pike who wants better feedback (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -103,7 +104,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.0
+gScriptVersion=4.1
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1221,7 +1222,7 @@ function _isRoot()
 function main()
 {
     printf "\nsdtPRGen.sh v$gScriptVersion Copyright (c) 2013 by Pike R. Alpha\n"
-    echo   '-----------------------------------------------------'
+    echo   '----------------------------------------------------------------'
 
     let modelSpecified=0
     let maxTurboFrequency=0
@@ -1263,7 +1264,14 @@ function main()
             fi
     fi
 
-    echo "$bridgeTypeString Core $gProcessorNumber processor installed"
+    _getBoardID
+
+    local modelID=$(_getModelName)
+    local cpu_type=$(_getCPUtype)
+    local currentSystemType=$(_getSystemType)
+
+    echo "Generating SSDT.dsl for a $modelID [$boardID]"
+    echo "$bridgeTypeString Core $gProcessorNumber processor [0x$cpu_type] setup"
 
     #
     # gTypeCPU is greater than 0 when the processor is found in one of the CPU lists
@@ -1333,7 +1341,7 @@ function main()
         fi
     fi
 
-    echo "$logicalCPUs logical CPU's detected with a Core Frequency of $frequency MHz"
+    echo "Number logical CPU's: $logicalCPUs (Core Frequency: $frequency MHz)"
 
     #
     # Check maxTurboFrequency
@@ -1377,13 +1385,6 @@ function main()
     _printDebugInfo $logicalCPUs $gTdp $packageLength $turboStates $maxTurboFrequency
     _printScopeStart $turboStates $packageLength
     _printPackages $gTdp $frequency $maxTurboFrequency
-
-    _getBoardID
-
-    local modelID=$(_getModelName)
-
-    local cpu_type=$(_getCPUtype)
-    local currentSystemType=$(_getSystemType)
 
     if [ $gBridgeType -eq $IVY_BRIDGE ];
         then
