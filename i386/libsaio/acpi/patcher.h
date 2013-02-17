@@ -263,7 +263,7 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 	{
 #if STATIC_DSDT_TABLE_INJECTION
 		_ACPI_DEBUG_DUMP("static DSDT data");
-#else	// STATIC_DSDT_TABLE_INJECTION
+#elif LOAD_MODEL_SPECIFIC_ACPI_DATA
 		_ACPI_DEBUG_DUMP("%s", customTables[DSDT].fileName);
 #endif	// STATIC_DSDT_TABLE_INJECTION
 		_ACPI_DEBUG_DUMP(" @ 0x%x\n", customTables[DSDT].tableAddress);
