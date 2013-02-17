@@ -21,6 +21,12 @@ static uint32_t APIC_Table[] =
 #endif
 };
 
+static uint32_t DMAR_Table[] =
+{
+#if STATIC_DMAR_TABLE_INJECTION
+	STATIC_DMAR_TABLE_DATA
+#endif
+};
 
 static uint32_t ECDT_Table[] =
 {

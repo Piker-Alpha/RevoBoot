@@ -64,6 +64,7 @@ static ACPITable customTables[] =
 #if LOAD_MODEL_SPECIFIC_ACPI_DATA
 	// Essential tables.
 	{ "APIC",		APIC_Table,			sizeof(APIC_Table),			false,	0,	""	},
+	{ "DMAR",		DMAR_Table,			sizeof(DMAR_Table),			false,	0,	""	},
 	{ "ECDT",		ECDT_Table,			sizeof(ECDT_Table),			false,	0,	""	},
 	{ "HPET",		HPET_Table,			sizeof(HPET_Table),			false,	0,	""	},
 	{ "MCFG",		MCFG_Table,			sizeof(MCFG_Table),			false,	0,	""	},
@@ -84,6 +85,7 @@ static ACPITable customTables[] =
 #else
 	// Essential tables.
 	{ "APIC",		APIC_Table,			sizeof(APIC_Table),			false,	0	},
+	{ "DMAR",		DMAR_Table,			sizeof(DMAR_Table),			false,	0	},
 	{ "ECDT",		ECDT_Table,			sizeof(ECDT_Table),			false,	0	},
 	{ "HPET",		HPET_Table,			sizeof(HPET_Table),			false,	0	},
 	{ "MCFG",		MCFG_Table,			sizeof(MCFG_Table),			false,	0	},
@@ -112,6 +114,7 @@ typedef enum
 
 	// Essential tables.
 	APIC,
+	DMAR,
     ECDT,
 	HPET,
 	MCFG,
@@ -143,19 +146,19 @@ typedef enum
 
 
 // ACPI table signatures in little endian format.
-#define RSDP_TABLE_SIGNATURE 0x50445352
-#define RSDT_TABLE_SIGNATURE 0x54445352
-#define XSDT_TABLE_SIGNATURE 0x54445358
 #define APIC_TABLE_SIGNATURE 0x43495041
-#define ECDT_TABLE_SIGNATURE 0x54444345
+#define DMAR_TABLE_SIGNATURE 0x52414d44
 #define DSDT_TABLE_SIGNATURE 0x54445344
+#define ECDT_TABLE_SIGNATURE 0x54444345
 #define FACP_TABLE_SIGNATURE 0x50434146
 #define FACS_TABLE_SIGNATURE 0x53434146
 #define HPET_TABLE_SIGNATURE 0x54455048
-#define SBST_TABLE_SIGNATURE 0x54534253
 #define MCFG_TABLE_SIGNATURE 0x4746434d
+#define RSDP_TABLE_SIGNATURE 0x50445352
+#define RSDT_TABLE_SIGNATURE 0x54445352
+#define SBST_TABLE_SIGNATURE 0x54534253
 #define SSDT_TABLE_SIGNATURE 0x54445353
-
+#define XSDT_TABLE_SIGNATURE 0x54445358
 
 typedef struct acpi_2_tables
 {
@@ -169,6 +172,7 @@ typedef struct acpi_2_tables
 static ACPITables essentialTables[] =
 {
 	{ APIC, APIC_TABLE_SIGNATURE,	replaceTable,		kReplaceTable | kAddTable	},
+	{ DMAR, DMAR_TABLE_SIGNATURE,	NULL,				kReplaceTable | kAddTable	},
 	{ NONE,	FACP_TABLE_SIGNATURE,	patchFACPTable,		kPatchTable					},
 	{ HPET, HPET_TABLE_SIGNATURE,	replaceTable,		kReplaceTable				},
 	{ MCFG, MCFG_TABLE_SIGNATURE,	NULL,				kReplaceTable				},
