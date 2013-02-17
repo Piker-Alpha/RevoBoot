@@ -406,7 +406,7 @@ void initCPUStruct(void)
 					qpiSpeed = 0; // No QPI but DMI for Sandy Bridge processors.
 					
 					// Disable C1/C3 state auto demotion i.e. it won't change C3/C6/C7 requests to C1/C3.
-					wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x18000003ULL);
+					wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x1E000003ULL);
 
 					// Disable EIST Hardware coordination (letting AICPUPM.kext handle it).
 					msr = rdmsr64(MSR_MISC_PWR_MGMT);
