@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -44,6 +44,7 @@
 #			- First set of Haswell processors added (Pike/Jeroen, Februari 2013)
 #			- More rigid testing for user errors (Pike/Jeroen, Februari 2013)
 #			- Getting ready for new Haswell setups (Pike/Jeroen, Februari 2013)
+#			- Typo and ssdtPRGen.command breakage fixed (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -107,7 +108,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.2
+gScriptVersion=4.3
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1248,7 +1249,7 @@ function _initIvyBridgeSetup()
 function _exitWithError()
 {
     case "$1" in
-        2) echo -e "\nError: 'MaxTurboFrequency' must be in the range of $frequency-gMaxOCFrequency... exiting\n" 1>&2
+        2) echo -e "\nError: 'MaxTurboFrequency' must be in the range of $frequency-$gMaxOCFrequency... exiting\n" 1>&2
            exit 2
            ;;
         3) echo -e "\nError: 'TDP' must be in the range of 10-150 Watts... exiting\n" 1>&2
@@ -1379,48 +1380,54 @@ function main()
         #
         # One arguments given (should be a number)
         #
-        if [[ $# -ge 1 && "$1" =~ ^[0-9]+$ ]];
-            then
-                if [[ $1 -lt $frequency || $1 -gt $gMaxOCFrequency ]];
-                    then
-                        _exitWithError $MAX_TURBO_FREQUENCY_ERROR
-                    else
-                        let maxTurboFrequency=$1
-                fi
-            else
-                _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+        if [[ $# -ge 1 && $1 != "" ]]; then
+		    if [[ "$1" =~ ^[0-9]+$ ]];
+                then
+                    if [[ $1 -lt $frequency || $1 -gt $gMaxOCFrequency ]];
+                        then
+                            _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+                        else
+                            let maxTurboFrequency=$1
+                    fi
+                else
+                    _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+            fi
         fi
 
-        if [[ $# -ge 2 && "$2" =~ ^[0-9]+$ ]];
-            then
-                if [[ $2 -lt 10 || -gt 150 ]];
-                    then
-                        _exitWithError $MAX_TDP_ERROR
-                    else
-                        let gTdp=$2
-                        echo "Override value: Max TDP, now using: $gTdp Watt!"
-                fi
-            else
-                _exitWithError $MAX_TDP_ERROR
+        if [ $# -ge 2 ]; then
+            if [[ "$2" =~ ^[0-9]+$ ]];
+                then
+                    if [[ $2 -lt 10 || -gt 150 ]];
+                        then
+                            _exitWithError $MAX_TDP_ERROR
+                        else
+                            let gTdp=$2
+                            echo "Override value: Max TDP, now using: $gTdp Watt!"
+                    fi
+                else
+                    _exitWithError $MAX_TDP_ERROR
+            fi
         fi
 
-        if [[ $# -eq 3 && "$3" =~ ^[0-9]+$ ]];
-            then
-                case "$3" in
-                    0) let gBridgeType=2
-                       echo "Override value: CPU type, now using: Sandy Bridge!"
-                       ;;
-                    1) let gBridgeType=4
-                       echo "Override value: CPU type, now using: Ivy Bridge!"
-                       ;;
-                    2) let gBridgeType=8
-                       echo "Override value: CPU type, now using: Haswell!"
-                       ;;
-                    *) _exitWithError $TARGET_CPU_ERROR
-                       ;;
-                esac
-            else
-                _exitWithError $TARGET_CPU_ERROR
+        if [ $# -eq 3 ]; then
+            if [[ "$3" =~ ^[0-9]+$ ]];
+                then
+                    case "$3" in
+                        0) let gBridgeType=2
+                           echo "Override value: CPU type, now using: Sandy Bridge!"
+                           ;;
+                        1) let gBridgeType=4
+                           echo "Override value: CPU type, now using: Ivy Bridge!"
+                           ;;
+                        2) let gBridgeType=8
+                           echo "Override value: CPU type, now using: Haswell!"
+                           ;;
+                        *) _exitWithError $TARGET_CPU_ERROR
+                           ;;
+                    esac
+                else
+                    _exitWithError $TARGET_CPU_ERROR
+            fi
         fi
     fi
 
