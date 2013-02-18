@@ -41,6 +41,7 @@
 #			- Turned auto copy on (Jeroen, Februari 2013)
 #			- Download IASL if it isn't there where we expect it (Pike, Februari 2013)
 #			- A sweet dreams update for Pike who wants better feedback (Jeroen, Februari 2013)
+#			- First set of Haswell processors added (Pike/Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -120,6 +121,7 @@ gSandyCPU=1
 gDesktopCPU=2
 gMobileCPU=3
 gServerCPU=4
+gHaswellCPU=5
 
 let gSystemType=0
 
@@ -269,6 +271,29 @@ i3-3130M,35,1200,2600,0,2,4
 i3-3120ME,35,0,2400,0,2,4
 i3-3120M,35,0,2500,0,2,4
 i3-3110M,35,0,2400,0,2,4
+)
+
+#
+# New Haswell processors with HD-4600 graphics
+#
+
+gDesktopHaswellCPUList=(
+# Socket 1150 (Standard Power)
+i7-4770K,84,00,3500,3900,4,8
+i7-4770,84,0,3400,3900,4,8
+i5-4670K,84,0,3400,3800,4,4
+i5-4670,84,0,3400,3800,4,4
+i5-4570,84,0,3200,3600,4,4
+i5-4430,84,0,3000,3200,4,4
+# Socket 1150 (Low Power)
+i7-4770S,65,0,3100,3900,4,8
+i7-4770T,45,0,2500,3700,4,8
+i7-4765T,35,0,2000,3000,4,8
+i5-4670S,65,0,3100,3800,4,4
+i5-4670T,45,0,2300,3300,4,4
+i5-4570S,65,0,2900,3600,4,4
+i5-4570T,35,0,2900,3600,2,4
+i5-4430S,65,0,2700,3200,4,4
 )
 
 #--------------------------------------------------------------------------------
@@ -977,6 +1002,10 @@ function _getCPUDataByProcessorNumber
 
     if (!(($gTypeCPU))); then
         __searchList "gSandyBridgeCPUList[@]" $gSandyCPU
+    fi
+
+    if (!(($gTypeCPU))); then
+        __searchList "gDesktopHaswellCPUList[@]" $gHaswellCPU
     fi
 }
 
