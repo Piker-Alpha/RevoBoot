@@ -874,13 +874,12 @@ function _getSystemType()
 
 function _findIasl()
 {
-    if ((gCallIasl)); then
+    if (($gCallIasl)); then
         #
         # First we do a quick lookup of iasl (should be there after the first run)
         #
         if [ ! -f /usr/local/bin/iasl ]; then
-            echo -e
-            echo 'IASL not found. Downloading iasl...'
+            echo -e "\nIASL not found. Downloading iasl..."
             sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
             sudo chmod +x /usr/local/bin/iasl
             echo 'Done.'
@@ -1330,7 +1329,7 @@ function main()
     local cpu_type=$(_getCPUtype)
     local currentSystemType=$(_getSystemType)
 
-    echo "Generating SSDT.dsl for a $modelID [$boardID]"
+    echo "Generating ${gSsdtID}.dsl for a $modelID [$boardID]"
     echo "$bridgeTypeString Core $gProcessorNumber processor [0x$cpu_type] setup"
 
     #
@@ -1526,7 +1525,7 @@ main "$1" $2 $3
 
 _findIasl
 
-if ((gCallIasl)); then
+if (($gCallIasl)); then
     #
     # Compile SSDT.dsl
     #
@@ -1541,7 +1540,8 @@ if ((gCallIasl)); then
             read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
             case "$choice" in
                 y|Y ) _setDestinationPath
-                      sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile};;
+                      sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
+                      ;;
             esac
         fi
     fi
