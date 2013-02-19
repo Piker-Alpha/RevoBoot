@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -45,6 +45,7 @@
 #			- More rigid testing for user errors (Pike/Jeroen, Februari 2013)
 #			- Getting ready for new Haswell setups (Pike/Jeroen, Februari 2013)
 #			- Typo and ssdtPRGen.command breakage fixed (Jeroen, Februari 2013)
+#			- Target folder check added for _findIASL (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -108,7 +109,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.3
+gScriptVersion=4.5
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -876,10 +877,19 @@ function _findIasl()
 {
     if (($gCallIasl)); then
         #
-        # First we do a quick lookup of iasl (should be there after the first run)
+        # Then we do a quick lookup of iasl (should also be there after the first run)
         #
         if [ ! -f /usr/local/bin/iasl ]; then
-            echo -e "\nIASL not found. Downloading iasl..."
+            printf "\nIASL not found. "
+            #
+            # First we check the target directory (should be there after the first run)
+            #
+            if [ ! -d /usr/local/bin ]; then
+                printf "Creating target directory... "
+                sudo mkdir /usr/local/bin/
+            fi
+
+            printf "Downloading iasl...\n"
             sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
             sudo chmod +x /usr/local/bin/iasl
             echo 'Done.'
