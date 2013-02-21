@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -46,6 +46,7 @@
 #			- Getting ready for new Haswell setups (Pike/Jeroen, Februari 2013)
 #			- Typo and ssdtPRGen.command breakage fixed (Jeroen, Februari 2013)
 #			- Target folder check added for _findIASL (Pike, Februari 2013)
+#			- Set $baseFreqyency to $lfm when the latter isn't zero (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -109,7 +110,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.5
+gScriptVersion=4.6
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -884,6 +885,7 @@ function _findIasl()
             #
             # First we check the target directory (should be there after the first run)
             #
+            # XXX: Jeroen, try curl --create-dirs without the mkdir here ;)
             if [ ! -d /usr/local/bin ]; then
                 printf "Creating target directory... "
                 sudo mkdir /usr/local/bin/
@@ -891,6 +893,7 @@ function _findIasl()
 
             printf "Downloading iasl...\n"
             sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
+#           sudo curl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl -o /usr/local/bin/iasl --create-dirs
             sudo chmod +x /usr/local/bin/iasl
             echo 'Done.'
         fi
@@ -1367,17 +1370,20 @@ function main()
             #
             # Check Low Frequency Mode (may be 0 aka still unknown)
             #
-            if (($lfm == 0)); then
-                echo 'Warning: Low Frequency Mode is 0 (unknown)'
+            if (($lfm > 0));
+                then
+                    let gBaseFrequency=$lfm
+                else
+                    echo 'Warning: Low Frequency Mode is 0 (unknown)'
 
-                if (($gTypeCPU == gMobileCPU));
-                    then
-                        echo 'Now using 1200 MHz for Mobile processor'
-                        let gBaseFrequency=1200
-                    else
-                        echo 'Now using 1600 MHz for Server/Desktop processors'
-                        let gBaseFrequency=1600
-                fi
+                    if (($gTypeCPU == gMobileCPU));
+                        then
+                            echo 'Now using 1200 MHz for Mobile processor'
+                            let gBaseFrequency=1200
+                        else
+                            echo 'Now using 1600 MHz for Server/Desktop processors'
+                            let gBaseFrequency=1600
+                    fi
             fi
         else
             let logicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
