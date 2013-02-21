@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.7 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -47,6 +47,7 @@
 #			- Typo and ssdtPRGen.command breakage fixed (Jeroen, Februari 2013)
 #			- Target folder check added for _findIASL (Pike, Februari 2013)
 #			- Set $baseFreqyency to $lfm when the latter isn't zero (Pike, Februari 2013)
+#			- Check PlatformSupport.plist for supported model/board-id added (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -110,7 +111,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.6
+gScriptVersion=4.7
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1076,6 +1077,43 @@ function _showLowPowerStates()
 
 #--------------------------------------------------------------------------------
 
+function _checkPlatformSupport()
+{
+    #
+    # Local function definition
+    #
+    function __searchList()
+    {
+        local data=`awk '/<key>'${1}'<\/key>.*/,/<\/array>/' /System/Library/CoreServices/PlatformSupport.plist`
+        local targetList=(`echo $data | egrep -o '(<string>.*</string>)' | sed -e 's/<\/*string>//g'`)
+
+        for item in "${targetList[@]}"
+        do
+
+            if [ "$item" == "$2" ]; then
+                return 1
+            fi
+        done
+
+        return 0
+    }
+
+    __searchList 'SupportedModelProperties' $1
+
+    if (($? == 0)); then
+        echo 'Warning: Model identifier ['$1'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
+    fi
+
+    __searchList 'SupportedBoardIds' $2
+
+    if (($? == 0)); then
+        echo 'Warning: boardID ['$2'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
+
+    fi
+}
+
+#--------------------------------------------------------------------------------
+
 function _checkSMCKeys()
 {
     #
@@ -1508,6 +1546,7 @@ function main()
     fi
 
     _showLowPowerStates
+    _checkPlatformSupport $modelID $boardID
 
     #
     # Some IB CPUPM specific configuration checks
