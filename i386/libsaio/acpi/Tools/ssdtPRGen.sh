@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.7 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 4.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -48,6 +48,9 @@
 #			- Target folder check added for _findIASL (Pike, Februari 2013)
 #			- Set $baseFreqyency to $lfm when the latter isn't zero (Pike, Februari 2013)
 #			- Check PlatformSupport.plist for supported model/board-id added (Jeroen, Februari 2013)
+#			- New/expanded Sandy Bridge CPU lists, thanks to Francis (Jeroen, Februari 2013)
+#			- More preparations for the official Haswell launch (Pike, Februari 2013)
+#			- Fix for home directory with space characters (Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -111,7 +114,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.7
+gScriptVersion=4.9
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -120,14 +123,12 @@ gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 #
 
 gPath=~/Desktop
-gSsdtID=SSDT_PR
-gSsdtPR=${gPath}/${gSsdtID}.dsl
+gSsdtID="SSDT_PR"
+gSsdtPR="${gPath}/${gSsdtID}.dsl"
 
-gSandyCPU=1
-gDesktopCPU=2
-gMobileCPU=3
-let gServerCPU=4
-let gHaswellCPU=5
+let gDesktopCPU=1
+let gMobileCPU=2
+let gServerCPU=3
 
 let gSystemType=0
 
@@ -158,10 +159,7 @@ let PROCESSOR_NUMBER_ERROR=5
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
 #
 
-gSandyBridgeCPUList=(
-i5-2500K,95,1600,3300,3700,4,4
-i7-2600K,95,1600,3400,3800,4,8
-i7-2700K,95,1600,3500,3900,4,8
+gServerSandyBridgeCPUList=(
 # E3-1200 Xeon Processor Series
 E3-1290,95,0,3600,4000,4,8
 E3-1280,95,0,3500,3900,4,8
@@ -176,6 +174,96 @@ E3-1225,95,0,3100,3400,4,4
 E3-1220L,20,0,2200,3400,2,4
 E3-1220,80,0,3100,3400,4,4
 )
+
+gDesktopSandyBridgeCPUList=(
+# i7 Desktop series
+i7-2600S,65,1600,2800,3800,4,8
+i7-2600,95,1600,3400,3800,4,8
+i7-2600K,95,1600,3400,3800,4,8
+i7-2700K,95,1600,3500,3900,4,8
+i7-3930K,130,1600,3200,3800,6,12
+i7-3820,130,1600,3600,3800,4,8
+# i5 Desktop Series
+i5-2300,95,1600,2800,3100,4,4
+i5-2310,95,1600,2900,3200,4,4
+i5-2320,95,1600,3000,3300,4,4
+i5-2380P,95,1600,3100,3400,4,4
+i5-2390T,35,1600,2700,3500,2,4
+i5-2400S,65,1600,2500,3300,4,4
+i5-2405S,65,1600,2500,3300,4,4
+i5-2400,95,1600,3100,3400,4,4
+i5-2450P,95,1600,3200,3500,4,4
+i5-2500T,45,1600,2300,3300,4,4
+i5-2500S,65,1600,2700,3700,4,4
+i5-2500,95,1600,3300,3700,4,4
+i5-2500K,95,1600,3300,3700,4,4
+i5-2550K,95,1600,3400,3800,4,4
+# i3 1200 Desktop Series
+i3-2130,65,1600,3400,0,2,4
+i3-2125,65,1600,3300,0,2,4
+i3-2120T,35,1600,2600,0,2,4
+i3-2120,65,1600,3300,0,2,4
+i3-2115C,25,1600,2000,0,2,4
+i3-2105,65,1600,3100,0,2,4
+i3-2102,65,1600,3100,0,2,4
+i3-2100T,35,1600,2500,0,2,4
+i3-2100,65,1600,3100,0,2,4
+)
+
+gMobileSandyBridgeCPUList=(
+# i7 Mobile Extreme Series
+i7-2960XM,55,0,2700,3700,4,8
+i7-2920XM,55,0,2500,3500,4,8
+# i7 Mobile Series
+i7-2860QM,45,0,2500,3600,4,8
+i7-2820QM,45,0,2300,3400,4,8
+i7-2760QM,45,0,2400,3500,4,8
+i7-2720QM,45,0,2200,3300,4,8
+i7-2715QE,45,0,2100,3000,4,8
+i7-2710QE,45,0,2100,3000,4,8
+i7-2677M,17,0,1800,2900,2,4
+i7-2675QM,45,0,2200,3100,4,8
+i7-2670QM,45,0,2200,3100,4,8
+i7-2675M,17,0,1600,2700,2,4
+i7-2655LE,25,0,2200,2900,2,4
+i7-2649M,25,0,2300,3200,2,4
+i7-26740M,32,0,2800,3500,2,4
+i7-2637M,17,0,1700,2800,2,4
+i7-2635QM,45,0,2000,2900,4,8
+i7-2630QM,45,0,2000,2900,4,8
+i7-2629M,25,0,2100,3000,2,4
+i7-2620M,35,0,2700,3400,2,4
+i7-2617M,17,0,1500,2600,2,4
+i7-2610UE,17,0,1500,2400,2,4
+# i5 Mobile Series
+i5-2467M,17,0,1600,2300,2,4
+i5-2450M,35,0,2300,3100,2,4
+i5-2435M,35,0,2400,3000,2,4
+i5-2430M,35,0,2400,3000,2,4
+i5-2410M,35,0,2300,2900,2,4
+i5-2557M,17,0,1700,2700,2,4
+i5-2540M,35,0,2600,3300,2,4
+i5-2537M,17,0,1400,2300,2,4
+i5-2520M,35,0,2500,3200,2,4
+i5-2515E,35,0,2500,3100,2,4
+i5-2510E,35,0,2500,3100,2,4
+# i3 2300 Mobile Series
+i3-2377M,17,0,1500,0,2,4
+i3-2370M,35,0,2400,0,2,4
+i3-2367M,17,0,1400,0,2,4
+i3-2365M,17,0,1400,0,2,4
+i3-2357M,17,0,1300,0,2,4
+i3-2350M,35,0,2300,0,2,4
+i3-2348M,35,0,2300,0,2,4
+i3-2340UE,17,0,1300,0,2,4
+i3-2330M,35,0,2200,0,2,4
+i3-2330E,35,0,2200,0,2,4
+i3-2328M,35,0,2200,0,2,4
+i3-2312M,35,0,2100,0,2,4
+i3-2310M,35,0,2100,0,2,4
+i3-2310E,35,0,2100,0,2,4
+)
+
 
 #
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
@@ -199,6 +287,9 @@ gServerIvyBridgeCPUList=(
 )
 
 gDesktopIvyBridgeCPUList=(
+# i7 Desktop Extreme Series
+i7-3970X,150,1600,3500,4000,6,12
+i7-3960X,130,1600,3300,3900,6,12
 # i7-3700 Desktop Processor Series
 i7-3770T,45,1600,2500,3700,4,8
 i7-3770S,65,1600,3100,3900,4,8
@@ -291,8 +382,10 @@ i3-3110M,35,0,2400,0,2,4
 )
 
 #
-# New Haswell processors with HD-4600 graphics
+# New Haswell processors (with HD-4600 graphics)
 #
+gServerHaswellCPUList=(
+)
 
 gDesktopHaswellCPUList=(
 # Socket 1150 (Standard Power)
@@ -311,6 +404,9 @@ i5-4670T,45,0,2300,3300,4,4
 i5-4570S,65,0,2900,3600,4,4
 i5-4570T,35,0,2900,3600,2,4
 i5-4430S,65,0,2700,3200,4,4
+)
+
+gMobileHaswellCPUList=(
 )
 
 #--------------------------------------------------------------------------------
@@ -594,10 +690,9 @@ function _printScopeACST()
             #
             # C-States override for Mobile processors (CPU0 only)
             #
-            if (($gTypeCPU == $gMobileCPU));
-                then
-                    echo 'Adjusting C-States for detected (mobile) processor'
-                    gACST_CPU0=29
+            if (($gTypeCPU == $gMobileCPU)); then
+                echo 'Adjusting C-States for detected (mobile) processor'
+                gACST_CPU0=29
             fi
 
             let targetCStates=$gACST_CPU0
@@ -995,43 +1090,50 @@ function _getCPUDataByProcessorNumber
     function __searchList()
     {
         local ifs=$IFS
-        local targetCPUList=("${!1}")
+        let targetType=0
 
-        for cpuData in "${targetCPUList[@]}"
+        case $1 in
+            2) local cpuSpecLists=("gDesktopSandyBridgeCPUList[@]" "gMobileSandyBridgeCPUList[@]" "gServerSandyBridgeCPUList[@]")
+               ;;
+            4) local cpuSpecLists=("gDesktopIvyBridgeCPUList[@]" "gMobileIvyBridgeCPUList[@]" "gServerIvyBridgeCPUList[@]")
+               ;;
+            8) local cpuSpecLists=("gDesktopHaswellCPUList[@]" "gMobileHaswellCPUList[@]" "gHaswellCPUList[@]")
+               ;;
+        esac
+
+        for cpuList in ${cpuSpecLists[@]}
         do
-            IFS=","
-            data=($cpuData)
+            let targetType+=1
+            local targetCPUList=("${!cpuList}")
 
-            if [[ ${data[0]} == $gProcessorNumber ]]; then
-                gProcessorData="$cpuData"
-                let gTypeCPU=$2
-                IFS=$ifs
-                return
-            fi
+            for cpuData in "${targetCPUList[@]}"
+            do
+                IFS=","
+                data=($cpuData)
+
+                if [[ ${data[0]} == $gProcessorNumber ]]; then
+                    gProcessorData="$cpuData"
+                    let gTypeCPU=$targetType
+                    IFS=$ifs
+                    return
+                fi
+            done
         done
 
         IFS=$ifs
     }
 
     #
-    # Local function callers (passing array and cpu type)
+    # Local function callers
     #
-    __searchList gDesktopIvyBridgeCPUList[@] $gDesktopCPU
+    __searchList $SANDY_BRIDGE
 
     if (!(($gTypeCPU))); then
-        __searchList gMobileIvyBridgeCPUList[@] $gMobileCPU
+        __searchList $IVY_BRIDGE
     fi
 
     if (!(($gTypeCPU))); then
-        __searchList "gServerIvyBridgeCPUList[@]" $gServerCPU
-    fi
-
-    if (!(($gTypeCPU))); then
-        __searchList "gSandyBridgeCPUList[@]" $gSandyCPU
-    fi
-
-    if (!(($gTypeCPU))); then
-        __searchList "gDesktopHaswellCPUList[@]" $gHaswellCPU
+        __searchList $HASWELL
     fi
 }
 
@@ -1335,6 +1437,12 @@ function main()
 
     if [[ $# -eq 1 ]]; then
         if [[ $1 != "" ]]; then
+            # Sandy Bridge checks
+            if [[ ${1:0:4} == "i3-2" || ${1:0:4} == "i5-2" || ${1:0:4} == "i7-2" || ${1:2:2} == "E2" ]]; then
+                let model=0x2A
+                let modelSpecified=1
+                gProcessorNumber=$1
+            fi
             # Ivy Bridge checks
             if [[ ${1:0:4} == "i3-3" || ${1:0:4} == "i5-3" || ${1:0:4} == "i7-3" || ${1:2:2} == "E3" ]]; then
                 let model=0x3A
@@ -1434,16 +1542,13 @@ function main()
         # One arguments given (should be a number)
         #
         if [[ $# -ge 1 && $1 != "" ]]; then
-		    if [[ "$1" =~ ^[0-9]+$ ]];
-                then
-                    if [[ $1 -lt $frequency || $1 -gt $gMaxOCFrequency ]];
-                        then
-                            _exitWithError $MAX_TURBO_FREQUENCY_ERROR
-                        else
-                            let maxTurboFrequency=$1
-                    fi
-                else
-                    _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+		    if [[ "$1" =~ ^[0-9]+$ ]]; then
+                if [[ $1 -lt $frequency || $1 -gt $gMaxOCFrequency ]];
+                    then
+                        _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+                    else
+                        let maxTurboFrequency=$1
+                fi
             fi
         fi
 
