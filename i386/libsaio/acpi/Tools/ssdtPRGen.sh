@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -54,6 +54,7 @@
 #			- Sandy Bridge CPU lists rearranged/extended, thanks to 'stinga11' (Jeroen, Februari 2013)
 #			- Now supporting up to 16 logical cores (Jeroen, Februari 2013)
 #			- Improved argument checking, now supporting a fourth argument (Jeroen/Pike, Februari 2013)
+#			- Suppress override output when possible (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -139,7 +140,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.0
+gScriptVersion=5.1
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1598,7 +1599,10 @@ function main()
                 then
                     _exitWithError $MAX_TURBO_FREQUENCY_ERROR
                 else
-                    let maxTurboFrequency=$2
+                    if [[ $2 -gt $maxTurboFrequency ]]; then
+                        echo "Override value: Max Turbo Frequency, now using: $2 MHz!"
+                        let maxTurboFrequency=$2
+                    fi
             fi
         fi
     fi
@@ -1610,8 +1614,10 @@ function main()
                     then
                         _exitWithError $MAX_TDP_ERROR
                     else
-                        let gTdp=$3
-                        echo "Override value: Max TDP, now using: $gTdp Watt!"
+                        if [[ $gTdp != $3 ]]; then
+                            let gTdp=$3
+                            echo "Override value: Max TDP, now using: $gTdp Watt!"
+                        fi
                 fi
             else
                 _exitWithError $MAX_TDP_ERROR
@@ -1621,19 +1627,25 @@ function main()
     if [ $# -eq 4 ]; then
         if [[ "$4" =~ ^[0-9]+$ ]];
             then
+                local detectedBridgeType=$gBridgeType
+
                 case "$4" in
                     0) let gBridgeType=2
-                       echo "Override value: CPU type, now using: Sandy Bridge!"
+                       local cpuTypeString="Override value: CPU type, now using: Sandy Bridge!"
                        ;;
                     1) let gBridgeType=4
-                       echo "Override value: CPU type, now using: Ivy Bridge!"
+                       local cpuTypeString="Override value: CPU type, now using: Ivy Bridge!"
                        ;;
                     2) let gBridgeType=8
-                       echo "Override value: CPU type, now using: Haswell!"
+                       local cpuTypeString="Override value: CPU type, now using: Haswell!"
                        ;;
                     *) _exitWithError $TARGET_CPU_ERROR
                        ;;
                 esac
+
+                if [[ $detectedBridgeType -ne $((2 << $4)) ]]; then
+                    echo $cpuTypeString
+                fi
             else
                 _exitWithError $TARGET_CPU_ERROR
         fi
