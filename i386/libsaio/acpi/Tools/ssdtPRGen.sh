@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 4.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -51,10 +51,35 @@
 #			- New/expanded Sandy Bridge CPU lists, thanks to Francis (Jeroen, Februari 2013)
 #			- More preparations for the official Haswell launch (Pike, Februari 2013)
 #			- Fix for home directory with space characters (Pike, Februari 2013)
+#			- Sandy Bridge CPU lists rearranged/extended, thanks to 'stinga11' (Jeroen, Februari 2013)
+#			- Now supporting up to 16 logical cores (Jeroen, Februari 2013)
+#			- Improved argument checking, now supporting a fourth argument (Jeroen/Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
-#			- Many thanks to Jeroen for the CPU data, cleanups and renaming stuff.
+#			- Thanks to 'stinga11' for Sandy Bridge (E5) data and processor list errors.
+#			- Many thanks to Jeroen for the CPU data, cleanups, renaming stuff and other improvements.
+#
+# Usage (v1.0 - v4.9):
+#
+#           - ./ssdtPRGen.sh [max turbo frequency] [TDP] [CPU type]
+#
+#           - ./ssdtPRGen.sh
+#           - ./ssdtPRGen.sh 3600
+#           - ./ssdtPRGen.sh 3600 70
+#           - ./ssdtPRGen.sh 3600 70 1
+#
+# Usage (v5.0 and greater):
+#
+#           - ./ssdtPRGen.sh [processor number] [max turbo frequency] [TDP] [CPU type]
+#
+#           - ./ssdtPRGen.sh E5-1650
+#
+#           - ./ssdtPRGen.sh 'E3-1220 V2'
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1
+#
 #
 
 # set -x # Used for tracing errors (can be used anywhere in the script).
@@ -114,7 +139,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=4.9
+gScriptVersion=5.0
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -160,6 +185,10 @@ let PROCESSOR_NUMBER_ERROR=5
 #
 
 gServerSandyBridgeCPUList=(
+# E5-1600 Xeon Processor Series
+E5-1660,130,0,3300,3900,6,12
+E5-1650,130,0,3200,3800,6,12
+E5-1620,130,0,3600,3800,4,8
 # E3-1200 Xeon Processor Series
 E3-1290,95,0,3600,4000,4,8
 E3-1280,95,0,3500,3900,4,8
@@ -176,13 +205,16 @@ E3-1220,80,0,3100,3400,4,4
 )
 
 gDesktopSandyBridgeCPUList=(
+# i7 Desktop Extreme Series
+i7-3970X,150,0,3500,4000,6,12
+i7-3960X,130,0,3300,3900,6,12
+i7-3930X,130,0,3200,3800,6,12
+i7-3820,130,0,3600,3800,4,8
 # i7 Desktop series
 i7-2600S,65,1600,2800,3800,4,8
 i7-2600,95,1600,3400,3800,4,8
 i7-2600K,95,1600,3400,3800,4,8
 i7-2700K,95,1600,3500,3900,4,8
-i7-3930K,130,1600,3200,3800,6,12
-i7-3820,130,1600,3600,3800,4,8
 # i5 Desktop Series
 i5-2300,95,1600,2800,3100,4,4
 i5-2310,95,1600,2900,3200,4,4
@@ -287,9 +319,6 @@ gServerIvyBridgeCPUList=(
 )
 
 gDesktopIvyBridgeCPUList=(
-# i7 Desktop Extreme Series
-i7-3970X,150,1600,3500,4000,6,12
-i7-3960X,130,1600,3300,3900,6,12
 # i7-3700 Desktop Processor Series
 i7-3770T,45,1600,2500,3700,4,8
 i7-3770S,65,1600,3100,3900,4,8
@@ -442,7 +471,7 @@ function _printExternals()
     currentCPU=0;
 
     while [ $currentCPU -lt $1 ]; do
-        echo '    External (\_PR_.'$gProcLabel$currentCPU', DeviceObj)'                 >> $gSsdtPR
+        printf "    External (\_PR_.$gProcLabel%X, DeviceObj)\n" $currentCPU            >> $gSsdtPR
         let currentCPU+=1
     done
 
@@ -471,14 +500,15 @@ function _printDebugInfo()
 
 function _printProcessorDefinitions()
 {
+echo "IN"
     let currentCPU=0;
 
     while [ $currentCPU -lt $1 ]; do
-        echo '    External (\_PR_.'$gProcLabel$currentCPU', DeviceObj)'                 >> $gSsdtPR
+         printf "    External (\_PR_.$gProcLabel$currentCPU%x, DeviceObj)\n" $currentCPU >> $gSsdtPR
         let currentCPU+=1
     done
 
-    echo ''                                                                             >> $gSsdtPR
+    echo ''                                                                              >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
@@ -886,9 +916,9 @@ function _printScopeCPUn()
     let currentCPU=1;
 
     while [ $currentCPU -lt $1 ]; do
-        echo ''                                                                         >> $gSsdtPR
-        echo '    Scope (\_PR.'$gProcLabel$currentCPU')'                                >> $gSsdtPR
-        echo '    {'                                                                    >> $gSsdtPR
+        echo ''                                                                              >> $gSsdtPR
+      printf "    Scope (\_PR.$gProcLabel%X)" $currentCPU                                    >> $gSsdtPR
+        echo '    {'                                                                         >> $gSsdtPR
         echo '        Method (APSS, 0, NotSerialized) { Return (\_PR.'$gProcLabel'0.APSS) }' >> $gSsdtPR
 
         #
@@ -904,11 +934,11 @@ function _printScopeCPUn()
             fi
         fi
 
-        echo '    }'                                                                    >> $gSsdtPR
+        echo '    }'                                                                         >> $gSsdtPR
         let currentCPU+=1
     done
 
-    echo '}'                                                                            >> $gSsdtPR
+    echo '}'                                                                                 >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
@@ -1114,6 +1144,7 @@ function _getCPUDataByProcessorNumber
                 if [[ ${data[0]} == $gProcessorNumber ]]; then
                     gProcessorData="$cpuData"
                     let gTypeCPU=$targetType
+                    let gBridgeType=$1
                     IFS=$ifs
                     return
                 fi
@@ -1425,62 +1456,78 @@ function main()
     printf "\nsdtPRGen.sh v$gScriptVersion Copyright (c) 2013 by Pike R. Alpha\n"
     echo   '----------------------------------------------------------------'
 
+    let assumedTDP=0
     let modelSpecified=0
     let maxTurboFrequency=0
 
-    #
-    # Get installed CPU model, set bridge type and default TDP.
-    #
-    local model=$(_getCPUModel)
-
     _getCPUNumberFromBrandString
 
-    if [[ $# -eq 1 ]]; then
-        if [[ $1 != "" ]]; then
-            # Sandy Bridge checks
-            if [[ ${1:0:4} == "i3-2" || ${1:0:4} == "i5-2" || ${1:0:4} == "i7-2" || ${1:2:2} == "E2" ]]; then
-                let model=0x2A
-                let modelSpecified=1
-                gProcessorNumber=$1
-            fi
-            # Ivy Bridge checks
-            if [[ ${1:0:4} == "i3-3" || ${1:0:4} == "i5-3" || ${1:0:4} == "i7-3" || ${1:2:2} == "E3" ]]; then
-                let model=0x3A
-                let modelSpecified=1
-                gProcessorNumber=$1
-            fi
-            # Haswell checks
-            if [[ ${1:0:4} == "i3-4" || ${1:0:4} == "i5-4" || ${1:0:4} == "i7-4" || ${1:2:2} == "E4" ]]; then
-                let model=0x4A
-                let modelSpecified=1
-                gProcessorNumber=$1
-            fi
+    if [[ "$1" != "" ]]; then
+        # Sandy Bridge checks
+        if [[ ${1:0:4} == "i3-2" || ${1:0:4} == "i5-2" || ${1:0:4} == "i7-2" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+        # Ivy Bridge checks
+        if [[ ${1:0:4} == "i3-3" || ${1:0:4} == "i5-3" || ${1:0:4} == "i7-3" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+        # Haswell checks
+        if [[ ${1:0:4} == "i3-4" || ${1:0:4} == "i5-4" || ${1:0:4} == "i7-4" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+        # Xeon check
+        if [[ ${1:0:1} == "E" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
         fi
     fi
 
-    if (($model==0x2A || $model==0x2D)); then
-        let gTdp=95
-        let gBridgeType=2
-        local bridgeTypeString="Sandy Bridge"
+    _getCPUDataByProcessorNumber
 
-        _getCPUDataByProcessorNumber
+    if [[ $modelSpecified -eq 1 && $gTypeCPU -eq 0 ]]; then
+       _exitWithError $PROCESSOR_NUMBER_ERROR
     fi
 
-    if (($model==0x3A || $model==0x3B)); then
-        let gTdp=77
-        let gBridgeType=4
-        local bridgeTypeString="Ivy Bridge"
+    if [[ $gBridgeType -eq 0 ]]; then
+        local model=$(_getCPUModel)
 
-        _getCPUDataByProcessorNumber
+        if (($model==0x2A)); then
+            let gTdp=95
+            let gBridgeType=2
+        fi
+
+        if (($model==0x2D)); then
+            let assumedTDP=1
+            let gTdp=130
+            let gBridgeType=2
+        fi
+
+        if (($model==0x3A || $model==0x3B)); then
+            let assumedTDP=1
+            let gTdp=77
+            let gBridgeType=4
+        fi
+
+        if (($model==0x4A || $model==0x4B)); then
+            let assumedTDP=1
+            let gTdp=84
+            let gBridgeType=8
+        fi
     fi
 
-    if (($model==0x4A || $model==0x4B)); then
-        let gTdp=84
-        let gBridgeType=8
-        local bridgeTypeString="Haswell"
-
-        _getCPUDataByProcessorNumber
-    fi
+    case $gBridgeType in
+        2) local bridgeTypeString="Sandy Bridge"
+           ;;
+        4) local bridgeTypeString="Ivy Bridge"
+           ;;
+        8) local bridgeTypeString="Haswell"
+           ;;
+	    *) local bridgeTypeString="Unknown"
+           ;;
+    esac
 
     _getBoardID
 
@@ -1535,57 +1582,60 @@ function main()
             let logicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
             let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
             let frequency=($frequency / 1000000)
+
+            if [[ $assumedTDP -eq 1 ]]; then
+                echo 'With a maximum TDP of '$gTdp' Watt - assumed, may require override value!'
+            fi
     fi
 
-    if (!(($modelSpecified))); then
-        #
-        # One arguments given (should be a number)
-        #
-        if [[ $# -ge 1 && $1 != "" ]]; then
-		    if [[ "$1" =~ ^[0-9]+$ ]]; then
-                if [[ $1 -lt $frequency || $1 -gt $gMaxOCFrequency ]];
+    #
+    # Script argument checks
+    #
+
+    if [[ $# -ge 2 ]]; then
+        if [[ "$2" =~ ^[0-9]+$ ]]; then
+            if [[ $2 -lt $frequency || $2 -gt $gMaxOCFrequency ]];
+                then
+                    _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+                else
+                    let maxTurboFrequency=$2
+            fi
+        fi
+    fi
+
+    if [ $# -ge 3 ]; then
+        if [[ "$3" =~ ^[0-9]+$ ]];
+            then
+                if [[ $3 -lt 10 || $3 -gt 150 ]];
                     then
-                        _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+                        _exitWithError $MAX_TDP_ERROR
                     else
-                        let maxTurboFrequency=$1
+                        let gTdp=$3
+                        echo "Override value: Max TDP, now using: $gTdp Watt!"
                 fi
-            fi
+            else
+                _exitWithError $MAX_TDP_ERROR
         fi
+    fi
 
-        if [ $# -ge 2 ]; then
-            if [[ "$2" =~ ^[0-9]+$ ]];
-                then
-                    if [[ $2 -lt 10 || -gt 150 ]];
-                        then
-                            _exitWithError $MAX_TDP_ERROR
-                        else
-                            let gTdp=$2
-                            echo "Override value: Max TDP, now using: $gTdp Watt!"
-                    fi
-                else
-                    _exitWithError $MAX_TDP_ERROR
-            fi
-        fi
-
-        if [ $# -eq 3 ]; then
-            if [[ "$3" =~ ^[0-9]+$ ]];
-                then
-                    case "$3" in
-                        0) let gBridgeType=2
-                           echo "Override value: CPU type, now using: Sandy Bridge!"
-                           ;;
-                        1) let gBridgeType=4
-                           echo "Override value: CPU type, now using: Ivy Bridge!"
-                           ;;
-                        2) let gBridgeType=8
-                           echo "Override value: CPU type, now using: Haswell!"
-                           ;;
-                        *) _exitWithError $TARGET_CPU_ERROR
-                           ;;
-                    esac
-                else
-                    _exitWithError $TARGET_CPU_ERROR
-            fi
+    if [ $# -eq 4 ]; then
+        if [[ "$4" =~ ^[0-9]+$ ]];
+            then
+                case "$4" in
+                    0) let gBridgeType=2
+                       echo "Override value: CPU type, now using: Sandy Bridge!"
+                       ;;
+                    1) let gBridgeType=4
+                       echo "Override value: CPU type, now using: Ivy Bridge!"
+                       ;;
+                    2) let gBridgeType=8
+                       echo "Override value: CPU type, now using: Haswell!"
+                       ;;
+                    *) _exitWithError $TARGET_CPU_ERROR
+                       ;;
+                esac
+            else
+                _exitWithError $TARGET_CPU_ERROR
         fi
     fi
 
@@ -1594,8 +1644,8 @@ function main()
     #
     # Check maxTurboFrequency
     #
-    if [ $maxTurboFrequency == 0 ]; then
-        _exitWithError $PROCESSOR_NUMBER_ERROR
+    if [ $maxTurboFrequency -eq 0 ]; then
+        _exitWithError $MAX_TURBO_FREQUENCY_ERROR
     fi
 
 	#
@@ -1681,7 +1731,14 @@ function main()
 
 clear
 
-main "$1" $2 $3
+if [ $# -ge 1 ]; then
+    if [[ "$1" =~ ^[0-9]+$ ]];
+        then
+            main "" $1 $2 $3
+        else
+            main "$1" $2 $3 $4
+    fi
+fi
 
 _findIasl
 
