@@ -17,6 +17,8 @@ i386/config/SMBIOS/default.h
 i386/config/SMBIOS/*Mac*.h
 
 i386/util/libcc_kext.a
+
 MODEL
 
+i386/libsaio/cpu/tools/PMinfo
 i386/libsaio/smbios/tools/smbios2struct3
