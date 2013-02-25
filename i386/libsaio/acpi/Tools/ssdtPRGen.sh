@@ -1743,13 +1743,16 @@ function main()
 
 clear
 
-if [ $# -ge 1 ]; then
-    if [[ "$1" =~ ^[0-9]+$ ]];
-        then
-            main "" $1 $2 $3
-        else
-            main "$1" $2 $3 $4
-    fi
+if [ $# -eq 0 ];
+    then
+        main "" $1 $2 $3
+    else
+        if [[ "$1" =~ ^[0-9]+$ ]];
+            then
+                main "" $1 $2 $3
+            else
+                main "$1" $2 $3 $4
+        fi
 fi
 
 _findIasl
