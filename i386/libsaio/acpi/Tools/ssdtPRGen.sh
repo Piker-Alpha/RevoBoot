@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -55,6 +55,7 @@
 #			- Now supporting up to 16 logical cores (Jeroen, Februari 2013)
 #			- Improved argument checking, now supporting a fourth argument (Jeroen/Pike, Februari 2013)
 #			- Suppress override output when possible (Jeroen, Februari 2013)
+#			- Get processor label from ioreg (Jeroen/Pike, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -132,7 +133,7 @@ let gDebug=1
 let gBaseFrequency=1600
 
 #
-# Change this label to "P00" when your DSDT uses 'P00n' instead of 'CPUn'.
+# This is the default processor label (verified by _setProcessorLabel).
 #
 gProcLabel="CPU"
 
@@ -140,7 +141,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.1
+gScriptVersion=5.2
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -501,7 +502,6 @@ function _printDebugInfo()
 
 function _printProcessorDefinitions()
 {
-echo "IN"
     let currentCPU=0;
 
     while [ $currentCPU -lt $1 ]; do
@@ -960,18 +960,28 @@ function _getBoardID()
     #
     # Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
     #
-    boardID=`ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//'`
+    boardID=$(ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//')
+}
+
+#--------------------------------------------------------------------------------
+
+function _setProcessorLabel()
+{
+    local data=$(ioreg -p IODeviceTree -c IOACPIPlatformDevice -k cpu-type | egrep name  | sed -e 's/ *[-|="<a-z>]//g')
+    let gProcLabel=${cpuLabel[0]}
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUtype()
 {
+    _setProcessorLabel
+
     #
     # Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
     #
-    local grepStr=`ioreg -p IODeviceTree -n CPU0@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g'`
-    #
+    local grepStr=$(ioreg -p IODeviceTree -n "$gProcLabel"0@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
+
     # Swap bytes with help of ${str:pos:num}
     #
     echo ${grepStr:2:2}${grepStr:0:2}
