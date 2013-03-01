@@ -125,7 +125,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 			gClockRatio = (UInt8)((msr >> 8) & 0xff);
 			IOLog("Clock Speed        : %d00 MHz\n", gClockRatio);
 
-			if (turboEnabled)
+			if (!((rdmsr64(IA32_MISC_ENABLES) >> 32) & 0x40))	// Turbo Mode Enabled?
 			{
 				msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
 				gMaxRatio = (UInt8)(msr & 0xff);
