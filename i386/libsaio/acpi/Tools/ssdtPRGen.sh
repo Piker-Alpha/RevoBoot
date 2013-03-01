@@ -1526,13 +1526,13 @@ function main()
             let gBridgeType=2
         fi
 
-        if (($model==0x3A || $model==0x3B)); then
+        if (($model==0x3A || $model==0x3B || $model==0x3E)); then
             let assumedTDP=1
             let gTdp=77
             let gBridgeType=4
         fi
 
-        if (($model==0x4A || $model==0x4B)); then
+        if (($model==0x3C || $model==0x3F || $model==0x45)); then
             let assumedTDP=1
             let gTdp=84
             let gBridgeType=8
