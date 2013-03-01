@@ -968,7 +968,14 @@ function _getBoardID()
 function _setProcessorLabel()
 {
     local data=$(ioreg -p IODeviceTree -c IOACPIPlatformDevice -k cpu-type | egrep name  | sed -e 's/ *[-|="<a-z>]//g')
-    let gProcLabel=${cpuLabel[0]}
+    local cpuLabels=($data)
+
+    if [[ ${#cpuLabels[@]} -gt 0 ]];
+        then
+            gFirstProcessorLabel=${cpuLabels[0]}
+        else
+            _exitWithError 6
+    fi
 }
 
 #--------------------------------------------------------------------------------
@@ -980,7 +987,7 @@ function _getCPUtype()
     #
     # Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
     #
-    local grepStr=$(ioreg -p IODeviceTree -n "$gProcLabel"0@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
+    local grepStr=$(ioreg -p IODeviceTree -n "$gFirstProcessorLabel"@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
 
     # Swap bytes with help of ${str:pos:num}
     #
@@ -1454,6 +1461,9 @@ function _exitWithError()
            ;;
         5) echo -e "\nError: Unknown processor number... exiting\n" 1>&2
            exit 5
+           ;;
+        6) echo -e "\nError: Processor label not found... exiting\n" 1>&2
+           exit 6
            ;;
         *) exit 1
            ;;
