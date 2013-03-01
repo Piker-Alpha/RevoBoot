@@ -10,6 +10,7 @@
 
 #include "AppleIntelCPUPowerManagementInfo.h"
 
+
 //==============================================================================
 
 void AppleIntelCPUPowerManagementInfo::reportMSRs(uint8_t aModel)
@@ -60,43 +61,79 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(uint8_t aModel)
 		IOLog("MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
 		IOLog("MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
 	}
+	
+	IOLog("MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
+	IOLog("MSR_PKG_C3_RESIDENCY.......(0x3f8) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C3_RESIDENCY));
+	IOLog("MSR_PKG_C6_RESIDENCY.......(0x3f9) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C6_RESIDENCY));
+	IOLog("MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
 }
 
 //==============================================================================
 
-IOReturn AppleIntelCPUPowerManagementInfo::getMultiplier(void)
+inline void getCStates(void *arg)
 {
-	timerEventSource->setTimeoutTicks(gInterval);
+	UInt8 logicalCoreNumber = cpu_number();
+
+	IOLog("MSR_CORE[%d]_C3_RESIDENCY......(0x3fc) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C3_RESIDENCY));
+	IOLog("MSR_CORE[%d]_C6_RESIDENCY......(0x3fd) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C6_RESIDENCY));
+	IOLog("MSR_CORE[%d]_C7_RESIDENCY......(0x3fe) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C7_RESIDENCY));
+}
+
+//==============================================================================
+
+IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
+{
 	gCoreMultipliers |= (1ULL << (rdmsr64(MSR_IA32_PERF_STS) >> 8));
 
-	if (!loopLock)
+	timerEventSource->setTimeoutTicks(Interval);
+
+	if (loopLock)
 	{
-		loopLock = true;
+		return kIOReturnTimeout;
+	}
+	
+	loopLock = true;
 
-		if (gCoreMultipliers != gTriggeredPStates)
+	UInt32 magic = 0;
+	IOSimpleLockLock(simpleLock);
+	mp_rendezvous_no_intrs(getCStates, (void *)&magic);
+	IOSimpleLockUnlock(simpleLock);
+
+	if (gCoreMultipliers != gTriggeredPStates)
+	{
+		gTriggeredPStates = gCoreMultipliers;
+		IOLog("AICPUPMI: P-States [ ");
+		
+		for (int currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
 		{
-			gTriggeredPStates = gCoreMultipliers;
-			IOLog("AICPUPMI: P-States [ ");
-
-			for (int currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
+			UInt64 value = (1ULL << currentBit);
+			
+			if ((gTriggeredPStates & value) == value)
 			{
-				UInt64 value = (1ULL << currentBit);
-				
-				if ((gTriggeredPStates & value) == value)
-				{
-					IOLog("%d ", currentBit);
-				}
+				IOLog("%d ", currentBit);
 			}
-
-			IOLog("]\n");
 		}
-
-		loopLock = false;
-
-		return kIOReturnSuccess;
+		
+		IOLog("]\n");
 	}
 
-	return kIOReturnTimeout;
+	loopLock = false;
+
+	return kIOReturnSuccess;
+}
+
+//==============================================================================
+
+IOService* AppleIntelCPUPowerManagementInfo::probe(IOService *provider, SInt32 *score)
+{
+	IOService *ret = super::probe(provider, score);
+	
+	if (ret != this)
+	{
+		return 0;
+	}
+	
+	return ret;
 }
 
 //==============================================================================
@@ -105,42 +142,46 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 {
 	if (IOService::start(provider))
 	{
-		timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::getMultiplier));
-		workLoop = getWorkLoop();
+		simpleLock = IOSimpleLockAlloc();
 
-		if (timerEventSource && workLoop && (kIOReturnSuccess == workLoop->addEventSource(timerEventSource)))
+		if (simpleLock)
 		{
-			this->registerService(0);
+			timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::loopTimerEvent));
+			workLoop = getWorkLoop();
 
-			uint32_t cpuid_reg[4];
-			do_cpuid(0x00000001, cpuid_reg);
+			if (timerEventSource && workLoop && (kIOReturnSuccess == workLoop->addEventSource(timerEventSource)))
+			{
+				this->registerService(0);
 
-			uint8_t cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
-			reportMSRs(cpuModel);
+				uint32_t cpuid_reg[4];
+				do_cpuid(0x00000001, cpuid_reg);
 
-			UInt64 msr = rdmsr64(MSR_PLATFORM_INFO);
-			gMinRatio = (UInt8)((msr >> 40) & 0xff);
-			IOLog("Low Frequency Mode : %d00 MHz\n", gMinRatio);
+				uint8_t cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
+				reportMSRs(cpuModel);
+
+				UInt64 msr = rdmsr64(MSR_PLATFORM_INFO);
+				gMinRatio = (UInt8)((msr >> 40) & 0xff);
+				IOLog("Low Frequency Mode : %d00 MHz\n", gMinRatio);
  
-			gClockRatio = (UInt8)((msr >> 8) & 0xff);
-			IOLog("Clock Speed        : %d00 MHz\n", gClockRatio);
+				gClockRatio = (UInt8)((msr >> 8) & 0xff);
+				IOLog("Clock Speed        : %d00 MHz\n", gClockRatio);
 
-			if (!((rdmsr64(IA32_MISC_ENABLES) >> 32) & 0x40))	// Turbo Mode Enabled?
-			{
-				msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
-				gMaxRatio = (UInt8)(msr & 0xff);
-				IOLog("Max Turbo Frequency: %d00 MHz\n", gMaxRatio);
+				if (!((rdmsr64(IA32_MISC_ENABLES) >> 32) & 0x40))	// Turbo Mode Enabled?
+				{
+					msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
+					gMaxRatio = (UInt8)(msr & 0xff);
+					IOLog("Max Turbo Frequency: %d00 MHz\n", gMaxRatio);
+				}
+				else
+				{
+					gMaxRatio = gClockRatio;
+					IOLog("Max Frequency      : %d00 MHz\n", gMaxRatio);
+				}
+
+				timerEventSource->setTimeoutMS(1000);
+
+				return true;
 			}
-			else
-			{
-				gMaxRatio = gClockRatio;
-				IOLog("Max Frequency      : %d00 MHz\n", gMaxRatio);
-			}
-
-			timerEventSource->enable();
-			timerEventSource->setTimeoutMS(500);
-
-			return true;
 		}
 	}
 
@@ -151,16 +192,17 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 
 void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 {
+	if (simpleLock)
+	{
+		IOSimpleLockFree(simpleLock);
+	}
+
 	if (timerEventSource)
 	{
-		timerEventSource->disable();
-		timerEventSource->cancelTimeout();
-
 		if (workLoop)
 		{
+			timerEventSource->cancelTimeout();
 			workLoop->removeEventSource(timerEventSource);
-			workLoop->release();
-			workLoop = NULL;
 		}
 
 		timerEventSource->release();
@@ -174,20 +216,5 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 
 void AppleIntelCPUPowerManagementInfo::free()
 {
-	if (timerEventSource)
-	{
-		timerEventSource->cancelTimeout();
-		
-		if (workLoop)
-		{
-			workLoop->removeEventSource(timerEventSource);
-			workLoop->release();
-			workLoop = NULL;
-		}
-		
-		timerEventSource->release();
-		timerEventSource = NULL;
-	}
-
 	super::free();
 }
