@@ -20,5 +20,11 @@ i386/util/libcc_kext.a
 
 MODEL
 
-i386/libsaio/cpu/tools/PMinfo
+xcuserdata
+project.xcworkspace
+
+i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo/secretCode.h
+i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo.xcodeproj/xcuserdata
+i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo.xcodeproj/project.xcworkspace
+
 i386/libsaio/smbios/tools/smbios2struct3

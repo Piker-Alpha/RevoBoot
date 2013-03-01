@@ -1,0 +1,303 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5600B62D138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 5600B62C138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.h */; };
+		5600B62F138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5600B62E138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		5600B620138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppleIntelCPUPowerManagementInfo.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		5600B624138A9BC80001A2BC /* Kernel.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Kernel.framework; path = System/Library/Frameworks/Kernel.framework; sourceTree = SDKROOT; };
+		5600B627138A9BC80001A2BC /* Info-AppleIntelCPUPowerManagementInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-AppleIntelCPUPowerManagementInfo.plist"; sourceTree = "<group>"; };
+		5600B62B138A9BC80001A2BC /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
+		5600B62C138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppleIntelCPUPowerManagementInfo.h; sourceTree = "<group>"; };
+		5600B62E138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AppleIntelCPUPowerManagementInfo.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5600B61B138A9BC80001A2BC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5600B613138A9BC80001A2BC = {
+			isa = PBXGroup;
+			children = (
+				5600B625138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo */,
+				5600B621138A9BC80001A2BC /* Products */,
+				5600B624138A9BC80001A2BC /* Kernel.framework */,
+			);
+			sourceTree = "<group>";
+		};
+		5600B621138A9BC80001A2BC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5600B620138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.kext */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5600B625138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo */ = {
+			isa = PBXGroup;
+			children = (
+				9015B9A516DCCD8700FCE81D /* Headers */,
+				9015B9A416DCCD7800FCE81D /* Source */,
+				5600B626138A9BC80001A2BC /* Resources */,
+			);
+			name = AppleIntelCPUPowerManagementInfo;
+			path = AppleIntelCPUPowerManagementInfo;
+			sourceTree = "<group>";
+		};
+		5600B626138A9BC80001A2BC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5600B627138A9BC80001A2BC /* Info-AppleIntelCPUPowerManagementInfo.plist */,
+				5600B62B138A9BC80001A2BC /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		9015B9A416DCCD7800FCE81D /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				5600B62E138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.cpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		9015B9A516DCCD8700FCE81D /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				5600B62C138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		5600B61C138A9BC80001A2BC /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5600B62D138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		5600B61F138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5600B632138A9BC80001A2BC /* Build configuration list for PBXNativeTarget "AppleIntelCPUPowerManagementInfo" */;
+			buildPhases = (
+				5600B61A138A9BC80001A2BC /* Sources */,
+				5600B61B138A9BC80001A2BC /* Frameworks */,
+				5600B61C138A9BC80001A2BC /* Headers */,
+				5600B61D138A9BC80001A2BC /* Resources */,
+				5600B61E138A9BC80001A2BC /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AppleIntelCPUPowerManagementInfo;
+			productName = AppleIntelCPUPowerManagementInfo;
+			productReference = 5600B620138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5600B615138A9BC80001A2BC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+			};
+			buildConfigurationList = 5600B618138A9BC80001A2BC /* Build configuration list for PBXProject "AppleIntelCPUPowerManagementInfo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 5600B613138A9BC80001A2BC;
+			productRefGroup = 5600B621138A9BC80001A2BC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5600B61F138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5600B61D138A9BC80001A2BC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		5600B61E138A9BC80001A2BC /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5600B61A138A9BC80001A2BC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5600B62F138A9BC80001A2BC /* AppleIntelCPUPowerManagementInfo.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5600B630138A9BC80001A2BC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALTERNATE_GROUP = wheel;
+				ALTERNATE_OWNER = root;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = NO;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INSTALL_GROUP = wheel;
+				INSTALL_OWNER = root;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
+			};
+			name = Debug;
+		};
+		5600B631138A9BC80001A2BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALTERNATE_GROUP = wheel;
+				ALTERNATE_OWNER = root;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = NO;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INSTALL_GROUP = wheel;
+				INSTALL_OWNER = root;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
+			};
+			name = Release;
+		};
+		5600B633138A9BC80001A2BC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALTERNATE_GROUP = wheel;
+				ALTERNATE_OWNER = root;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				GCC_VERSION = "";
+				INFOPLIST_FILE = "AppleIntelCPUPowerManagementInfo/Info-AppleIntelCPUPowerManagementInfo.plist";
+				MODULE_NAME = com.apple.kext.AppleIntelCPUPowerManagementInfo;
+				MODULE_VERSION = 1.0.0d1;
+				PRODUCT_NAME = AppleIntelCPUPowerManagementInfo;
+				VALID_ARCHS = x86_64;
+				VERSION_INFO_BUILDER = root;
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Debug;
+		};
+		5600B634138A9BC80001A2BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALTERNATE_GROUP = wheel;
+				ALTERNATE_OWNER = root;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				GCC_VERSION = "";
+				INFOPLIST_FILE = "AppleIntelCPUPowerManagementInfo/Info-AppleIntelCPUPowerManagementInfo.plist";
+				MODULE_NAME = com.apple.kext.AppleIntelCPUPowerManagementInfo;
+				MODULE_VERSION = 1.0.0d1;
+				PRODUCT_NAME = AppleIntelCPUPowerManagementInfo;
+				VALID_ARCHS = x86_64;
+				VERSION_INFO_BUILDER = root;
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5600B618138A9BC80001A2BC /* Build configuration list for PBXProject "AppleIntelCPUPowerManagementInfo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5600B630138A9BC80001A2BC /* Debug */,
+				5600B631138A9BC80001A2BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5600B632138A9BC80001A2BC /* Build configuration list for PBXNativeTarget "AppleIntelCPUPowerManagementInfo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5600B633138A9BC80001A2BC /* Debug */,
+				5600B634138A9BC80001A2BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5600B615138A9BC80001A2BC /* Project object */;
+}
