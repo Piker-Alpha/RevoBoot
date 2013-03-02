@@ -35,7 +35,7 @@ private:
 
 	virtual IOReturn loopTimerEvent(void);
 
-	void reportMSRs(uint8_t aModel);
+	void reportMSRs(void);
 
 	bool loopLock = false;
 
