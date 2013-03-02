@@ -56,3 +56,5 @@ UInt64	gTriggeredPStates;
 UInt8	gMinRatio	= 0;
 UInt8	gClockRatio	= 0;
 UInt8	gMaxRatio	= 0;
+
+UInt8	gCPUModel	= 0x2A;
