@@ -13,7 +13,7 @@
 
 //==============================================================================
 
-void AppleIntelCPUPowerManagementInfo::reportMSRs(uint8_t aModel)
+void AppleIntelCPUPowerManagementInfo::reportMSRs(void)
 {
 	IOLog("MSR_CORE_THREAD_COUNT......(0x35)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_THREAD_COUNT));
 
@@ -46,14 +46,14 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(uint8_t aModel)
 	IOLog("MSR_PP0_ENERGY_STATUS......(0x639) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_ENERGY_STATUS));
 	IOLog("MSR_PP0_POLICY.............(0x63a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POLICY));
 
-	if ((aModel == CPU_MODEL_SB_CORE) || aModel == (CPU_MODEL_IB_CORE))
+	if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_IB_CORE))
 	{
 		IOLog("MSR_PP1_POWER_LIMIT........(0x640) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POWER_LIMIT));
 		IOLog("MSR_PP1_ENERGY_STATUS......(0x641) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_ENERGY_STATUS));
 		IOLog("MSR_PP1_POLICY.............(0x642) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POLICY));
 	}
 
-	if ((aModel == CPU_MODEL_IB_CORE) || (aModel == CPU_MODEL_IB_CORE_EX))
+	if ((gCPUModel != CPU_MODEL_SB_CORE) && (gCPUModel != CPU_MODEL_SB_JAKETOWN))
 	{
 		IOLog("MSR_CONFIG_TDP_NOMINAL.....(0x648) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_NOMINAL));
 		IOLog("MSR_CONFIG_TDP_LEVEL1......(0x649) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL1));
@@ -61,11 +61,19 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(uint8_t aModel)
 		IOLog("MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
 		IOLog("MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
 	}
-	
-	IOLog("MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
+
+	if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN))
+	{
+		IOLog("MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
+	}
+
 	IOLog("MSR_PKG_C3_RESIDENCY.......(0x3f8) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C3_RESIDENCY));
 	IOLog("MSR_PKG_C6_RESIDENCY.......(0x3f9) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C6_RESIDENCY));
-	IOLog("MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+
+	if ((gCPUModel != CPU_MODEL_IB_CORE) && (gCPUModel != CPU_MODEL_IB_CORE_EX))
+	{
+		IOLog("MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+	}
 }
 
 //==============================================================================
@@ -76,7 +84,11 @@ inline void getCStates(void *arg)
 
 	IOLog("MSR_CORE[%d]_C3_RESIDENCY......(0x3fc) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C3_RESIDENCY));
 	IOLog("MSR_CORE[%d]_C6_RESIDENCY......(0x3fd) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C6_RESIDENCY));
-	IOLog("MSR_CORE[%d]_C7_RESIDENCY......(0x3fe) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C7_RESIDENCY));
+
+	if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN))
+	{
+		IOLog("MSR_CORE[%d]_C7_RESIDENCY......(0x3fe) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C7_RESIDENCY));
+	}
 }
 
 //==============================================================================
@@ -156,8 +168,8 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
 
-				uint8_t cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
-				reportMSRs(cpuModel);
+				gCPUModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
+				reportMSRs();
 
 				UInt64 msr = rdmsr64(MSR_PLATFORM_INFO);
 				gMinRatio = (UInt8)((msr >> 40) & 0xff);
