@@ -188,6 +188,8 @@ let PROCESSOR_NUMBER_ERROR=5
 #
 
 gServerSandyBridgeCPUList=(
+# E5-2600 Xeon Processor Series
+E5-2687W,150,0,3100,3800,8,16
 # E5-1600 Xeon Processor Series
 E5-1660,130,0,3300,3900,6,12
 E5-1650,130,0,3200,3800,6,12
