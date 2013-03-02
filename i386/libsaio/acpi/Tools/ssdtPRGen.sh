@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.2 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -56,6 +56,7 @@
 #			- Improved argument checking, now supporting a fourth argument (Jeroen/Pike, Februari 2013)
 #			- Suppress override output when possible (Jeroen, Februari 2013)
 #			- Get processor label from ioreg (Jeroen/Pike, Februari 2013)
+#			- Create /usr/local/bin when missing (Jeroen, Februari 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -141,7 +142,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.2
+gScriptVersion=5.3
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
