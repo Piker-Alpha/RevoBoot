@@ -1032,7 +1032,8 @@ function _findIasl()
             # XXX: Jeroen, try curl --create-dirs without the mkdir here ;)
             if [ ! -d /usr/local/bin ]; then
                 printf "Creating target directory... "
-                sudo mkdir /usr/local/bin/
+                sudo mkdir -p /usr/local/bin/
+                sudo chown -R root:wheel /usr/local/bin/
             fi
 
             printf "Downloading iasl...\n"
