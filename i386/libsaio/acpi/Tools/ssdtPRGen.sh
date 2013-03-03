@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -57,6 +57,10 @@
 #			- Suppress override output when possible (Jeroen, Februari 2013)
 #			- Get processor label from ioreg (Jeroen/Pike, Februari 2013)
 #			- Create /usr/local/bin when missing (Jeroen, Februari 2013)
+#			- Changed warnings to make them pop out in the on-screen log (Pike, March 2013)
+#			- Now using the ACPI processor names of the running system (Pike, March 2013)
+#			- Now supporting up to 256/0xff logical processors (Pike, March 2013)
+#			- Command line argument for processor labels added (Pike, March 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -83,6 +87,17 @@
 #           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70
 #           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1
 #
+# Usage (v5.5 and greater):
+#
+#           - ./ssdtPRGen.sh [processor number] [max turbo frequency] [TDP] [CPU type] [ACPI Processor Name]
+#
+#           - ./ssdtPRGen.sh E5-1650
+#
+#           - ./ssdtPRGen.sh 'E3-1220 V2'
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1
+#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1 CPU
 #
 
 # set -x # Used for tracing errors (can be used anywhere in the script).
@@ -142,7 +157,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.3
+gScriptVersion=5.5
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -182,6 +197,8 @@ let MAX_TURBO_FREQUENCY_ERROR=2
 let MAX_TDP_ERROR=3
 let TARGET_CPU_ERROR=4
 let PROCESSOR_NUMBER_ERROR=5
+let PROCESSOR_LABEL_LENGTH_ERROR=6
+let PROCESSOR_NAMES_ERROR=7
 
 #
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
@@ -468,31 +485,29 @@ function _printHeader()
     echo '{'                                                                              >> $gSsdtPR
 }
 
-
 #--------------------------------------------------------------------------------
 
 function _printExternals()
 {
-    currentCPU=0;
+    let currentCPU=0;
 
-    while [ $currentCPU -lt $1 ]; do
-        printf "    External (\_PR_.$gProcLabel%X, DeviceObj)\n" $currentCPU            >> $gSsdtPR
+    while [ $currentCPU -lt $gLogicalCPUs ]; do
+        echo "    External (\_PR_.${gProcessorNames[$currentCPU]}, DeviceObj)"          >> $gSsdtPR
         let currentCPU+=1
     done
 
     echo ''                                                                             >> $gSsdtPR
 }
 
-
 #--------------------------------------------------------------------------------
 
 function _printDebugInfo()
 {
     if ((gDebug)); then
-        echo '    Store ("ssdtPRGen.sh v'$gScriptVersion'", Debug)'                     >> $gSsdtPR
+        echo '    Store ("ssdtPRGen version: '$gScriptVersion'", Debug)'                     >> $gSsdtPR
         echo '    Store ("baseFrequency    : '$gBaseFrequency'", Debug)'                >> $gSsdtPR
         echo '    Store ("frequency        : '$frequency'", Debug)'                     >> $gSsdtPR
-        echo '    Store ("logicalCPUs      : '$logicalCPUs'", Debug)'                   >> $gSsdtPR
+        echo '    Store ("logicalCPUs      : '$gLogicalCPUs'", Debug)'                  >> $gSsdtPR
         echo '    Store ("tdp              : '$gTdp'", Debug)'                          >> $gSsdtPR
         echo '    Store ("packageLength    : '$packageLength'", Debug)'                 >> $gSsdtPR
         echo '    Store ("turboStates      : '$turboStates'", Debug)'                   >> $gSsdtPR
@@ -508,11 +523,11 @@ function _printProcessorDefinitions()
     let currentCPU=0;
 
     while [ $currentCPU -lt $1 ]; do
-         printf "    External (\_PR_.$gProcLabel$currentCPU%x, DeviceObj)\n" $currentCPU >> $gSsdtPR
+        echo "    External (\_PR_.${gProcessorNames[$currentCPU]}, DeviceObj)"          >> $gSsdtPR
         let currentCPU+=1
     done
 
-    echo ''                                                                              >> $gSsdtPR
+    echo ''                                                                             >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
@@ -525,7 +540,7 @@ function _printScopeStart()
     # TODO: Remove this when CPUPM for IB works properly!
     let useWorkArounds=0
 
-    echo '    Scope (\_PR.'$gProcLabel'0)'                                              >> $gSsdtPR
+    echo '    Scope (\_PR.'${gProcessorNames[0]}')'                                     >> $gSsdtPR
     echo '    {'                                                                        >> $gSsdtPR
 
     #
@@ -717,7 +732,7 @@ function _printScopeACST()
             latency_C3=0xC6
 
             if ((gDebug)); then
-                echo '            Store ("CPU1 C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
+                echo '            Store ("'${gProcessorNames[1]}' C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
                 echo ''                                                                 >> $gSsdtPR
             fi
         else
@@ -736,7 +751,7 @@ function _printScopeACST()
             latency_C7=0xF5
 
             if ((gDebug)); then
-                echo '            Store ("CPU0 C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
+                echo '            Store ("'${gProcessorNames[0]}' C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
                 echo ''                                                                 >> $gSsdtPR
             fi
     fi
@@ -776,7 +791,7 @@ function _printScopeACST()
 
     let hintCode=0x00
 
-    echo '            /* Low Power Modes for '$gProcLabel$1' */'                        >> $gSsdtPR
+    echo "            /* Low Power Modes for ${gProcessorNames[$1]} */"                 >> $gSsdtPR
   printf "            Return (Package (0x%02x)\n" $pkgLength                            >> $gSsdtPR
     echo '            {'                                                                >> $gSsdtPR
     echo '                One,'                                                         >> $gSsdtPR
@@ -919,11 +934,11 @@ function _printScopeCPUn()
 {
     let currentCPU=1;
 
-    while [ $currentCPU -lt $1 ]; do
-        echo ''                                                                              >> $gSsdtPR
-      printf "    Scope (\_PR.$gProcLabel%X)" $currentCPU                                    >> $gSsdtPR
-        echo '    {'                                                                         >> $gSsdtPR
-        echo '        Method (APSS, 0, NotSerialized) { Return (\_PR.'$gProcLabel'0.APSS) }' >> $gSsdtPR
+    while [ $currentCPU -lt $gLogicalCPUs ]; do
+        echo ''                                                                                     >> $gSsdtPR
+        echo "    Scope (\_PR.${gProcessorNames[$currentCPU]})"                                     >> $gSsdtPR
+        echo '    {'                                                                                >> $gSsdtPR
+        echo "        Method (APSS, 0, NotSerialized) { Return (\_PR.${gProcessorNames[0]}.APSS) }" >> $gSsdtPR
 
         #
         # IB CPUPM tries to parse/execute CPUn.ACST (see debug data) and thus we add
@@ -934,15 +949,15 @@ function _printScopeCPUn()
                 then
                     _printScopeACST 1
                 else
-                    echo '        Method (ACST, 0, NotSerialized) { Return (\_PR.'$gProcLabel'1.ACST ()) }' >> $gSsdtPR
+                    echo "        Method (ACST, 0, NotSerialized) { Return (\_PR.${gProcessorNames[1]}.ACST ()) }" >> $gSsdtPR
             fi
         fi
 
-        echo '    }'                                                                         >> $gSsdtPR
+        echo '    }'                                                                                >> $gSsdtPR
         let currentCPU+=1
     done
 
-    echo '}'                                                                                 >> $gSsdtPR
+    echo '}'                                                                                        >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
@@ -968,29 +983,58 @@ function _getBoardID()
 
 #--------------------------------------------------------------------------------
 
-function _setProcessorLabel()
+function _getProcessorNames()
 {
-    local data=$(ioreg -p IODeviceTree -c IOACPIPlatformDevice -k cpu-type | egrep name  | sed -e 's/ *[-|="<a-z>]//g')
-    local cpuLabels=($data)
+    local acpiNames=$(ioreg -p IODeviceTree -c IOACPIPlatformDevice -k cpu-type | egrep name  | sed -e 's/ *[-|="<a-z>]//g')
+    gProcessorNames=($acpiNames)
 
-    if [[ ${#cpuLabels[@]} -gt 0 ]];
-        then
-            gFirstProcessorLabel=${cpuLabels[0]}
-        else
-            _exitWithError 6
+    if [[ ${#gProcessorNames[@]} -lt 2 ]]; then
+        _exitWithError $PROCESSOR_NAMES_ERROR
     fi
+}
+
+#--------------------------------------------------------------------------------
+
+function _updateProcessorNames()
+{
+    if [[ $gLogicalCPUs -le 0x0f ]];
+        then
+             local label=${gProcLabel:0:3}
+        else
+             local label=${gProcLabel:0:2}
+    fi
+
+    if [[ $1 -gt ${#gProcessorNames[@]} ]]; then
+        echo -e "\nWarning: Target CPU has $gLogicalCPUs logical cores, the running system only ${#gProcessorNames[@]}"
+        echo    "         Now using '$label' to extent the current range to $gLogicalCPUs..."
+        echo -e "         You may want to check/verify the generated DSDT_PR.dsl\n"
+    fi
+
+    let currentCPU=0
+
+    while [ $currentCPU -lt $1 ];
+    do
+        if [[ $1 -gt 0x0f && $currentCPU -le 0x0f ]];
+            then
+                local filler='0'
+            else
+                local filler=''
+        fi
+
+        gProcessorNames[$currentCPU]=${label}${filler}$(echo "obase=16; ${currentCPU}" | bc)
+
+        let currentCPU+=1
+    done
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUtype()
 {
-    _setProcessorLabel
-
     #
     # Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
     #
-    local grepStr=$(ioreg -p IODeviceTree -n "$gFirstProcessorLabel"@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
+    local grepStr=$(ioreg -p IODeviceTree -n "${gProcessorNames[0]}"@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
 
     # Swap bytes with help of ${str:pos:num}
     #
@@ -1202,7 +1246,7 @@ function _showLowPowerStates()
         local mask=1
         local cStates=$1
 
-        printf "Injected C-States for ${gProcLabel}${2} ("
+        printf "Injected C-States for ${gProcessorNames[$2]} ("
 
         for state in C1 C2 C3 C6 C7
         do
@@ -1466,8 +1510,11 @@ function _exitWithError()
         5) echo -e "\nError: Unknown processor number... exiting\n" 1>&2
            exit 5
            ;;
-        6) echo -e "\nError: Processor label not found... exiting\n" 1>&2
+        6) echo -e "\nError: Processor label length is less than 3... exiting\n" 1>&2
            exit 6
+           ;;
+        7) echo -e "\nError: Processor label not found... exiting\n" 1>&2
+           exit 7
            ;;
         *) exit 1
            ;;
@@ -1555,6 +1602,7 @@ function main()
     esac
 
     _getBoardID
+    _getProcessorNames
 
     local modelID=$(_getModelName)
     local cpu_type=$(_getCPUtype)
@@ -1580,7 +1628,8 @@ function main()
                 let maxTurboFrequency=$frequency
             fi
 
-            let logicalCPUs=${cpuData[6]}
+            let gLogicalCPUs=${cpuData[6]}
+
             IFS=$ifs
 
             echo 'With a maximum TDP of '$gTdp' Watt, as specified by Intel'
@@ -1592,19 +1641,19 @@ function main()
                 then
                     let gBaseFrequency=$lfm
                 else
-                    echo 'Warning: Low Frequency Mode is 0 (unknown)'
+                    echo -e "\nWarning: Low Frequency Mode is 0 (unknown)"
 
                     if (($gTypeCPU == gMobileCPU));
                         then
-                            echo 'Now using 1200 MHz for Mobile processor'
+                            echo -e "         Now using 1200 MHz for Mobile processor\n"
                             let gBaseFrequency=1200
                         else
-                            echo 'Now using 1600 MHz for Server/Desktop processors'
+                            echo -e "         Now using 1600 MHz for Server/Desktop processors\n"
                             let gBaseFrequency=1600
                     fi
             fi
         else
-            let logicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
+            let gLogicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
             let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
             let frequency=($frequency / 1000000)
 
@@ -1648,7 +1697,7 @@ function main()
         fi
     fi
 
-    if [ $# -eq 4 ]; then
+    if [ $# -ge 4 ]; then
         if [[ "$4" =~ ^[0-9]+$ ]];
             then
                 local detectedBridgeType=$gBridgeType
@@ -1675,7 +1724,22 @@ function main()
         fi
     fi
 
-    echo "Number logical CPU's: $logicalCPUs (Core Frequency: $frequency MHz)"
+    if [ $# -eq 5 ]; then
+        if [ ${#5} -eq 3 ];
+            then
+                gProcLabel=$(echo "$5" | tr '[:lower:]' '[:upper:]')
+                echo "Override value: Now using '$gProcLabel' for ACPI processor names!"
+                _updateProcessorNames ${#gProcessorNames[@]}
+            else
+                _exitWithError $PROCESSOR_LABEL_LENGTH_ERROR
+        fi
+    fi
+
+    echo "Number logical CPU's: $gLogicalCPUs (Core Frequency: $frequency MHz)"
+
+    if [ $gLogicalCPUs -gt ${#gProcessorNames[@]} ]; then
+        _updateProcessorNames $gLogicalCPUs
+    fi
 
     #
     # Check maxTurboFrequency
@@ -1713,8 +1777,8 @@ function main()
     echo "Number of P-States: $packageLength ($gBaseFrequency-$maxTurboFrequency MHz)"
 
     _printHeader
-    _printExternals $logicalCPUs
-    _printDebugInfo $logicalCPUs $gTdp $packageLength $turboStates $maxTurboFrequency
+    _printExternals
+    _printDebugInfo
     _printScopeStart $turboStates $packageLength
     _printPackages $gTdp $frequency $maxTurboFrequency
 
@@ -1725,7 +1789,7 @@ function main()
             _initSandyBridgeSetup
 
             _printScopeACST 0
-            _printScopeCPUn $logicalCPUs
+            _printScopeCPUn
         else
             local cpuTypeString="07"
 
@@ -1733,7 +1797,7 @@ function main()
 
             _printScopeACST 0
             _printMethodDSM
-            _printScopeCPUn $logicalCPUs
+            _printScopeCPUn
     fi
 
     _showLowPowerStates
@@ -1745,19 +1809,19 @@ function main()
     if [ $gBridgeType -eq $IVY_BRIDGE ];
         then
             if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
-                echo "Warning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
+                echo -e "\nWarning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
             fi
 
             if [ $gSystemType -eq 0 ];
                 then
-                    echo "Warning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
+                    echo -e "\nWarning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
                 else
                     if [ "$gMacModelIdentifier" != "$modelID" ]; then
                         echo "Error: board-id [$boardID] and model [$modelID] mismatch"
                     fi
 
                     if [ $currentSystemType -ne $gSystemType ]; then
-                        echo "Warning: 'system-type' may be set improperly ($currentSystemType instead of $gSystemType)"
+                        echo -e "\nWarning: 'system-type' may be set improperly ($currentSystemType instead of $gSystemType)"
                     fi
             fi
     fi
@@ -1769,13 +1833,13 @@ clear
 
 if [ $# -eq 0 ];
     then
-        main "" $1 $2 $3
+        main "" $1 $2 $3 $4
     else
         if [[ "$1" =~ ^[0-9]+$ ]];
             then
-                main "" $1 $2 $3
+                main "" $1 $2 $3 $4
             else
-                main "$1" $2 $3 $4
+                main "$1" $2 $3 $4 $5
         fi
 fi
 
