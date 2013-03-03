@@ -82,12 +82,17 @@ inline void getCStates(void *arg)
 {
 	UInt8 logicalCoreNumber = cpu_number();
 
-	IOLog("MSR_CORE[%d]_C3_RESIDENCY......(0x3fc) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C3_RESIDENCY));
-	IOLog("MSR_CORE[%d]_C6_RESIDENCY......(0x3fd) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C6_RESIDENCY));
-
-	if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN))
+	if ((gCoreStates & logicalCoreNumber) == 0)
 	{
-		IOLog("MSR_CORE[%d]_C7_RESIDENCY......(0x3fe) : 0x%llX\n", logicalCoreNumber, (unsigned long long)rdmsr64(MSR_CORE_C7_RESIDENCY));
+		gCoreStates |= (1ULL << logicalCoreNumber);
+		IOLog("Core (logical): %d\n", logicalCoreNumber);
+		IOLog("MSR_CORE_C3_RESIDENCY......(0x3fc) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_C3_RESIDENCY));
+		IOLog("MSR_CORE_C6_RESIDENCY......(0x3fd) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_C6_RESIDENCY));
+
+		if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN))
+		{
+			IOLog("MSR_CORE_C7_RESIDENCY......(0x3fe) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_C7_RESIDENCY));
+		}
 	}
 }
 
@@ -106,10 +111,13 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	
 	loopLock = true;
 
-	UInt32 magic = 0;
-	IOSimpleLockLock(simpleLock);
-	mp_rendezvous_no_intrs(getCStates, (void *)&magic);
-	IOSimpleLockUnlock(simpleLock);
+	if (dumpCStates)
+	{
+		UInt32 magic = 0;
+		IOSimpleLockLock(simpleLock);
+		mp_rendezvous_no_intrs(getCStates, (void *)&magic);
+		IOSimpleLockUnlock(simpleLock);
+	}
 
 	if (gCoreMultipliers != gTriggeredPStates)
 	{

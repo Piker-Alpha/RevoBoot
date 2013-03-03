@@ -38,23 +38,25 @@ private:
 	void reportMSRs(void);
 
 	bool loopLock = false;
+	bool dumpCStates = false;
 
 	UInt16 Interval	= 50;
+
+	UInt64	gCoreMultipliers	= 0ULL;
+	UInt64	gTriggeredPStates	= 0ULL;
 
 public:
 	virtual IOService *	probe(IOService * provider, SInt32 * score);
 	virtual bool start(IOService * provider);
 	virtual void stop(IOService * provider);
 	virtual void free(void);
+
+	UInt8	gMinRatio	= 0;
+	UInt8	gClockRatio	= 0;
+	UInt8	gMaxRatio	= 0;
 };
 
 OSDefineMetaClassAndStructors(AppleIntelCPUPowerManagementInfo, IOService)
 
-UInt64	gCoreMultipliers;
-UInt64	gTriggeredPStates;
-
-UInt8	gMinRatio	= 0;
-UInt8	gClockRatio	= 0;
-UInt8	gMaxRatio	= 0;
-
 UInt8	gCPUModel	= 0x2A;
+UInt8	gCoreStates	= 0ULL;
