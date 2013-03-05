@@ -122,7 +122,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	if (gCoreMultipliers != gTriggeredPStates)
 	{
 		gTriggeredPStates = gCoreMultipliers;
-		IOLog("AICPUPMI: P-States [ ");
+		IOLog("AICPUPMI: CPU P-States [ ");
 		
 		for (int currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
 		{
@@ -134,7 +134,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 			}
 		}
 		
-		IOLog("]\n");
+		IOLog("] GPU P-State [ %d ]\n", (UInt8)gMchbar[1]);
 	}
 
 	loopLock = false;
@@ -198,6 +198,41 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					IOLog("Max Frequency      : %d00 MHz\n", gMaxRatio);
 				}
 
+				/*
+				 * TODO: Pike, add check a to see if there is a GPU and if it is is enabled!
+				 */
+				IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
+				memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionIn);
+				
+				if (memDescriptor != NULL)
+				{
+					if ((result = memDescriptor->prepare()) == kIOReturnSuccess)
+					{
+						memoryMap = memDescriptor->map();
+						
+						if (memoryMap != NULL)
+						{
+							gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
+							IOLog("Graphics Core Ratios:\n");
+							IOLog("Current Ratio       : 0x%02x\n", (UInt8)gMchbar[1]);
+							IOLog("Max Non-Turbo Ratio : 0x%02x\n", (UInt8)gMchbar[0x51]);
+							IOLog("Max Turbo Ratio     : 0x%02x\n", (UInt8)gMchbar[0x50]);
+						}
+						else
+						{
+							IOLog("Error: memoryMap == NULL\n");
+						}
+					}
+					else
+					{
+						IOLog("Error: memDescriptor->prepare() failed!\n");
+					}
+				}
+				else
+				{
+					IOLog("Error: memDescriptor == NULL\n");
+				}
+
 				timerEventSource->setTimeoutMS(1000);
 
 				return true;
@@ -236,5 +271,17 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 
 void AppleIntelCPUPowerManagementInfo::free()
 {
+	if (memoryMap)
+	{
+		memoryMap->release();
+		memoryMap = NULL;
+	}
+
+	if (memDescriptor)
+	{
+		memDescriptor->release();
+		memDescriptor = NULL;
+	}
+
 	super::free();
 }

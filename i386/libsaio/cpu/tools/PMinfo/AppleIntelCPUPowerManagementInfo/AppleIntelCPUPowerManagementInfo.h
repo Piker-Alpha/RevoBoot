@@ -32,6 +32,10 @@ private:
 	IOSimpleLock		*simpleLock;
 	IOWorkLoop			*workLoop;
 	IOTimerEventSource	*timerEventSource;
+	IOMemoryDescriptor	*memDescriptor;
+	IOMemoryMap			*memoryMap;
+
+	IOReturn result		= kIOReturnSuccess;
 
 	virtual IOReturn loopTimerEvent(void);
 
@@ -60,3 +64,4 @@ OSDefineMetaClassAndStructors(AppleIntelCPUPowerManagementInfo, IOService)
 
 UInt8	gCPUModel	= 0x2A;
 UInt8	gCoreStates	= 0ULL;
+UInt8	* gMchbar	= NULL;
