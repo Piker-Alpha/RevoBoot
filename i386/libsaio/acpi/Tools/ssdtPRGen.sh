@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -61,6 +61,7 @@
 #			- Now using the ACPI processor names of the running system (Pike, March 2013)
 #			- Now supporting up to 256/0xff logical processors (Pike, March 2013)
 #			- Command line argument for processor labels added (Pike, March 2013)
+#			- Bug fix, overriding the cpu type displayed the wrong name (Jeroen, March 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -157,7 +158,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.5
+gScriptVersion=5.6
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -504,7 +505,7 @@ function _printExternals()
 function _printDebugInfo()
 {
     if ((gDebug)); then
-        echo '    Store ("ssdtPRGen version: '$gScriptVersion'", Debug)'                     >> $gSsdtPR
+        echo '    Store ("ssdtPRGen version: '$gScriptVersion'", Debug)'                >> $gSsdtPR
         echo '    Store ("baseFrequency    : '$gBaseFrequency'", Debug)'                >> $gSsdtPR
         echo '    Store ("frequency        : '$frequency'", Debug)'                     >> $gSsdtPR
         echo '    Store ("logicalCPUs      : '$gLogicalCPUs'", Debug)'                  >> $gSsdtPR
@@ -1704,20 +1705,20 @@ function main()
 
                 case "$4" in
                     0) let gBridgeType=2
-                       local cpuTypeString="Override value: CPU type, now using: Sandy Bridge!"
+                       local bridgeTypeString='Sandy Bridge'
                        ;;
                     1) let gBridgeType=4
-                       local cpuTypeString="Override value: CPU type, now using: Ivy Bridge!"
+                       local bridgeTypeString='Ivy Bridge'
                        ;;
                     2) let gBridgeType=8
-                       local cpuTypeString="Override value: CPU type, now using: Haswell!"
+                       local bridgeTypeString='Haswell'
                        ;;
                     *) _exitWithError $TARGET_CPU_ERROR
                        ;;
                 esac
 
                 if [[ $detectedBridgeType -ne $((2 << $4)) ]]; then
-                    echo $cpuTypeString
+                    echo "Override value: CPU type, now using: $bridgeTypeString"
                 fi
             else
                 _exitWithError $TARGET_CPU_ERROR
