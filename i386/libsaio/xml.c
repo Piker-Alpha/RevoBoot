@@ -707,10 +707,10 @@ static void FreeSymbol(char * string)
 			{
 				gSymbolsHead = symbol->next;
 			}
-		}
 
-		// Free the symbol's memory.
-		free (symbol);
+			// Free the symbol's memory.
+			free (symbol);
+		}
 	}
 }
 
