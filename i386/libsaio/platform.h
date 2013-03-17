@@ -54,6 +54,7 @@
 // Additional model selectors to select a specific target model.
 //------------------------------------------------------------------------------
 
+<<<<<<< HEAD
 #define IMAC_131			(IMAC | (4 << 15))
 #define IMAC_122			(IMAC | (3 << 15))
 #define IMAC_121			(IMAC | (2 << 15))
@@ -61,10 +62,20 @@
 #define IMAC_132			 IMAC                    		// Defaults to iMac13,2
 
 #define MACBOOK_41			MACBOOK					// Defaults to MacBook4,1
+=======
+#define IMAC_111				(IMAC | (1 << 15))
+#define IMAC_121				(IMAC | (2 << 15))
+#define IMAC_122				(IMAC | (3 << 15))
+#define IMAC_131				(IMAC | (4 << 15))
+#define IMAC_132				 IMAC						// Defaults to iMac13,2
+
+#define MACBOOK_41				 MACBOOK					// Defaults to MacBook4,1
+>>>>>>> Reordering model identifier data
 
 #define MACBOOK_AIR_42			(MACBOOK_AIR | (1 << 15))
 #define MACBOOK_AIR_41			 MACBOOK_AIR				// Defaults to MacBookAir4,1
 
+<<<<<<< HEAD
 #define MACBOOK_PRO_102			(MACBOOK_PRO | (6 << 15))
 #define MACBOOK_PRO_101			(MACBOOK_PRO | (5 << 15))
 #define MACBOOK_PRO_91			(MACBOOK_PRO | (4 << 15))
@@ -82,6 +93,27 @@
 #define MACPRO_51			(MACPRO | (2 << 15))
 #define MACPRO_41			(MACPRO | (1 << 15))
 #define MACPRO_31			 MACPRO					// Defaults to MacPro3,1
+=======
+#define MACBOOK_PRO_61			(MACBOOK_PRO | (1 << 15))
+#define MACBOOK_PRO_81			(MACBOOK_PRO | (2 << 15))
+#define MACBOOK_PRO_82			(MACBOOK_PRO | (3 << 15))
+#define MACBOOK_PRO_83			(MACBOOK_PRO | (4 << 15))
+#define MACBOOK_PRO_91			(MACBOOK_PRO | (5 << 15))
+#define MACBOOK_PRO_92			(MACBOOK_PRO | (6 << 15))
+#define MACBOOK_PRO_101			(MACBOOK_PRO | (7 << 15))
+#define MACBOOK_PRO_102			 MACBOOK_PRO				// Defaults to MacBookPro10,2
+
+#define MACMINI_41				(MACMINI | (1 << 15))
+#define MACMINI_51				(MACMINI | (2 << 15))
+#define MACMINI_52				(MACMINI | (3 << 15))
+#define MACMINI_53				(MACMINI | (4 << 15))
+#define MACMINI_61				(MACMINI | (5 << 15))
+#define MACMINI_62				 MACMINI					// Defaults to Macmini5,1
+
+#define MACPRO_31				(MACPRO | (1 << 15))
+#define MACPRO_41				(MACPRO | (2 << 15))
+#define MACPRO_51				 MACPRO						// Defaults to MacPro5,1
+>>>>>>> Reordering model identifier data
 
 //------------------------------------------------------------------------------
 
