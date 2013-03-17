@@ -72,20 +72,24 @@ extern unsigned long getExtendedMemorySize();
 extern unsigned long getConventionalMemorySize();
 extern void		sleep(int n);
 
+
 /* efi.c */
 extern void		initEFITree(void);
 extern void		updateEFITree(char *rootUUID);
 extern void		finalizeEFITree(uint32_t kernelAdler32);
+
 
 /* bootstruct.c */
 extern void		initKernelBootConfig(void);
 extern void		finalizeKernelBootConfig(void);
 extern void		moveKernelBootArgs(void);
 
+
 /* cache.c */
 extern void		CacheReset();
 extern void		CacheInit(CICell ih, long blockSize);
 extern long		CacheRead(CICell ih, char *buffer, long long offset, long length, long cache);
+
 
 /* console.c */
 extern bool		gVerboseMode;
@@ -162,8 +166,8 @@ extern bool		getValueForBootKey(const char *line, const char *match, const char 
 extern bool		getValueForKey(const char *key, const char **val, int *size, config_file_t *configBuff);
 extern bool		getBoolForKey(const char *key, bool *val, config_file_t *configBuff);
 extern bool		getIntForKey(const char *key, int *val, config_file_t *configBuff);
-extern bool		loadConfigFile(const char *configFile, config_file_t *configBuff);
-extern int		loadSystemConfig(config_file_t *configBuff);
+extern long		loadConfigFile(const char *configFile, config_file_t *configBuff);
+extern long		loadSystemConfig(config_file_t *configBuff);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
 
