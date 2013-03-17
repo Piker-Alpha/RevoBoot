@@ -168,7 +168,7 @@ static long initDriverSupport(void)
 
 long loadDrivers(char * dirSpec)
 {
-	if (initDriverSupport() != STATE_SUCCESS)
+	if (initDriverSupport() != EFI_SUCCESS)
 	{
 		return -1;
 	}
@@ -180,7 +180,7 @@ long loadDrivers(char * dirSpec)
 
 	if (shouldLoadMKext) // Skipped in "Safe Boot" mode.
 	{
-		if (loadMultiKext(gPlatform.KernelCachePath) == STATE_SUCCESS)
+		if (loadMultiKext(gPlatform.KernelCachePath) == EFI_SUCCESS)
 		{
 			gKextLoadStatus |= 1;
 			
@@ -201,7 +201,7 @@ long loadDrivers(char * dirSpec)
 		{
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/System/Library/Extensions\");\n");
 
-			if (loadKexts("/System/Library/Extensions", 0) == STATE_SUCCESS)
+			if (loadKexts("/System/Library/Extensions", 0) == EFI_SUCCESS)
 			{
 				_DRIVERS_DEBUG_DUMP("loadKexts(1) OK.\n");
 			}
@@ -215,7 +215,7 @@ long loadDrivers(char * dirSpec)
 
 	_DRIVERS_DEBUG_SLEEP(15);
 
-	return STATE_SUCCESS;
+	return EFI_SUCCESS;
 }
 
 
@@ -243,7 +243,7 @@ static int loadMultiKext(char * path)
 	long ret = GetFileInfo(path, fileName, &flags, &time);
 	
 	// Pre-flight checks; Does the file exists, and is it something we can use?
-	if ((ret == STATE_SUCCESS) && ((flags & kFileTypeMask) == kFileTypeFlat))
+	if ((ret == EFI_SUCCESS) && ((flags & kFileTypeMask) == kFileTypeFlat))
 	{
 		unsigned long    driversAddr, driversLength;
 		char             segName[32];
@@ -305,7 +305,7 @@ static int loadMultiKext(char * path)
 
 		_DRIVERS_DEBUG_DUMP("loadMultiKext(Success : 0) @ 0x%08x\n", driversAddr);
 
-		return STATE_SUCCESS;
+		return EFI_SUCCESS;
 	}
 
 	_DRIVERS_DEBUG_DUMP("loadMultiKext(File Not Found Error: -1)\n");

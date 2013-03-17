@@ -29,6 +29,16 @@
 #ifndef _LIBSAIO_EFI_EFI_H
 #define _LIBSAIO_EFI_EFI_H
 
+///
+/// 32/64-bit native width with the highest bit set.
+///
+#if EFI_64_BIT
+	#define EFI_MAX_BIT					0x8000000000000000ULL
+#else
+	#define EFI_MAX_BIT					0x80000000
+#endif
+
+#include "EfiError.h"
 
 // Set up space for up to 5 tables but we currently only add two.
 #define EFI_MAX_CONFIG_TABLES			5
@@ -46,39 +56,6 @@
 	// ret
 	static uint8_t const UNSUPPORTEDRET_INSTRUCTIONS[] = { 0xb8, 0x03, 0x00, 0x00, 0x80, 0xc3 };
 #endif
-
-///
-/// 32/64-bit native width with the highest bit set.
-///
-#if EFI_64_BIT
-	#define EFI_MAX_BIT					0x8000000000000000ULL
-#else
-	#define EFI_MAX_BIT					0x80000000
-#endif
-
-///
-/// Macro's to encode the status code.
-///
-
-// Set the upper bit to indicate EFI Error.
-#define ENCODE_ERROR(_a)				(EFI_MAX_BIT | (_a))
-
-#define EFIERR(_a)						ENCODE_ERROR(_a)
-
-///
-/// The operation completed successfully.
-///
-#define EFI_SUCCESS						0
-
-///
-/// The parameter was incorrect.
-///
-#define EFI_INVALID_PARAMETER			EFIERR (2)
-
-///
-/// The operation is not supported.
-///
-#define EFI_UNSUPPORTED					EFIERR (3)
 
 // EFI Revision info.
 //

@@ -936,7 +936,7 @@ BVRef getTargetRootVolume(char *rootUUID)
 					if ((bvr->biosdev == hdIndex) && (bvr->flags & kBVFlagSystemVolume))
 					{
 						if ((bvr->flags & kBVFlagSystemVolume) &&
-							(bvr->fs_getuuid(bvr, rootUUID) == 0)) // STATE_SUCCESS))
+							(bvr->fs_getuuid(bvr, rootUUID) == EFI_SUCCESS))
 						{
 							return bvr;
 						}

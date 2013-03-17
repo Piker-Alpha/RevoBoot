@@ -29,8 +29,6 @@
 #ifndef __LIBSAIO_LIBSAIO_H
 #define __LIBSAIO_LIBSAIO_H
 
-#define STATE_SUCCESS	0
-
 #include "libsa.h"
 #include "memory.h"
 #include "io_inline.h"

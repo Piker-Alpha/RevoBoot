@@ -230,7 +230,7 @@ void boot(int biosdev)
 		config_file_t	nvramStorage;
 		const char * path = "/Extra/NVRAM/nvramStorage.plist";
 	
-		if (loadConfigFile(path, &nvramStorage) == STATE_SUCCESS)
+		if (loadConfigFile(path, &nvramStorage) == EFI_SUCCESS)
 		{
 			_BOOT_DEBUG_DUMP("nvramStorage.plist found\n");
 
@@ -260,7 +260,7 @@ void boot(int biosdev)
 
 	// Loading: /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
 	// TODO: Check if everything works <i>without</i> having this plist.
-	if (loadCABootPlist() == STATE_SUCCESS)
+	if (loadCABootPlist() == EFI_SUCCESS)
 	{
 		_BOOT_DEBUG_DUMP("com.apple.Boot.plist located.\n");
 
@@ -363,7 +363,7 @@ void boot(int biosdev)
 			_BOOT_DEBUG_DUMP("Booting from a System Volume, getting UUID.\n");
 
 			// Yes, then let's get the UUID.
-			if (HFSGetUUID(gPlatform.BootVolume, rootUUID) == STATE_SUCCESS)
+			if (HFSGetUUID(gPlatform.BootVolume, rootUUID) == EFI_SUCCESS)
 			{
 				_BOOT_DEBUG_DUMP("Success [%s]\n", rootUUID);
 			}

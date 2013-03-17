@@ -90,11 +90,6 @@ enum {
     errFuncInvalid      = 3
 }; */
 
-#define STATE_SUCCESS                 0 // graphics.c
-// #define STATE_FUNCTION_FAILED         1
-#define STATE_FUNCTION_NOT_SUPPORTED  2 // graphics.c
-// #define STATE_FUNCTION_INVALID        3
-
 /*
  * Per-controller info, returned in function 4f00.
  */

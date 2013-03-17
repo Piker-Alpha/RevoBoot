@@ -28,9 +28,7 @@
 
 #include "boot.h"
 #include "vbe.h"
-
 #include "bootstruct.h"
-
 
 //==============================================================================
 
@@ -65,7 +63,7 @@ static unsigned short getVESAModeWithProperties(unsigned short width, unsigned s
 	strcpy((char*)&vbeInfo, "VBE2");
 	status = getVBEInfo(&vbeInfo);
 
-	if (status != STATE_SUCCESS)
+	if (status != EFI_SUCCESS)
 	{
 		return modeEndOfList;
 	}
@@ -86,7 +84,7 @@ static unsigned short getVESAModeWithProperties(unsigned short width, unsigned s
 		bzero(&modeInfo, sizeof(modeInfo));
 		status = getVBEModeInfo(*modePtr, &modeInfo);
 
-		if (status != STATE_SUCCESS)
+		if (status != EFI_SUCCESS)
 		{
 			continue;
 		}
@@ -187,7 +185,7 @@ static int setVESATextMode(unsigned short cols, unsigned short rows, unsigned ch
 	getc();
 #endif
 
-	if ((mode == modeEndOfList) || (setVBEMode(mode, NULL) != STATE_SUCCESS))
+	if ((mode == modeEndOfList) || (setVBEMode(mode, NULL) != EFI_SUCCESS))
 	{
 		video_mode(2);  // VGA BIOS, 80x25 text mode.
 		minfo.XResolution = 80;
@@ -203,20 +201,20 @@ static int setVESATextMode(unsigned short cols, unsigned short rows, unsigned ch
 	bootArgs->Video.v_baseAddr = 0xb8000;
 	bootArgs->Video.v_rowBytes = 0x8000;
 
-	return STATE_SUCCESS;  // always return success
+	return EFI_SUCCESS;  // always return success
 }
 
 
 //==============================================================================
 
-static int setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned char  bitsPerPixel, unsigned short refreshRate)
+long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned char  bitsPerPixel, unsigned short refreshRate)
 {
 	VBEModeInfoBlock	minfo;
 
-	unsigned short		mode = 280; // Default to 1024 * 768 * 32 (1920 * 1200 * 32 would be 330)
-	unsigned short		vesaVersion;
+	unsigned short	mode = 280; // Default to 1024 * 768 * 32 (1920 * 1200 * 32 would be 330)
+	unsigned short	vesaVersion;
 
-	int					status = STATE_FUNCTION_NOT_SUPPORTED;
+	long status = (long)EFI_UNSUPPORTED;
 
 	do
 	{
@@ -236,7 +234,7 @@ static int setVESAGraphicsMode(unsigned short width, unsigned short height, unsi
 
 		status = setVBEMode(mode | kLinearFrameBufferBit, NULL);
 
-		if (status != STATE_SUCCESS)
+		if (status != EFI_SUCCESS)
 		{
 			break;
 		}
@@ -305,7 +303,7 @@ static int getNumberArrayFromProperty(const char *  propKey, unsigned long numbe
 
 //==============================================================================
 
-int initGraphicsMode()
+long initGraphicsMode()
 {
 	unsigned long params[4];
 
@@ -341,19 +339,19 @@ int initGraphicsMode()
 
 void setVideoMode(int mode)
 {
-	int status = STATE_SUCCESS;
+	long status = EFI_SUCCESS;
 
 	unsigned long params[4];
 
 	if (mode == GRAPHICS_MODE)
 	{
-		if ((status = initGraphicsMode()) == STATE_SUCCESS)
+		if ((status = initGraphicsMode()) == EFI_SUCCESS)
 		{
 			bootArgs->Video.v_display = (gVerboseMode) ? FB_TEXT_MODE : GRAPHICS_MODE;
 		}
 	}
 
-	if (mode == VGA_TEXT_MODE || status != STATE_SUCCESS)
+	if (mode == VGA_TEXT_MODE || status != EFI_SUCCESS)
 	{
 		params[0] = 80;  // Default text mode is 80x25.
 		params[1] = 25;
