@@ -333,14 +333,13 @@ long ParseXMLFile(char * buffer, TagPtr * dictionaryPtr)
 	}
 #endif
 
-	return 0;
+	return (long)(EFI_INVALID_PARAMETER | EFI_OUT_OF_RESOURCES);
 }
 
 
 //==============================================================================
-// Returns TRUE on success and FALSE when it is fails to locate / open the file.
 
-bool loadConfigFile(const char * configFile, config_file_t *config)
+long loadConfigFile(const char * configFile, config_file_t *config)
 {
 	int fd = 0;
 
@@ -352,21 +351,21 @@ bool loadConfigFile(const char * configFile, config_file_t *config)
 		close(fd);
 	
 		// Build XML dictionary.
-		ParseXMLFile(config->plist, &config->dictionary);
-	
-		return 0;
+		if (ParseXMLFile(config->plist, &config->dictionary) > 0)
+		{
+			return EFI_SUCCESS;
+		}
 	}
 
-	return 1;
+	return (long)(EFI_INVALID_PARAMETER | EFI_NOT_FOUND);
 }
 
 
 //==============================================================================
-// Returns 0 on success and -1 when it is fails to locate / open the file.
 
-int loadSystemConfig(config_file_t *config)
+long loadSystemConfig(config_file_t *config)
 {
-	short retValue = -1;
+	long retValue = (long) EFI_OUT_OF_RESOURCES;
 
 	static char * dirspec[] =
 	{
@@ -403,11 +402,7 @@ int loadSystemConfig(config_file_t *config)
 		for (; i < len; i++)
 		{
 			sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
-
-			if (loadConfigFile(path, config) == STATE_SUCCESS)
-			{
-				retValue = 0;
-			}
+			retValue = loadConfigFile(path, config);
 		}
 
 		free (path);
