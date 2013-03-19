@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.7 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -62,6 +62,7 @@
 #			- Now supporting up to 256/0xff logical processors (Pike, March 2013)
 #			- Command line argument for processor labels added (Pike, March 2013)
 #			- Bug fix, overriding the cpu type displayed the wrong name (Jeroen, March 2013)
+#			- Automatic detection of CPU scopes added (Pike, March 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -158,7 +159,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.6
+gScriptVersion=5.7
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -493,7 +494,7 @@ function _printExternals()
     let currentCPU=0;
 
     while [ $currentCPU -lt $gLogicalCPUs ]; do
-        echo "    External (\_PR_.${gProcessorNames[$currentCPU]}, DeviceObj)"          >> $gSsdtPR
+        echo '    External ('${gScope}'.'${gProcessorNames[$currentCPU]}', DeviceObj)'  >> $gSsdtPR
         let currentCPU+=1
     done
 
@@ -524,7 +525,7 @@ function _printProcessorDefinitions()
     let currentCPU=0;
 
     while [ $currentCPU -lt $1 ]; do
-        echo "    External (\_PR_.${gProcessorNames[$currentCPU]}, DeviceObj)"          >> $gSsdtPR
+        echo '    External ('${gScope}'.'${gProcessorNames[$currentCPU]}', DeviceObj)'  >> $gSsdtPR
         let currentCPU+=1
     done
 
@@ -541,7 +542,7 @@ function _printScopeStart()
     # TODO: Remove this when CPUPM for IB works properly!
     let useWorkArounds=0
 
-    echo '    Scope (\_PR.'${gProcessorNames[0]}')'                                     >> $gSsdtPR
+    echo '    Scope ('${gScope}'.'${gProcessorNames[0]}')'                              >> $gSsdtPR
     echo '    {'                                                                        >> $gSsdtPR
 
     #
@@ -936,10 +937,10 @@ function _printScopeCPUn()
     let currentCPU=1;
 
     while [ $currentCPU -lt $gLogicalCPUs ]; do
-        echo ''                                                                                     >> $gSsdtPR
-        echo "    Scope (\_PR.${gProcessorNames[$currentCPU]})"                                     >> $gSsdtPR
-        echo '    {'                                                                                >> $gSsdtPR
-        echo "        Method (APSS, 0, NotSerialized) { Return (\_PR.${gProcessorNames[0]}.APSS) }" >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+        echo '    Scope ('${gScope}'.'${gProcessorNames[$currentCPU]}')'                >> $gSsdtPR
+        echo '    {'                                                                    >> $gSsdtPR
+        echo '        Method (APSS, 0, NotSerialized) { Return ('${gScope}'.'${gProcessorNames[0]}'.APSS) }' >> $gSsdtPR
 
         #
         # IB CPUPM tries to parse/execute CPUn.ACST (see debug data) and thus we add
@@ -950,15 +951,15 @@ function _printScopeCPUn()
                 then
                     _printScopeACST 1
                 else
-                    echo "        Method (ACST, 0, NotSerialized) { Return (\_PR.${gProcessorNames[1]}.ACST ()) }" >> $gSsdtPR
+                    echo '        Method (ACST, 0, NotSerialized) { Return ('${gScope}'.'${gProcessorNames[1]}'.ACST ()) }' >> $gSsdtPR
             fi
         fi
 
-        echo '    }'                                                                                >> $gSsdtPR
+        echo '    }'                                                                    >> $gSsdtPR
         let currentCPU+=1
     done
 
-    echo '}'                                                                                        >> $gSsdtPR
+    echo '}'                                                                            >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
@@ -1025,6 +1026,29 @@ function _updateProcessorNames()
         gProcessorNames[$currentCPU]=${label}${filler}$(echo "obase=16; ${currentCPU}" | bc)
 
         let currentCPU+=1
+    done
+}
+
+#--------------------------------------------------------------------------------
+
+function _getScope()
+{
+    let procNameFound=0
+    local names=($(ioreg -p IOACPIPlane -d 3 | sed -e 's/<.*>//g' -e 's/.*o //g'))
+
+    for name in ${names[@]}
+    do
+        if [[ $name == "_SB" && $procNameFound -eq 0 ]]; then
+#           echo 'Using: Scope (\_SB.'${gProcessorNames[0]}') etc.'
+            gScope="\_SB"
+            return
+        fi
+
+        if [[ "${name:0:3}" == ${gProcessorNames[0]:0:3} ]]; then
+#           echo 'Using: Scope (\_PR.'${gProcessorNames[0]}') etc.'
+            gScope="\_PR"
+            let procNameFound=1
+        fi
     done
 }
 
@@ -1604,6 +1628,7 @@ function main()
 
     _getBoardID
     _getProcessorNames
+    _getScope
 
     local modelID=$(_getModelName)
     local cpu_type=$(_getCPUtype)
