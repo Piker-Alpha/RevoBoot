@@ -3,13 +3,13 @@
  * AML Disassembler version 20110316-64 [Mar 16 2011]
  * Copyright (c) 2000 - 2011 Intel Corporation
  * 
- * Disassembly of dsdt-factory-32mb-igpu.aml, Wed Mar 20 12:38:18 2013
+ * Disassembly of dsdt-factory-64mb-igpu.aml, Wed Mar 20 12:29:46 2013
  *
  * Original Table Header:
  *     Signature        "DSDT"
  *     Length           0x0000BAFE (47870)
  *     Revision         0x02
- *     Checksum         0x72
+ *     Checksum         0x78
  *     OEM ID           "ALASKA"
  *     OEM Table ID     "A M I"
  *     OEM Revision     0x00000015 (21)
@@ -17,7 +17,7 @@
  *     Compiler Version 0x20051117 (537202967)
  */
 
-DefinitionBlock ("dsdt-factory-32mb-igpu.aml", "DSDT", 2, "ALASKA", "A M I", 0x00000015)
+DefinitionBlock ("dsdt-factory-64mb-igpu.aml", "DSDT", 2, "ALASKA", "A M I", 0x00000015)
 {
     External (TNOT, MethodObj)    // 0 Arguments
     External (PDC7)
@@ -148,7 +148,7 @@ DefinitionBlock ("dsdt-factory-32mb-igpu.aml", "DSDT", 2, "ALASKA", "A M I", 0x0
     Name (TOPM, 0x00000000)
     Name (ROMS, 0xFFE00000)
     Name (VGAF, One)
-    OperationRegion (GNVS, SystemMemory, 0xDCBB2E18, 0x01CB)
+    OperationRegion (GNVS, SystemMemory, 0xDABB2E18, 0x01CB)
     Field (GNVS, AnyAcc, Lock, Preserve)
     {
         OSYS,   16, 
@@ -8308,7 +8308,7 @@ DefinitionBlock ("dsdt-factory-32mb-igpu.aml", "DSDT", 2, "ALASKA", "A M I", 0x0
 
     Scope (_SB.PCI0.LPCB)
     {
-        OperationRegion (CPSB, SystemMemory, 0xDCBC5F98, 0x10)
+        OperationRegion (CPSB, SystemMemory, 0xDABC5F98, 0x10)
         Field (CPSB, AnyAcc, NoLock, Preserve)
         {
             RTCX,   1, 
@@ -12627,7 +12627,7 @@ DefinitionBlock ("dsdt-factory-32mb-igpu.aml", "DSDT", 2, "ALASKA", "A M I", 0x0
 
     Scope (_SB)
     {
-        Name (RAMB, 0xDCB94018)
+        Name (RAMB, 0xDAB94018)
         OperationRegion (\RAMW, SystemMemory, RAMB, 0x00010000)
         Field (RAMW, ByteAcc, NoLock, Preserve)
         {
