@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.7 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.8 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -63,6 +63,7 @@
 #			- Command line argument for processor labels added (Pike, March 2013)
 #			- Bug fix, overriding the cpu type displayed the wrong name (Jeroen, March 2013)
 #			- Automatic detection of CPU scopes added (Pike, March 2013)
+#			- Show warnings for Sandy Bridge systems as well (Jeroen, March 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -159,7 +160,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.7
+gScriptVersion=5.8
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1832,7 +1833,7 @@ function main()
     #
     # Some IB CPUPM specific configuration checks
     #
-    if [ $gBridgeType -eq $IVY_BRIDGE ];
+    if [ $gBridgeType -ne $HASWELL ];
         then
             if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
                 echo -e "\nWarning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
