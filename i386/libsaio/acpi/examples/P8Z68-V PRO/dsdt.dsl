@@ -36,7 +36,7 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
     Name (TCLT, 0x1000)
     Name (OPRE, 0xDCBB2E18)
 
-    OperationRegion (GNVS, SystemMemory, OPRE, 0x0164)
+    OperationRegion (GNVS, SystemMemory, OPRE, 0x0163)
     Field (GNVS, AnyAcc, Lock, Preserve)
     {
                 Offset (0x0B), 
@@ -45,7 +45,7 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
         IGDS,   8,
                 Offset (0xAA), 
         ASLB,   32,
-                Offset (0xEF), 
+                Offset (0xEF),
         L01C,   8,
                 Offset (0x15F), 
         TBAB,   32, 
@@ -526,7 +526,7 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
                 CreateDWordField (BUF0, ^_Y0E._LEN, M1LN)
                 ShiftLeft (TLUD, 0x14, M1MN)
                 Add (Subtract (M1MX, M1MN), One, M1LN)
-                CreateDWordField (BUF0, ^_Y0F._LEN, MSLN)
+                CreateQWordField (BUF0, ^_Y0F._LEN, MSLN)
                 Store (Zero, MSLN)
 
                 Return (BUF0)
@@ -721,47 +721,47 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
                     {
                         Name (_ADR, One)
                         Name (_UPC, Package (0x04) { 0xFF, Zero, Zero, Zero })
-                        Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0x30, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero })
+                        Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0x30, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero }})
                         Device (PR11)
                         {
                             Name (_ADR, One)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR12)
                         {
                             Name (_ADR, 0x02)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR13)
                         {
                             Name (_ADR, 0x03)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR14)
                         {
                             Name (_ADR, 0x04)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR15)
                         {
                             Name (_ADR, 0x05)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR16)
                         {
                             Name (_ADR, 0x06)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
                     }
                 }
@@ -813,61 +813,61 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
                     {
                         Name (_ADR, One)
                         Name (_UPC, Package (0x04) { 0xFF, Zero, Zero, Zero })
-                        Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0x30, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero })
+                        Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0x30, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero }})
                         Device (PR11)
                         {
                             Name (_ADR, One)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1C, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR12)
                         {
                             Name (_ADR, 0x02)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR13)
                         {
                             Name (_ADR, 0x03)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1D, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR14)
                         {
                             Name (_ADR, 0x04)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xE1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR15)
                         {
                             Name (_ADR, 0x05)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR16)
                         {
                             Name (_ADR, 0x06)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR17)
                         {
                             Name (_ADR, 0x07)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
 
                         Device (PR18)
                         {
                             Name (_ADR, 0x08)
                             Name (_UPC, Package (0x04) { 0xFF, 0xFF, Zero, Zero })
-                            Name (_PLD, Package (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero })
+                            Name (_PLD, Package (One) { Buffer (0x10) { 0x81, Zero, Zero, Zero, Zero, Zero, Zero, Zero, 0xB1, 0x1E, Zero, Zero, Zero, Zero, Zero, Zero }})
                         }
                     }
                 }
