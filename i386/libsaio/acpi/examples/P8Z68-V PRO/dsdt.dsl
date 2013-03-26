@@ -36,7 +36,7 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
     Name (TCLT, 0x1000)
     Name (OPRE, 0xDCBB2E18)
 
-    OperationRegion (GNVS, SystemMemory, OPRE, 0x01CB)
+    OperationRegion (GNVS, SystemMemory, OPRE, 0x0164)
     Field (GNVS, AnyAcc, Lock, Preserve)
     {
                 Offset (0x0B), 
@@ -45,9 +45,6 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
         IGDS,   8,
                 Offset (0xAA), 
         ASLB,   32,
-                Offset (0xE3), 
-        SBV1,   8, 
-        SBV2,   8,
                 Offset (0xEF), 
         L01C,   8,
                 Offset (0x15F), 

@@ -18,54 +18,14 @@
  */
 DefinitionBlock ("ssdt.aml", "SSDT", 1, "APPLE ", "general", 0x00001000)
 {
-    External (_SB_.PCI0, DeviceObj)
     External (_SB_.PCI0.EHC1, DeviceObj)
-    External (_SB_.PCI0.EHC1.HUBN.PR01.PR14, DeviceObj)
-    External (_SB_.PCI0.EHC1.HUBN.PR01.PR15, DeviceObj)
-    External (_SB_.PCI0.EHC1.HUBN.PR01.PR16, DeviceObj)
-    External (_SB_.PCI0.EHC1.HUBN.PR01.PR17, DeviceObj)
     External (_SB_.PCI0.EHC2, DeviceObj)
-    External (_SB_.PCI0.EHC2.HUBN.PR01.PR12, DeviceObj)
-    External (_SB_.PCI0.EHC2.HUBN.PR01.PR13, DeviceObj)
     External (_SB_.PCI0.LPCB.HPET, DeviceObj)
     External (_SB_.PCI0.RP02, DeviceObj)
     External (_SB_.PCI0.RP04, DeviceObj)
     External (_SB_.PCI0.RP05, DeviceObj)
     External (_SB_.PCI0.RP07, DeviceObj)
     External (HPTC, IntObj)
-    External (SBV1, FieldUnitObj)
-    External (SBV2, FieldUnitObj)
-
-    Scope (\_SB.PCI0)
-    {
-        /* Example code (soon to be removed) */
-        Method (EHCN, 2, NotSerialized)
-        {
-            Name (T_0, Zero)
-            Store (ToInteger (Arg1), T_0)
-
-            If (LEqual (T_0, Zero))
-            {
-                Return (Buffer (One)
-                {
-                    0x07
-                })
-            }
-            ElseIf (LEqual (T_0, One))
-            {
-                If (LNotEqual (Arg0, 0xFF))
-                {
-                    Return (One)
-                }
-            }
-            ElseIf (LEqual (T_0, 0x02))
-            {
-                Return (Arg0)
-            }
-
-            Return (Zero)
-        }
-    }
 
     Scope (\_SB.PCI0.EHC2)
     {
@@ -86,52 +46,12 @@ DefinitionBlock ("ssdt.aml", "SSDT", 1, "APPLE ", "general", 0x00001000)
 
         Method (_DSM, 4, NotSerialized)
         {
-            /* Arg0 = 0xC6, 0xB7, 0xB5, 0xA0, 0x18, 0x13, 0x1C, 0x44, 0xB0, 0xC9, 0xFE, 0x69, 0x5E, 0xAF, 0x94, 0x9b
-
-            If (LEqual (Arg0, Buffer (0x10)
-                {
-                / * 0000 * /    0x8F, 0x70, 0xFC, 0xA5, 0x75, 0x87, 0xA6, 0x4B,
-                / * 0008 * /    0xBD, 0x0C, 0xBA, 0x90, 0xA1, 0xEC, 0x72, 0xF8
-                }))
-            { */
-                If (LEqual (Arg2, Zero))
-                {
-                    Return (Buffer (One) { 0x03 })
-                }
-
-                Return (RefOf (AAPL))
-            /* }
-			Else
-			{
-                If (LEqual (Arg2, Zero))
-                {
-                    Return (Buffer (One) { 0x03 })
-                }
-
-				Name (UUID, Zero)
-                ToBuffer (Arg0, UUID)
-                Return ( Package (0x02) { "UUID", UUID })
+            If (LEqual (Arg2, Zero))
+            {
+                Return (Buffer (One) { 0x03 })
             }
 
-            Return (Zero)  */
-        }
-    }
-
-    /* Example code (soon to be removed) */
-    Scope (\_SB.PCI0.EHC2.HUBN.PR01.PR12)
-    {
-        Method (_DSM, 4, Serialized)
-        {
-            Return (\_SB.PCI0.EHCN (SBV1, Arg2))
-        }
-    }
-
-    /* Example code (soon to be removed) */
-    Scope (\_SB.PCI0.EHC2.HUBN.PR01.PR13)
-    {
-        Method (_DSM, 4, Serialized)
-        {
-            Return (\_SB.PCI0.EHCN (SBV2, Arg2))
+            Return (RefOf (AAPL))
         }
     }
 
@@ -145,29 +65,6 @@ DefinitionBlock ("ssdt.aml", "SSDT", 1, "APPLE ", "general", 0x00001000)
             Name (_S3D, 0x03)
             Name (MBSD, One)
             Name (XHCN, One)
-
-            /*  Experimental code
-            Method (_DSM, 4, Serialized)
-            {
-                If (LEqual (Arg2, Zero))
-                {
-                    Return (Buffer (One) { 0x03 })
-                }
-
-                Return (Package (0x0A)
-                {
-                    "name",
-                    "pci8086,1e31",
-                    "device-id",
-                    Buffer(0x04) { 0x31, 0x1e, 0x00, 0x00 },
-                    "vendor-id",
-                    Buffer(0x04) { 0x86, 0x80, 0x00, 0x00 },
-                    "subsystem-id",
-                    Buffer(0x04) { 0x72, 0x70, 0x00, 0x00 },
-                    "subsystem-vendor-id",
-                    Buffer(0x04) { 0x86, 0x80, 0x00, 0x00 }
-                })
-            } */
         }
     }
 
@@ -238,29 +135,6 @@ DefinitionBlock ("ssdt.aml", "SSDT", 1, "APPLE ", "general", 0x00001000)
             Name (_S3D, 0x03)
             Name (MBSD, One)
             Name (XHCN, One)
-
-            /* Experimental code
-			Method (_DSM, 4, Serialized)
-            {
-                If (LEqual (Arg2, Zero))
-                {
-                    Return (Buffer (One) { 0x03 })
-                }
-
-                Return (Package (0x0A)
-                {
-                    "name",
-                    "pci8086,1e31",
-                    "device-id",
-                    Buffer(0x04) { 0x31, 0x1e, 0x00, 0x00 },
-                    "vendor-id",
-                    Buffer(0x04) { 0x86, 0x80, 0x00, 0x00 },
-                    "subsystem-id",
-                    Buffer(0x04) { 0x72, 0x70, 0x00, 0x00 },
-                    "subsystem-vendor-id",
-                    Buffer(0x04) { 0x86, 0x80, 0x00, 0x00 }
-                })
-            } */
         }
     }
 
@@ -303,42 +177,6 @@ DefinitionBlock ("ssdt.aml", "SSDT", 1, "APPLE ", "general", 0x00001000)
             }
 
             Return (RefOf (\_SB.PCI0.EHC2.AAPL))
-        }
-    }
-
-    /* Example code (soon to be removed) */
-    Scope (\_SB.PCI0.EHC1.HUBN.PR01.PR14)
-    {
-        Method (_DSM, 4, Serialized)
-        {
-            Return (\_SB.PCI0.EHCN (SBV1, Arg2))
-        }
-    }
-
-    /* Example code (soon to be removed) */
-    Scope (\_SB.PCI0.EHC1.HUBN.PR01.PR15)
-    {
-        Method (_DSM, 4, Serialized)
-        {
-            Return (\_SB.PCI0.EHCN (SBV2, Arg2))
-        }
-    }
-
-    /* Example code (soon to be removed) */
-    Scope (\_SB.PCI0.EHC1.HUBN.PR01.PR16)
-    {
-        Method (_DSM, 4, Serialized)
-        {
-            Return (\_SB.PCI0.EHCN (SBV1, Arg2))
-        }
-    }
-
-    /* Example code (soon to be removed) */
-    Scope (\_SB.PCI0.EHC1.HUBN.PR01.PR17)
-    {
-        Method (_DSM, 4, Serialized)
-        {
-            Return (\_SB.PCI0.EHCN (SBV2, Arg2))
         }
     }
 
