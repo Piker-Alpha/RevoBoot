@@ -532,6 +532,11 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
                 Return (BUF0)
             }
 
+            Device (MCHC)
+            {
+                Name (_ADR, Zero)
+            }
+
             Device (PEG0)
             {
                 Name (_ADR, 0x00010000)
