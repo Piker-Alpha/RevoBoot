@@ -21,6 +21,9 @@
 
 #define super IOService
 
+#define REPORT_MSRS			0
+#define REPORT_GPU_STATS	0
+
 extern "C" void mp_rendezvous_no_intrs(void (*action_func)(void *), void * arg);
 extern "C" int cpu_number(void);
 
@@ -32,8 +35,11 @@ private:
 	IOSimpleLock		*simpleLock;
 	IOWorkLoop			*workLoop;
 	IOTimerEventSource	*timerEventSource;
+
+#if REPORT_GPU_STATS
 	IOMemoryDescriptor	*memDescriptor;
 	IOMemoryMap			*memoryMap;
+#endif
 
 	IOReturn result		= kIOReturnSuccess;
 
@@ -64,4 +70,7 @@ OSDefineMetaClassAndStructors(AppleIntelCPUPowerManagementInfo, IOService)
 
 UInt8	gCPUModel	= 0x2A;
 UInt8	gCoreStates	= 0ULL;
-UInt8	* gMchbar	= NULL;
+
+#if REPORT_GPU_STATS
+	UInt8	* gMchbar	= NULL;
+#endif

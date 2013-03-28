@@ -133,8 +133,11 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 				IOLog("%d ", currentBit);
 			}
 		}
-		
+#if REPORT_GPU_STATS
 		IOLog("] GPU P-State [ %d ]\n", (UInt8)gMchbar[1]);
+#else
+		IOLog("]\n");
+#endif
 	}
 
 	loopLock = false;
@@ -173,13 +176,18 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 			{
 				this->registerService(0);
 
+				UInt64  msr = rdmsr64(MSR_IA32_PERF_STS);
+				gCoreMultipliers |= (1ULL << (msr >> 8));
+
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
 
 				gCPUModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
-				reportMSRs();
 
-				UInt64 msr = rdmsr64(MSR_PLATFORM_INFO);
+#if REPORT_MSRS
+				reportMSRs();
+#endif
+				msr = rdmsr64(MSR_PLATFORM_INFO);
 				gMinRatio = (UInt8)((msr >> 40) & 0xff);
 				IOLog("Low Frequency Mode : %d00 MHz\n", gMinRatio);
  
@@ -198,6 +206,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					IOLog("Max Frequency      : %d00 MHz\n", gMaxRatio);
 				}
 
+#if REPORT_GPU_STATS
 				/*
 				 * TODO: Pike, add check a to see if there is a GPU and if it is is enabled!
 				 */
@@ -232,7 +241,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				{
 					IOLog("Error: memDescriptor == NULL\n");
 				}
-
+#endif
 				timerEventSource->setTimeoutMS(1000);
 
 				return true;
@@ -271,6 +280,7 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 
 void AppleIntelCPUPowerManagementInfo::free()
 {
+#if REPORT_GPU_STATS
 	if (memoryMap)
 	{
 		memoryMap->release();
@@ -282,6 +292,7 @@ void AppleIntelCPUPowerManagementInfo::free()
 		memDescriptor->release();
 		memDescriptor = NULL;
 	}
+#endif
 
 	super::free();
 }
