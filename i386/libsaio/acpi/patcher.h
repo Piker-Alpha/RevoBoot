@@ -503,7 +503,7 @@ void setupACPI(void)
 		int newTableEntries = 0;
 
 		// Now wade through the custom table entries to see if they have been assigned already.
-		for (cti = 0; cti < 13; cti++)
+		for (cti = 0; cti < 14; cti++)
 		{
 			// We need an address so check it.
 			if (customTables[cti].table)
