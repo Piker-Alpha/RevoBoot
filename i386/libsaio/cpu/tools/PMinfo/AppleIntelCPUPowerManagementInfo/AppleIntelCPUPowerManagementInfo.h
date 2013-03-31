@@ -21,7 +21,7 @@
 
 #define super IOService
 
-#define REPORT_MSRS			0
+#define REPORT_MSRS			1
 #define REPORT_GPU_STATS	0
 
 extern "C" void mp_rendezvous_no_intrs(void (*action_func)(void *), void * arg);
