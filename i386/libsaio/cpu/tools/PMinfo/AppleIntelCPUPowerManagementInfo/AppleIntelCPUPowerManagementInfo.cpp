@@ -100,7 +100,8 @@ inline void getCStates(void *arg)
 
 IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 {
-	gCoreMultipliers |= (1ULL << (rdmsr64(MSR_IA32_PERF_STS) >> 8));
+	UInt8 currentMultiplier = (rdmsr64(MSR_IA32_PERF_STS) >> 8);
+	gCoreMultipliers |= (1ULL << currentMultiplier);
 
 	timerEventSource->setTimeoutTicks(Interval);
 
@@ -130,7 +131,14 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 			
 			if ((gTriggeredPStates & value) == value)
 			{
-				IOLog("%d ", currentBit);
+				if (currentBit == currentMultiplier)
+				{
+					IOLog("(%d) ", currentBit);
+				}
+				else
+				{
+					IOLog("%d ", currentBit);
+				}
 			}
 		}
 #if REPORT_GPU_STATS
