@@ -1370,14 +1370,14 @@ set -x
 function _initSandyBridgeSetup()
 {
 	case $boardID in
-		Mac-942B59F58194151B)
+		Mac-942B5BF58194151B)
 			gSystemType=1
 			gMacModelIdentifier="iMac12,1"
 			gACST_CPU0=13   # C1, C3 and C6
 			gACST_CPU1=7    # C1, C2 and C3
 			;;
 
-		Mac-942B5BF58194171B)
+		Mac-942B59F58194171B)
 			gSystemType=1
 			gMacModelIdentifier="iMac12,2"
 			gACST_CPU0=13   # C1, C3 and C6

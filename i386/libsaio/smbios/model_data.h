@@ -22,9 +22,11 @@
  *			- EFI_MODEL_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
  *			- Data for new MacBookPro and Macmini added (PikerAlpha, October 2012).
  *			- Data for iMac13,2 and MacBookPro9,2 added (PikerAlpha, October 2013).
+ *			- Typo in SMB_BOARD_PRODUCT for iMac12,n fixed (PikerAlpha, April 2013).
  *
  * Credits:
  *			- blackosx, DB1, dgsga, FKA, humph, scrax and STLVNUB (testers).
+ *			- 4D3K for iMac12,n SMB_BOARD_PRODUCT typos.
  */
 
 
@@ -40,12 +42,12 @@
 	#elif (TARGET_MODEL == IMAC_121)
 		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B1D.1110171110"
 		#define SMB_PRODUCT_NAME	"iMac12,1"
-		#define SMB_BOARD_PRODUCT	"Mac-942B59F58194151B"
+		#define SMB_BOARD_PRODUCT	"Mac-942B5BF58194151B"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '2', ',', '1' }
 	#elif (TARGET_MODEL == IMAC_122)
 		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B1D.1110171110"
 		#define SMB_PRODUCT_NAME	"iMac12,2"
-		#define SMB_BOARD_PRODUCT	"Mac-942B5BF58194171B"
+		#define SMB_BOARD_PRODUCT	"Mac-942B59F58194171B"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '2', ',', '2' }
 	#elif (TARGET_MODEL == IMAC_131)
 		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
