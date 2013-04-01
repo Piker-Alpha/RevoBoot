@@ -216,7 +216,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 
 #if REPORT_GPU_STATS
 				/*
-				 * TODO: Pike, add check a to see if there is a GPU and if it is is enabled!
+				 * TODO: Pike, add check a to see if there is a GPU and if it is enabled!
 				 */
 				IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
 				memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionIn);
