@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.8 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 5.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -131,14 +131,14 @@ gDestinationPath="/Extra/"
 gDestinationFile="ssdt.aml"
 
 #
-# A value of 1 will make this script call iasl (compiles SSDT_PR.dsl)
+# A value of 1 will make this script call iasl (compiles ssdt_pr.dsl)
 #
 # Note: Will be set to 0 when we failed to locate a copy of iasl!
 #
 let gCallIasl=1
 
 #
-# A value of 1 will make this script open SSDT_PR.dsl in the editor of your choice. 
+# A value of 1 will make this script open ssdt_pr.dsl in the editor of your choice.
 #
 let gCallOpen=0
 
@@ -161,7 +161,7 @@ gProcLabel="CPU"
 # Other global variables.
 #
 
-gScriptVersion=5.8
+gScriptVersion=5.9
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1883,12 +1883,12 @@ _findIasl
 
 if (($gCallIasl)); then
     #
-    # Compile SSDT.dsl
+    # Compile ssdt.dsl
     #
     "$iasl" $gSsdtPR
 
     #
-    # Copy SSDT_PR.aml to /Extra/SSDT.aml (example)
+    # Copy ssdt_pr.aml to /Extra/ssdt.aml (example)
     #
     if (($gAutoCopy)); then
         if [ -f ${gPath}/${gSsdtID}.aml ]; then
