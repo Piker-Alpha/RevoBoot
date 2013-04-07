@@ -708,7 +708,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 													// Initialize with the first bootable volume.
 													gPlatform.BootVolume = gPlatform.RootVolume = bvr;
 
-													_DISK_DEBUG_DUMP("Init B/RootVolume - partition: %d, flags: %d, gptID: %d\n", bvr->part_no, bvr->flags, gptID);
+													_DISK_DEBUG_DUMP("Init Boot/RootVolume - partition: %d, flags: %d, gptID: %d\n", bvr->part_no, bvr->flags, gptID);
 												}
 
 												// Bail out after finding the first System Volume.
