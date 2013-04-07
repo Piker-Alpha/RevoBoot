@@ -27,6 +27,8 @@
  *			- White space changes (PikerAlpha, November 2012).
  *			- Now checking malloc returns (PikerAlpha, November 2012).
  *			- Cleanups, kTagTypeData support and NVRAMstorage reading changes (PikerAlpha, November 2012).
+ *			- Renamed LION_INSTALL_SUPPORT to INSTALL_ESD_SUPPORT (PikerAlpha, April 2013).
+ *			- Stripped (unnecessary) argument from loadSystemConfig (PikerAlpha, April 2013).
  *
  */
 
@@ -363,7 +365,7 @@ long loadConfigFile(const char * configFile, config_file_t *config)
 
 //==============================================================================
 
-long loadSystemConfig(config_file_t *config)
+long loadCABootPlist(void)
 {
 	long retValue = (long) EFI_OUT_OF_RESOURCES;
 
@@ -373,7 +375,7 @@ long loadSystemConfig(config_file_t *config)
 		"com.apple.recovery.boot",
 #endif
 
-#if LION_INSTALL_SUPPORT
+#if INSTALL_ESD_SUPPORT
 		".IABootFiles",
 		"OS X Install Data",
 		"Mac OS X Install Data",
@@ -398,11 +400,31 @@ long loadSystemConfig(config_file_t *config)
 	{
 		int i = 0;
 		int len = (sizeof(dirspec) / sizeof(dirspec[0]));
-
+#if INSTALL_ESD_SUPPORT
+		int start = 0;
+		int end = 3;
+	#if LION_RECOVERY_SUPPORT
+		start++;
+		end++;
+	#endif
+#endif
 		for (; i < len; i++)
 		{
+			bzero(path, 80);
 			sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
-			retValue = loadConfigFile(path, config);
+			retValue = loadConfigFile(path, &bootInfo->bootConfig);
+			
+			if (retValue == EFI_SUCCESS)
+			{
+#if INSTALL_ESD_SUPPORT
+				if (i > start && i < end)
+				{
+					// Installation data directory located
+					gPlatform.BootVolume->flags = kBVFlagInstallVolume;
+				}
+#endif
+				break;
+			}
 		}
 
 		free (path);
