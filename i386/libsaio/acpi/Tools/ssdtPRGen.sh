@@ -64,6 +64,7 @@
 #			- Bug fix, overriding the cpu type displayed the wrong name (Jeroen, March 2013)
 #			- Automatic detection of CPU scopes added (Pike, March 2013)
 #			- Show warnings for Sandy Bridge systems as well (Jeroen, March 2013)
+#			- New Intel Haswell processors added (Jeroen, April 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -127,7 +128,7 @@ gDestinationPath="/Extra/"
 #
 # This is the filename used for the copy process
 #
-gDestinationFile="SSDT.aml"
+gDestinationFile="ssdt.aml"
 
 #
 # A value of 1 will make this script call iasl (compiles SSDT_PR.dsl)
@@ -169,7 +170,7 @@ gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 #
 
 gPath=~/Desktop
-gSsdtID="SSDT_PR"
+gSsdtID="ssdt_pr"
 gSsdtPR="${gPath}/${gSsdtID}.dsl"
 
 let gDesktopCPU=1
@@ -442,6 +443,10 @@ gServerHaswellCPUList=(
 )
 
 gDesktopHaswellCPUList=(
+# Socket 2011 (Premium Power)
+i7-4960K,130,0,3600,4000,6,12
+i7-4930K,130,0,3400,3900,6,12
+i5-4820K,130,0,3700,3900,4,8
 # Socket 1150 (Standard Power)
 i7-4770K,84,00,3500,3900,4,8
 i7-4770,84,0,3400,3900,4,8
@@ -461,6 +466,9 @@ i5-4430S,65,0,2700,3200,4,4
 )
 
 gMobileHaswellCPUList=(
+i7-4930MX,57,0,3000,3900,4,8
+i7-4900MQ,47,0,2800,3800,4,8
+i7-4800MQ,47,0,2700,3700,4,8
 )
 
 #--------------------------------------------------------------------------------
@@ -599,7 +607,7 @@ function _printScopeStart()
         let extraF=($maxTurboFrequency+1)
         let maxTDP=($gTdp*1000)
         let extraR=($maxTurboFrequency/100)+1
-        echo '            /* Workaround for Ivy Bridge PM bug */'                       >> $gSsdtPR
+        echo "            /* Workaround for the Ivy Bridge PM 'bug' */"                 >> $gSsdtPR
       printf "            Package (0x06) { 0x%04X, 0x%06X, 0x0A, 0x0A, 0x%02X00, 0x%02X00 },\n" $extraF $maxTDP $extraR $extraR >> $gSsdtPR
     fi
 }
@@ -971,7 +979,6 @@ function _getModelName()
     # Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
     #
     echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
-#   echo "iMac13,2"
 }
 
 #--------------------------------------------------------------------------------
@@ -1010,7 +1017,7 @@ function _updateProcessorNames()
     if [[ $1 -gt ${#gProcessorNames[@]} ]]; then
         echo -e "\nWarning: Target CPU has $gLogicalCPUs logical cores, the running system only ${#gProcessorNames[@]}"
         echo    "         Now using '$label' to extent the current range to $gLogicalCPUs..."
-        echo -e "         You may want to check/verify the generated DSDT_PR.dsl\n"
+        echo -e "         You may want to check/verify the generated $gSsdtID.dsl\n"
     fi
 
     let currentCPU=0
@@ -1032,7 +1039,7 @@ function _updateProcessorNames()
 
 #--------------------------------------------------------------------------------
 
-function _getScope()
+function _getProcessorScope()
 {
     let procNameFound=0
     local names=($(ioreg -p IOACPIPlane -d 3 | sed -e 's/<.*>//g' -e 's/.*o //g'))
@@ -1629,7 +1636,9 @@ function main()
 
     _getBoardID
     _getProcessorNames
-    _getScope
+    #
+    # _getProcessorScope (work in progress)
+    #
 
     local modelID=$(_getModelName)
     local cpu_type=$(_getCPUtype)
