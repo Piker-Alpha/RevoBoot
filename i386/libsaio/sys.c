@@ -437,25 +437,21 @@ int open(const char * path, int flags)
 	const char *	filePath;
 	BVRef			bvr;
 
-	// Locate a free descriptor slot.
-
-	for (fdesc = 0; fdesc < NFILES; fdesc++)
+	// Resolve the boot volume (once per call) from the file spec.
+	if ((bvr = getBootVolumeRef(path, &filePath)) != NULL)
 	{
-		if (iob[fdesc].i_flgs == 0)
+		// Locate a free descriptor slot.
+		for (fdesc = 0; fdesc < NFILES; fdesc++)
 		{
-			io = &iob[fdesc];
-			bzero(io, sizeof(*io));
-			
-			// Mark the descriptor as taken.
-			
-			io->i_flgs = F_ALLOC;
-			
-			// Resolve the boot volume from the file spec.
-			
-			if ((bvr = getBootVolumeRef(path, &filePath)) != NULL)
+			if (iob[fdesc].i_flgs == 0)
 			{
-				// Find the next available memory block in the download buffer.
+				io = &iob[fdesc];
+				bzero(io, sizeof(*io));
 			
+				// Mark the descriptor as taken.
+				io->i_flgs = F_ALLOC;
+
+				// Find the next available memory block in the download buffer.
 				io->i_buf = (char *) LOAD_ADDR;
 			
 				for (i = 0; i < NFILES; i++)
@@ -469,7 +465,6 @@ int open(const char * path, int flags)
 				}
 			
 				// Load entire file into memory. Unnecessary open() calls must be avoided.
-
 				gFSLoadAddress = io->i_buf;
 				io->i_filesize = bvr->fs_loadfile(bvr, (char *)filePath);
 			
@@ -478,15 +473,16 @@ int open(const char * path, int flags)
 					return fdesc;
 				}
 			}
+
+			close(fdesc);
 		}
-	}
 #if DEBUG
-	if (fdesc == NFILES)
-	{
-		stop("Out of file descriptors");
-	}
+		if (fdesc == NFILES)
+		{
+			stop("Out of file descriptors");
+		}
 #endif
-	close(fdesc);
+	}
 
 	return -1;
 }
@@ -933,10 +929,9 @@ BVRef getTargetRootVolume(char *rootUUID)
 				// Traverse back from the last to the first partition in the chain.
 				for (bvr = chain; bvr; bvr = bvr->next)
 				{
-					if ((bvr->biosdev == hdIndex) && (bvr->flags & kBVFlagSystemVolume))
+					if ((bvr->biosdev == hdIndex)) && ((bvr->flags & kBVFlagSystemVolume) || (bvr->flags & kBVFlagInstallVolume))
 					{
-						if ((bvr->flags & kBVFlagSystemVolume) &&
-							(bvr->fs_getuuid(bvr, rootUUID) == EFI_SUCCESS))
+						if ((bvr->flags & kBVFlagSystemVolume) && (bvr->fs_getuuid(bvr, rootUUID) == EFI_SUCCESS))
 						{
 							return bvr;
 						}
