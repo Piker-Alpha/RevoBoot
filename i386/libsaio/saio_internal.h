@@ -25,6 +25,7 @@
  *
  *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
  *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
+ *			- Stripped (unnecessary) argument from loadSystemConfig (PikerAlpha, April 2013).
  *
  */
 
@@ -167,7 +168,7 @@ extern bool		getValueForKey(const char *key, const char **val, int *size, config
 extern bool		getBoolForKey(const char *key, bool *val, config_file_t *configBuff);
 extern bool		getIntForKey(const char *key, int *val, config_file_t *configBuff);
 extern long		loadConfigFile(const char *configFile, config_file_t *configBuff);
-extern long		loadSystemConfig(config_file_t *configBuff);
+extern long		loadCABootPlist(void);
 extern char		* getNextArg(char ** ptr, char * val);
 extern long		ParseXMLFile(char * buffer, TagPtr * dict);
 
