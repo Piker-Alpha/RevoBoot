@@ -86,13 +86,14 @@
 #define HIB_LEN				0x00060000L							// Size: 384 KB.
 
 //							0x000A0000L
-#define VIDEO_ADDR			(HIB_ADDR + HIB_LEN)					// Unusable space.
+#define VIDEO_ADDR			(HIB_ADDR + HIB_LEN)				// Unusable space.
 #define VIDEO_LEN			0x00060000L							// Size: 384 KB.
 
 //							0x00100000L
-#define KERNEL_ADDR			(VIDEO_ADDR + VIDEO_LEN)				// Kernel and MKexts/drivers.
+#define KERNEL_ADDR			(VIDEO_ADDR + VIDEO_LEN)			// Kernel and MKexts/drivers.
 #define KERNEL_LEN			0x04000000L							// Size: 64 MB (128 MB for Chameleon).
-
+																//
+																// Note: Can cause a stop("Kernel overflows available space")
 // Based on KERNEL_LEN		0x04100000L
 #define ZALLOC_ADDR			(KERNEL_ADDR + KERNEL_LEN)			// Zalloc area.
 #define ZALLOC_LEN			0x10000000L							// Size: 256 MB.
@@ -106,7 +107,7 @@
 #define PREBOOT_DATA		(LOAD_ADDR + LOAD_LEN)				// Room for a 195 MB RAM disk image (with 512 MB System Memory).
 
 
-#define TFTP_ADDR			LOAD_ADDR							// TFTP download buffer (not used in Revolution).
+#define TFTP_ADDR			LOAD_ADDR							// TFTP download buffer (not used in RevoBoot).
 #define TFTP_LEN			LOAD_LEN
 
 
@@ -120,17 +121,17 @@
 #define vtop(vaddr)			((vaddr) + MEMBASE)
 
 // Extract segment/offset from a linear address.
-#define OFFSET16(addr)    ((addr) - BASE_ADDR)
-#define OFFSET(addr)      ((addr) & 0xFFFF)
-#define SEGMENT(addr)     (((addr) & 0xF0000) >> 4)
+#define OFFSET16(addr)		((addr) - BASE_ADDR)
+#define OFFSET(addr)		((addr) & 0xFFFF)
+#define SEGMENT(addr)		(((addr) & 0xF0000) >> 4)
 
 /*
  * Extract segment/offset in normalized form so that the resulting far pointer
  * will point to something that is very unlikely to straddle a segment.
  * This is sometimes known as a "huge" pointer.
  */
-#define NORMALIZED_OFFSET(addr)      ((addr) & 0x000F)
-#define NORMALIZED_SEGMENT(addr)     (((addr) & 0xFFFF0) >> 4)
+#define NORMALIZED_OFFSET(addr)		((addr) & 0x000F)
+#define NORMALIZED_SEGMENT(addr)	(((addr) & 0xFFFF0) >> 4)
 
 // We need a minimum of 32MB of system memory.
 #define MIN_SYS_MEM_KB  (32 * 1024)
