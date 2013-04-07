@@ -94,9 +94,12 @@ void generateSSDT_PR(void)
 #endif
 
 #if AUTOMATIC_PROCESSOR_BLOCK_CREATION
-	uint8_t SCOPE_PR[] =							// Scope (\_PR) { }
+	uint8_t SCOPE_PR[] =							// Scope (\_PR_) { }
 	{
 		/* 0000 */	0x10, 0xFF, 0xFF, 0x5C, 0x5F, 0x50, 0x52, 0x5F
+
+		/* 0000 * /	0x10, 0xFF, 0xFF, 0x5C, 0x2E, 0x5F, 0x50, 0x52
+		/ *0008 * /	0x5F */
 	};
 
 	uint8_t PROCESSOR_DEF_BLOCK[] =
