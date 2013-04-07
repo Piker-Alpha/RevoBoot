@@ -48,6 +48,8 @@
  *			- Optionally include Recovery HD support code (PikerAlpha, November 2012).
  *			- Fixed clang compilation (PikerAlpha, November 2012).
  *			- Unused sysConfigValid removed and white space fix (PikerAlpha, November 2012).
+ *			- Fixed boot failure for InstallESD/BaseSystem.dmg/patched kernelcache (PikerAlpha, April 2013).
+ *			- Renamed LION_INSTALL_SUPPORT to INSTALL_ESD_SUPPORT (PikerAlpha, April 2013).
  *
  */
 
@@ -88,7 +90,7 @@ unsigned long Adler32(unsigned char *buf, long len)
 		k = len < NMAX ? len : NMAX;
 		len -= k;
 
-        while (k >= 16)
+		while (k >= 16)
 		{
 			DO16(buf);
 			buf += 16;
@@ -122,7 +124,7 @@ static void zeroBSS()
 	extern int  _DATA_bss__end		__asm("section$end$__DATA$__bss");
 	extern int  _DATA_common__start	__asm("section$start$__DATA$__common");
 	extern int  _DATA_common__end	__asm("section$end$__DATA$__common");
-    
+
 	bzero(&_DATA_bss__start, (&_DATA_bss__end - &_DATA_bss__start));
 	bzero(&_DATA_common__start, (&_DATA_common__end - &_DATA_common__start));
 }
@@ -135,13 +137,13 @@ static void zeroBSS()
 #if SAFE_MALLOC
 static void mallocError(char *addr, size_t size, const char *file, int line)
 {
-    stop("\nMemory allocation error! Addr=0x%x, Size=0x%x, File=%s, Line=%d\n", (unsigned)addr, (unsigned)size, file, line);
+	stop("\nMemory allocation error! Addr=0x%x, Size=0x%x, File=%s, Line=%d\n", (unsigned)addr, (unsigned)size, file, line);
 }
 #else
 static void mallocError(char *addr, size_t size)
 {
-    printf("\nMemory allocation error (0x%x, 0x%x)\n", (unsigned)addr, (unsigned)size);
-    asm volatile ("hlt");
+	printf("\nMemory allocation error (0x%x, 0x%x)\n", (unsigned)addr, (unsigned)size);
+	asm volatile ("hlt");
 }
 #endif
 
@@ -151,11 +153,11 @@ static void mallocError(char *addr, size_t size)
 
 void boot(int biosdev)
 {
-    zeroBSS();
-    mallocInit(0, 0, 0, mallocError);
+	zeroBSS();
+	mallocInit(0, 0, 0, mallocError);
 
 #if MUST_ENABLE_A20
-    // Enable A20 gate before accessing memory above 1 MB.
+	// Enable A20 gate before accessing memory above 1 MB.
 	if (fastEnableA20() != 0)
 	{
 		enableA20(); // Fast enable failed. Try legacy method.
@@ -256,10 +258,6 @@ void boot(int biosdev)
 	}
 #endif // #if STARTUP_DISK_SUPPORT
 
-	#define loadCABootPlist() loadSystemConfig(&bootInfo->bootConfig)
-
-	// Loading: /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
-	// TODO: Check if everything works <i>without</i> having this plist.
 	if (loadCABootPlist() == EFI_SUCCESS)
 	{
 		_BOOT_DEBUG_DUMP("com.apple.Boot.plist located.\n");
@@ -315,32 +313,22 @@ void boot(int biosdev)
 					// Yes. Copy its value into rootUUID.
 					strlcpy(rootUUID, val, 37);
 				}
-			}
-		}
+#if INSTALL_ESD_SUPPORT
+				if (getValueForBootKey(kernelFlags, "container-dmg", &val, &length) &&
+					getValueForBootKey(kernelFlags, "root-dmg", &val, &length))
+				{
+					_BOOT_DEBUG_DUMP("Target container-dmg/root-dmg=%s\n", val);
 
-#if PRE_LINKED_KERNEL_SUPPORT
-		/* Look for 'Kernel Cache' key. */
-		if (getValueForKey(kKernelCacheKey, &val, &length, &bootInfo->bootConfig))
-		{
-			_BOOT_DEBUG_DUMP("Kernel Cache set to: %s\n", val);
-
-			// Key found. Check if the given filepath/name exists.
-			if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
-			{
-				// File located. Init kernelCacheFile so that we can use it as boot file.
-				gPlatform.KernelCachePath = strdup(val);
-
-				// Set flag to inform the load process to skip parts of the code.
-				gPlatform.KernelCacheSpecified = true;
-
-				_BOOT_DEBUG_DUMP("kernelcache file found.\n");
-			}
-
-			_BOOT_DEBUG_ELSE_DUMP("Error: kernelcache file not found.\n");
-		}
-
-		// _BOOT_DEBUG_ELSE_DUMP("No 'Kernel Cache' key given.\n");
+					gPlatform.BootVolume->flags |= kBVFlagInstallVolume;
+				}
+				else
+				{
+					gPlatform.BootVolume->flags = ~kBVFlagInstallVolume;
+				}
 #endif
+			}
+		}
+
 		/* Enable touching of a single BIOS device by setting 'Scan Single Drive' to yes.
 		if (getBoolForKey(kScanSingleDriveKey, &gScanSingleDrive, &bootInfo->bootConfig) && gScanSingleDrive)
 		{
@@ -351,7 +339,7 @@ void boot(int biosdev)
 	{
 		_BOOT_DEBUG_DUMP("No com.apple.Boot.plist found.\n");
 	}
-	
+
 	// Was a target drive (per UUID) specified in com.apple.Boot.plist?
 	if (rootUUID[0] == '\0')
 	{
@@ -368,7 +356,16 @@ void boot(int biosdev)
 				_BOOT_DEBUG_DUMP("Success [%s]\n", rootUUID);
 			}
 		}
-		else // Booting from USB-stick or SDboot media.
+		else if (gPlatform.BootVolume->flags & kBVFlagInstallVolume)
+		{
+			_BOOT_DEBUG_DUMP("Booting from a disk image in the installation directory\n");
+
+			if (HFSGetUUID(gPlatform.BootVolume, rootUUID) == EFI_SUCCESS)
+			{
+				_BOOT_DEBUG_DUMP("Success [%s]\n", rootUUID);
+			}
+		}
+		else // Booting from USB-stick or SDboot media
 		{
 			_BOOT_DEBUG_DUMP("Booting from a Non System Volume, getting UUID.\n");
 
@@ -403,23 +400,39 @@ void boot(int biosdev)
 	 * non-default system setting and thus is this the place to update our EFI tree.
 	 */
 
-    updateEFITree(rootUUID);
+	updateEFITree(rootUUID);
 
 	if (haveCABootPlist) // Check boolean before doing more time consuming tasks.
 	{
+#if PRE_LINKED_KERNEL_SUPPORT
+		if (getValueForKey(kKernelCacheKey, &val, &length, &bootInfo->bootConfig))
+		{
+			if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
+			{
+				_BOOT_DEBUG_DUMP("Kernel Cache set to: %s\n", val);
+
+				// File located. Init kernelCacheFile so that we can use it as boot file.
+				gPlatform.KernelCachePath = strdup(val);
+				
+				// Set flag to inform the load process to skip parts of the code.
+				gPlatform.KernelCacheSpecified = true;
+			}
+		}
+		// _BOOT_DEBUG_ELSE_DUMP("No 'Kernel Cache' key given.\n");
+#endif
 		if (getBoolForKey(kQuietBootKey, &quietBootMode, &bootInfo->bootConfig) && !quietBootMode)
 		{
 			gBootMode = kBootModeNormal; // Reversed from: gBootMode |= kBootModeQuiet;
 		}
 	}
 
-    // Parse args, load and start kernel.
-    while (1)
-    {
+	// Parse args, load and start kernel.
+	while (1)
+	{
 		// Initialize globals.
-		gErrors        = 0;
+		gErrors			= 0;
 
-		int retStatus = -1;
+		int retStatus	= -1;
 
 		uint32_t adler32 = 0;
 
