@@ -211,7 +211,8 @@ enum
 	kBVFlagBootable			= 0x08,
 	kBVFlagEFISystem		= 0x10,
 	kBVFlagBooter			= 0x20,
-	kBVFlagSystemVolume		= 0x40
+	kBVFlagSystemVolume		= 0x40,
+	kBVFlagInstallVolume    = 0x80
 };
 
 enum
