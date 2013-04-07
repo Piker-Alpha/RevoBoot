@@ -33,6 +33,7 @@
  *			- Always inject SMB_BOARD_SERIAL_NUMBER, required for iMessage (PikerAlpha, January 2013).
  *			- New compiler directives in EFI section added (PikerAlpha, January 2013).
  *			- STATIC_SYSTEM_ID renamed to SMB_STATIC_SYSTEM_UUID and moved to SMBIOS section (PikerAlpha, January 2013).
+ *			- Renamed LION_INSTALL_SUPPORT to INSTALL_ESD_SUPPORT (PikerAlpha, April 2013).
  *
  */
 
@@ -355,7 +356,7 @@
 
 //------------------------------------------------------------ STRINGTABLE.H ----------------------------------------------------------------
 
-#define LION_INSTALL_SUPPORT				0	// Set to 0 by default. Setting this to 1 will make RevoBoot search in specific directories
+#define INSTALL_ESD_SUPPORT					0	// Set to 0 by default. Setting this to 1 will make RevoBoot search in specific directories
 												// for com.apple.Boot.plist – required for Mac like Lion OS X installations.
 												
 //-------------------------------------------------------------- SMBIOS.C ------------------------------------------------------------------
