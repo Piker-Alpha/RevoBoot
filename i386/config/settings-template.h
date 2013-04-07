@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Master Chief. All rights reserved.
  *
- * Note: This is an essential part of the build process for RevoBoot v1.5.38 and greater.
+ * Note: This is an essential part of the build process for RevoBoot v1.5.39 and greater.
  *
  * Updates:
  *
