@@ -929,7 +929,7 @@ BVRef getTargetRootVolume(char *rootUUID)
 				// Traverse back from the last to the first partition in the chain.
 				for (bvr = chain; bvr; bvr = bvr->next)
 				{
-					if ((bvr->biosdev == hdIndex)) && ((bvr->flags & kBVFlagSystemVolume) || (bvr->flags & kBVFlagInstallVolume))
+					if ((bvr->biosdev == hdIndex) && ((bvr->flags & kBVFlagSystemVolume) || (bvr->flags & kBVFlagInstallVolume)))
 					{
 						if ((bvr->flags & kBVFlagSystemVolume) && (bvr->fs_getuuid(bvr, rootUUID) == EFI_SUCCESS))
 						{
