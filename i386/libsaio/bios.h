@@ -90,7 +90,7 @@ typedef struct
 #define BASE_HD_DRIVE				0x80
 
 /* 
- * Used in saio_types.h and in StringTable.c (function loadSystemConfig).
+ * Used in saio_types.h and in StringTable.c (function loadCABootPlist).
  */
 
 #define IO_CONFIG_DATA_SIZE			4096
