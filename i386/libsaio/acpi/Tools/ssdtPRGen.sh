@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 5.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 6.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -65,6 +65,7 @@
 #			- Automatic detection of CPU scopes added (Pike, March 2013)
 #			- Show warnings for Sandy Bridge systems as well (Jeroen, March 2013)
 #			- New Intel Haswell processors added (Jeroen, April 2013)
+#			- Improved Processor declaration detection (Jeroen/Pike, April 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -114,12 +115,12 @@
 let gIvyWorkAround=1
 
 #
-# Asks for your confirmation to copy SSDT_PR.aml to /Extra/SSDT.aml (example)
+# Asks for your confirmation to copy ssdt_pr.aml to /Extra/ssdt.aml (example)
 #
 let gAutoCopy=1
 
 #
-# This is the target location that SSDT.aml will be copied to.
+# This is the target location that ssdt.aml will be copied to.
 #
 # Note: Do no change this - will be updated automatically for Clover/RevoBoot!
 #
@@ -158,10 +159,15 @@ let gBaseFrequency=1600
 gProcLabel="CPU"
 
 #
+# This is the default (ACPI 1.0 compliant) processor scope (verified by _getProcessorScope).
+#
+gScope="\_PR_"
+
+#
 # Other global variables.
 #
 
-gScriptVersion=5.9
+gScriptVersion=6.0
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -203,6 +209,7 @@ let TARGET_CPU_ERROR=4
 let PROCESSOR_NUMBER_ERROR=5
 let PROCESSOR_LABEL_LENGTH_ERROR=6
 let PROCESSOR_NAMES_ERROR=7
+let PROCESSOR_DECLARATION_ERROR=8
 
 #
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
@@ -1041,23 +1048,17 @@ function _updateProcessorNames()
 
 function _getProcessorScope()
 {
-    let procNameFound=0
-    local names=($(ioreg -p IOACPIPlane -d 3 | sed -e 's/<.*>//g' -e 's/.*o //g'))
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 | egrep -o 'DSDT"=<[0-9a-f]+5b830b') ]]; then
+        printf 'Processor Declaration(s) Found in DSDT'
+    fi
 
-    for name in ${names[@]}
-    do
-        if [[ $name == "_SB" && $procNameFound -eq 0 ]]; then
-#           echo 'Using: Scope (\_SB.'${gProcessorNames[0]}') etc.'
-            gScope="\_SB"
-            return
-        fi
-
-        if [[ "${name:0:3}" == ${gProcessorNames[0]:0:3} ]]; then
-#           echo 'Using: Scope (\_PR.'${gProcessorNames[0]}') etc.'
-            gScope="\_PR"
-            let procNameFound=1
-        fi
-    done
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 | egrep -o 'DSDT"=<[0-9a-f]+5f50525f') ]];
+        then
+            gScope="\_PR_"
+            echo ' (ACPI 1.0 compliant)'
+        else
+            gScope="\_SB_"
+    fi
 }
 
 #--------------------------------------------------------------------------------
@@ -1549,6 +1550,9 @@ function _exitWithError()
         7) echo -e "\nError: Processor label not found... exiting\n" 1>&2
            exit 7
            ;;
+        8) echo -e "\nError: Processor Declaration not found... exiting\n" 1>&2
+           exit 8
+           ;;
         *) exit 1
            ;;
     esac
@@ -1636,9 +1640,7 @@ function main()
 
     _getBoardID
     _getProcessorNames
-    #
-    # _getProcessorScope (work in progress)
-    #
+    _getProcessorScope
 
     local modelID=$(_getModelName)
     local cpu_type=$(_getCPUtype)
