@@ -197,21 +197,21 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 #endif
 				msr = rdmsr64(MSR_PLATFORM_INFO);
 				gMinRatio = (UInt8)((msr >> 40) & 0xff);
-				IOLog("Low Frequency Mode : %d00 MHz\n", gMinRatio);
+				IOLog("AICPUPMI: Low Frequency Mode : %d00 MHz\n", gMinRatio);
  
 				gClockRatio = (UInt8)((msr >> 8) & 0xff);
-				IOLog("Clock Speed        : %d00 MHz\n", gClockRatio);
+				IOLog("AICPUPMI: Clock Speed        : %d00 MHz\n", gClockRatio);
 
 				if (!((rdmsr64(IA32_MISC_ENABLES) >> 32) & 0x40))	// Turbo Mode Enabled?
 				{
 					msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
 					gMaxRatio = (UInt8)(msr & 0xff);
-					IOLog("Max Turbo Frequency: %d00 MHz\n", gMaxRatio);
+					IOLog("AICPUPMI: Max Turbo Frequency: %d00 MHz\n", gMaxRatio);
 				}
 				else
 				{
 					gMaxRatio = gClockRatio;
-					IOLog("Max Frequency      : %d00 MHz\n", gMaxRatio);
+					IOLog("AICPUPMI: Max Frequency      : %d00 MHz\n", gMaxRatio);
 				}
 
 #if REPORT_GPU_STATS
@@ -230,14 +230,14 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 						if (memoryMap != NULL)
 						{
 							gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
-							IOLog("Graphics Core Ratios:\n");
-							IOLog("Current Ratio       : 0x%02x\n", (UInt8)gMchbar[1]);
-							IOLog("Max Non-Turbo Ratio : 0x%02x\n", (UInt8)gMchbar[0x51]);
-							IOLog("Max Turbo Ratio     : 0x%02x\n", (UInt8)gMchbar[0x50]);
+							IOLog("AICPUPMI: Graphics Core Ratios:\n");
+							IOLog("AICPUPMI: Current Ratio       : 0x%02x\n", (UInt8)gMchbar[1]);
+							IOLog("AICPUPMI: Max Non-Turbo Ratio : 0x%02x\n", (UInt8)gMchbar[0x51]);
+							IOLog("AICPUPMI: Max Turbo Ratio     : 0x%02x\n", (UInt8)gMchbar[0x50]);
 						}
 						else
 						{
-							IOLog("Error: memoryMap == NULL\n");
+							IOLog("AICPUPMI: Error: memoryMap == NULL\n");
 						}
 					}
 					else
