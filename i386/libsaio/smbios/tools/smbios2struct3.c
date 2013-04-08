@@ -101,7 +101,7 @@ char tableDescriptions[134][36] =
 	/* 129 */ "",
 	/* 130 */ "Memory SPD Data",
 	/* 131 */ "OEM Processor Type",
-	/* 132 */ "OEM Processor Bus Speed"
+	/* 132 */ "OEM Processor Bus Speed",
 	/* 133 */ "OEM Platform Feature"
 };
 
