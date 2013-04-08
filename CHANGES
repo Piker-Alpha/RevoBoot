@@ -4,6 +4,18 @@ RevoBoot v1.5.40 (Next Major Release)
 - Improved P-State generation (less settings).
 
 
+RevoBoot v1.5.39
+================
+- Fixed boot failure for InstallESD/BaseSystem.dmg/patched kernelcache (Piker, April 2013).
+- LION_INSTALL_SUPPORT renamed to INSTALL_ESD_SUPPORT (Piker, April 2013).
+- Stripped (unnecessary) argument from loadSystemConfig (Pike, April 2013).
+- Renamed function loadSystemConfig to loadCABootPlist (Pike, April 2013).
+- Simplified search for and read of com.apple.Boot.plist (Pike, April 2013).
+- Board ID's for iMac12,n fixed (Jeroen, April 2013).
+- Settings template updated (Pike, April 2013).
+- VERSION updated to v1.5.39
+
+
 RevoBoot v1.5.38
 ================
 - RevoBoot/i386/libsaio/efi.c modified to workaround iMessage login/registration problems (PikerAlpha, January 2013).
