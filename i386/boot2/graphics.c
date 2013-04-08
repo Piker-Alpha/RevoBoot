@@ -307,29 +307,28 @@ long initGraphicsMode()
 {
 	unsigned long params[4];
 
-	int count = getNumberArrayFromProperty(kGraphicsModeKey, params, 4);
-
-#if DEBUG
-	printf("\nwidth: %d  height: %d  depth: %d\n", params[0], params[1], params[2]);
-#endif
+	params[2] = 32; // Default depth
+	params[3] = 0;
 
 	//  Do we have a "Graphics Mode" property in com.apple.Boot.plist?
-	if (count < 3)
+	if (getNumberArrayFromProperty(kGraphicsModeKey, params, 4) < 3)
 	{
 #if USE_STATIC_DISPLAY_RESOLUTION
 		params[0] = DEFAULT_SCREEN_WIDTH;
 		params[1] = DEFAULT_SCREEN_HEIGHT;
 #else
-		unsigned long resolutionCombo = getResolutionFromEDID();
-		printf("EDID width :%l\n", resolutionCombo);
-		/* params[0] = */ printf("EDID width :%l\n", (resolutionCombo << 16));
-		/* params[1] = */ printf("EDID height:%l\n", (resolutionCombo & 0xFFF));
-		// sleep(15);
+		UInt32 resolutionCombo = getResolutionFromEDID();
+	#if DEBUG_BOOT_GRAPHICS
+		printf("EDID resolution (0x%04x)\n", resolutionCombo);
+	#endif
+		params[0] = (resolutionCombo >> 16);
+		params[1] = (resolutionCombo & 0xFFFF);
+	#if DEBUG_BOOT_GRAPHICS
+		printf("Width: %d, Height: %d, Depth: %d\n", params[0], params[1], params[2]);
+		sleep(10);
+	#endif
 #endif
 	}
-
-	params[2] = 32; // Don't bother. Use the de facto standard.
-	params[3] = 0;
 
 	return setVESAGraphicsMode(params[0], params[1], params[2], 0);
 }

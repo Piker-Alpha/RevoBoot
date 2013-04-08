@@ -134,7 +134,7 @@ int setVBEPalette(void *palette)
 }
 
 
-#if USE_STATIC_DISPLAY_RESOLUTION == 0
+#if (USE_STATIC_DISPLAY_RESOLUTION == 0)
 //==============================================================================
 // Called from initGraphicsMode() in graphics.c
 
@@ -149,18 +149,20 @@ unsigned long getResolutionFromEDID(void)
 		bb.intno	= 0x10;
 		bb.eax.rr	= 0x4F15;
 		bb.ebx.r.l	= 0x01;
-		bb.edx.rr	= ++targetBlock;
+		bb.edx.rr	= targetBlock++;
 		bb.es		= SEG((void *)data);
 		bb.edi.rr	= OFF((void *)data);
 		bios(&bb);
 
 		// BIOS / display supports Display Data Channel (EDID) reading?
-		if (bb.eax.r.l == 0 && bb.eax.r.h == 79)
+		if ( ((bb.eax.rr & 0xff00) == 0) && ((bb.eax.rr & 0xff) == 0x4f) )
 		{
 			// Yes, supported. Check EDID header against known headers.
 			if (memcmp(data, header, sizeof(header)) != 0)
 			{
+#if DEBUG_BOOT_GRAPHICS
 				printf("targetBlock: %d\n", targetBlock);
+#endif
 				continue;
 			}
 
@@ -181,14 +183,14 @@ unsigned long getResolutionFromEDID(void)
 				}
 			}
 
-			sleep(5);
+			sleep(1);
 #endif
 			if (data[126] == 0)
 			{
 				targetBlock = 0;
 			}
 
-			return ( ( (data[56] | ((data[58] & 0xF0) << 4)) << 16) | (data[59] | ((data[61] & 0xF0) << 4)) );
+			return (((data[56] | ((data[58] & 0xF0) << 4)) << 16) | (data[59] | ((data[61] & 0xF0) << 4)));
 		}
 		else
 		{
