@@ -225,35 +225,6 @@ void initEFITree(void)
 }
 
 
-#ifndef SMB_STATIC_SYSTEM_UUID
-/*==============================================================================
-
-static EFI_CHAR8 * getSmbiosUUID()
-{
-	bool error = TRUE;
-
-	UInt8 *p = (UInt8 *)gPlatform.UUID;
-
-	for (int i = 0; i < 16; i++)
-	{
-		if (p[i] != 0x00 || p[i] != 0xff)
-		{
-			error = FALSE;
-		}
-	}
-
-	if (error)
-	{
-		printf("No proper UUID found in the System Information Table\n");
-		return NULL;
-	}
-
-	return (EFI_CHAR8 *)gPlatform.UUID;
-}
- */
-#endif
-
-
 //==============================================================================
 // Stage two EFI initialization (after getting data from com.apple.Boot.plist).
 
@@ -350,7 +321,7 @@ void finalizeEFITree(EFI_UINT32 kernelAdler32)
 	
 	DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, (EFI_CHAR8 *) &SYSTEM_ID);
 #else
-	// DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, getSmbiosUUID());
+	// gPlatform.UUID is set in: RevoBoot/i386/libsaio/SMBIOS/[dynamic/static]_data.h
 	DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, (EFI_CHAR8 *)gPlatform.UUID);
 #endif
 	
