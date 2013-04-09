@@ -1,9 +1,9 @@
 /*
  *
  * Name			: smbios2struct4
- * Version		: 1.1.1
+ * Version		: 1.1.2
  * Type			: Command line tool
- * Copyright	: Sam aka RevoGirl (c) 2011
+ * Copyright	: Sam aka RevoGirl (c) 2011 / Pike R. Alpha (c) 2012, 2013
  * Description	: SMBIOS extractor / converter (resulting in a smaller and more Apple like table).
  *
  * Usage		: sudo ./smbios2struct4											(output to terminal window)
@@ -15,6 +15,7 @@
  * Updates		: Interim solution for writing stripped SMBIOS table data to MacModelNN.bin (PikerAlpha, November 2012)
  *				: Check root priveledges for writing to: /Extra/SMBIOS/MacModelNN.bin (PikerAlpha, November 2012)
  *				: Now also saves /EFI-device-properties (PikerAlpha, November 2012)
+ *				: Cleanups and iMessage fix for static SMBIOS data (Pike, April 2013)
  *
  */
 
@@ -160,7 +161,7 @@ int main(int argc, char * argv[])
 #if DEBUG
 		printf("UID: %u EUID: %u\n", real_uid, euid);
 #endif
-		// Under sudo, getuid and geteuid return 0.
+		// Under sudo, getuid and geteuid returns 0.
 		if (real_uid != 0 || euid != 0)
 		{
 			printf("Error: Not root. Use sudo ./smbios2struct4 [filename without extension]\n");
@@ -322,20 +323,19 @@ int main(int argc, char * argv[])
 			UInt16 numBytes = (int) CFDataGetLength(dataRef);
 			printf("\nNumber of bytes: %d (Original SMBIOS table)\n", numBytes);
 #endif
-
+			SMBWord newHandle = 0;
 			SMBStructHeader * header;
+			SMBSystemInformation * systemInfo;
+
 			const UInt8 * tablePtr = (const UInt8 *) tableData;
 			const UInt8 * tableEndPtr  = tablePtr + tableLength;
 			const UInt8 * tableStructureStart = 0;
 			const UInt8 * droppedTableStructureStart = 0;
-			const UInt8 * tableBuffer = malloc(tableLength);
+			const UInt8 * tableBuffer = malloc(tableLength + 20);
 
-			// int index				= 0;
 			int maxStructureSize	= 0;
 			int newStructureCount	= 0;
 			int structureLength		= 0;
-
-			SMBWord newHandle = 0;
 
 			bzero((void *)tableBuffer, sizeof(tableBuffer));
 
@@ -349,11 +349,26 @@ int main(int argc, char * argv[])
 				{
 					break;
 				}
-				
+
 				switch (header->type)
 				{
-					case kSMBTypeBIOSInformation:			// Type 0
 					case kSMBTypeSystemInformation:			// Type 1
+
+						bcopy((void *)tableBuffer, (void *)tableBuffer + 20, (tableLength - 20));
+
+						static SMBByte const data[] = {
+							0x55, 0x55, 0x49, 0x44, 0x00, 0x00, 0x00, 0x00,
+							0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+							0x00, 0x00, 0x00, 0x00
+						};
+
+						bcopy(data, (void *)tableBuffer, 20);
+
+						systemInfo = (SMBSystemInformation *) tablePtr;
+						bcopy((SMBByte *)systemInfo->uuid, (void *)tableBuffer + 4, 16);
+						newTableLength += 20;
+
+					case kSMBTypeBIOSInformation:			// Type 0
 					case kSMBTypeBaseBoard:					// Type 2
 					case kSMBTypeProcessorInformation:		// Type 4
 					// case kSMBTypeMemoryModule:			// Type 6
