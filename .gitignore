@@ -28,3 +28,5 @@ i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo.xcodeproj/xcuserd
 i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo.xcodeproj/project.xcworkspace
 
 i386/libsaio/smbios/tools/smbios2struct3
+i386/libsaio/smbios/tools/smbios2struct4
+
