@@ -88,6 +88,9 @@
 #define MSR_CORE_C6_RESIDENCY		0x3FD
 #define MSR_CORE_C7_RESIDENCY		0x3FE
 
+#define MSR_PP0_CURRENT_CONFIG		0x601
+#define MSR_PP1_CURRENT_CONFIG		0x602
+
 // Sandy Bridge & JakeTown specific 'Running Average Power Limit' MSR's.
 #define MSR_RAPL_POWER_UNIT			0x606
 
