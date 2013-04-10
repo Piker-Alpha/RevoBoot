@@ -195,7 +195,7 @@ void checkFlexRatioMSR(void)
 	// The processor’s maximum non-turbo core frequency is configured during power-on reset 
 	// by using its manufacturing default value. This value is the highest non-turbo core 
 	// multiplier at which the processor can operate. If lower maximum speeds are desired, 
-	// the appropriate ratio can be configured using the FLEX_RATIO MSR. 
+	// then the appropriate ratio can be configured using the FLEX_RATIO MSR. 
 	
 	uint64_t msr = rdmsr64(MSR_FLEX_RATIO);
 	
