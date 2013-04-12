@@ -24,9 +24,12 @@
  * limitations under the License.
  * 
  * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
- */
-/*
+ *
  * @OSF_COPYRIGHT@
+ *
+ * Updates:
+ *
+ *			- New Haswell (ULT) specific MSR's added (Pike, April 2013).
  */
 
 #ifndef __LIBSAIO_CPU_ESSENTIALS_H
@@ -99,6 +102,28 @@
 #define MSR_PKG_PERF_STATUS			0x613
 #define MSR_PKG_POWER_INFO			0x614
 
+// JakeTown only Memory MSR's.
+#define MSR_DRAM_POWER_LIMIT		0x618
+#define MSR_DRAM_ENERGY_STATUS		0x619
+#define MSR_DRAM_PERF_STATUS		0x61B
+#define MSR_DRAM_POWER_INFO			0x61C
+
+// Haswell-ULT Package residency
+#define MSR_PKG_C8_RESIDENCY		0x630
+#define MSR_PKG_C9_RESIDENCY		0x631
+#define MSR_PKG_C10_RESIDENCY		0x632
+
+// Haswell-ULT C state latency control.
+#define MSR_PKG_C8_LATENCY			0x633
+#define MSR_PKG_C9_LATENCY			0x634
+#define MSR_PKG_C10_LATENCY			0x635
+
+// Haswell-ULT VR configurations.
+#define VR_MISC_CONFIG2				0x636
+
+// Haswell-ULT Alternate BCLK in deep Package C states.
+#define MSR_COUNTER_24_MHZ			0x637
+
 // Sandy Bridge IA (Core) domain MSR's.
 #define MSR_PP0_POWER_LIMIT			0x638
 #define MSR_PP0_ENERGY_STATUS		0x639
@@ -116,12 +141,6 @@
 #define MSR_CONFIG_TDP_LEVEL2		0x64A
 #define MSR_CONFIG_TDP_CONTROL		0x64B
 #define MSR_TURBO_ACTIVATION_RATIO	0x64C
-
-// JakeTown only Memory MSR's.
-#define MSR_DRAM_POWER_LIMIT		0x618
-#define MSR_DRAM_ENERGY_STATUS		0x619
-#define MSR_DRAM_PERF_STATUS		0x61B
-#define MSR_DRAM_POWER_INFO			0x61C
 
 // CPUID leaf index values (pointing to the right spot in CPUID/LEAF array).
 
@@ -154,6 +173,9 @@
 #define CPU_MODEL_IB_CORE			0x3A	// Ivy Bridge Core Processors (LGA 1155)
 #define CPU_MODEL_IB_CORE_EX		0x3B	// Ivy Bridge Core Processors (LGA 2011)
 #define CPU_MODEL_IB_CORE_XEON		0x3E
+
+#define CPU_MODEL_HASWELL			0x30
+#define CPU_MODEL_HASWELL_ULT		0x40
 
 #define CPU_MODEL_HASWELL			0x3C
 #define CPU_MODEL_HASWELL_CORE		0x3F

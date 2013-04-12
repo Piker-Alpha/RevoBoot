@@ -726,6 +726,18 @@ function _printMethodDSM()
 
 function _printScopeACST()
 {
+#
+# Intel values for Sandy / Ivy Bridge processors
+#
+# C-state : Power   : SB Latency : IB Latency
+#---------:---------:------------:------------
+#   C1    :  0x3e8  :    0x01    :    0x03
+#   C3    :  0x1f4  :    0x50    :    0xcd
+#   C6    :  0x15e  :    0x68    :    0xf5
+#   C7    :  0xc8   :    0x6d    :    0xf5
+#
+# Note: C-state latency in uS and C-state power in mW.
+
     let C1=0
     let C2=0
     let C3=0
@@ -1281,7 +1293,10 @@ function _showLowPowerStates()
         local cStates=$1
 
         printf "Injected C-States for ${gProcessorNames[$2]} ("
-
+        #
+        # Haswell    : C0, C1, C1E, C2E, C3, C4, C6 and C7
+        # Haswell-ULT: C0, C1, C1E, C2E, C3, C4, C6, C7, C8, C9 and C10
+        #
         for state in C1 C2 C3 C6 C7
         do
             if (($cStates & $mask)); then
@@ -1620,9 +1635,17 @@ function main()
             let gBridgeType=4
         fi
 
-        if (($model==0x3C || $model==0x3F || $model==0x45)); then
+        # Haswell
+        if (($model==0x30)); then
             let assumedTDP=1
             let gTdp=84
+            let gBridgeType=8
+        fi
+
+        # Haswell ULT
+        if (($model==0x40)); then
+            let assumedTDP=1
+            let gTdp=15
             let gBridgeType=8
         fi
     fi

@@ -349,6 +349,12 @@ void initCPUStruct(void)
 					hiBit = 31;
 					break;
 
+				case CPU_MODEL_HASWELL:
+				case CPU_MODEL_HASWELL_ULT:
+					CoreBridgeType = HASWELL;
+					hiBit = 31;
+					break;
+
 				case CPU_MODEL_NEHALEM:
 				case CPU_MODEL_NEHALEM_EX:
 				case CPU_MODEL_FIELDS:
@@ -396,7 +402,7 @@ void initCPUStruct(void)
 					requestMaxTurbo(maxBusRatio);
 				}
 
-				if (CoreBridgeType) // (SandyBridge || IvyBridge)
+				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell)
 				{
 					// gPlatform.CPU.Type += CoreBridgeType;
 
