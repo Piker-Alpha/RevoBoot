@@ -104,6 +104,16 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	UInt8 currentMultiplier = (rdmsr64(MSR_IA32_PERF_STS) >> 8);
 	gCoreMultipliers |= (1ULL << currentMultiplier);
 
+#if REPORT_GPU_STATS
+	UInt8 currentIgpuMultiplier = 0;
+
+	if (igpuEnabled)
+	{
+		currentIgpuMultiplier = (UInt8)gMchbar[1];
+		gIGPUMultipliers |= (1ULL << currentIgpuMultiplier);
+	}
+#endif
+
 	timerEventSource->setTimeoutTicks(Interval);
 
 	if (loopLock)
@@ -121,14 +131,21 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		IOSimpleLockUnlock(simpleLock);
 	}
 
+#if REPORT_GPU_STATS
+	if ((gCoreMultipliers != gTriggeredPStates) || (gIGPUMultipliers != gTriggeredIGPUPStates))
+#else
 	if (gCoreMultipliers != gTriggeredPStates)
+#endif
 	{
+		int currentBit = 0;
+		UInt64 value = 0ULL;
+
 		gTriggeredPStates = gCoreMultipliers;
 		IOLog("AICPUPMI: CPU P-States [ ");
-		
-		for (int currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
+
+		for (currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
 		{
-			UInt64 value = (1ULL << currentBit);
+			value = (1ULL << currentBit);
 			
 			if ((gTriggeredPStates & value) == value)
 			{
@@ -142,11 +159,32 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 				}
 			}
 		}
+
 #if REPORT_GPU_STATS
-		IOLog("] GPU P-State [ %d ]\n", (UInt8)gMchbar[1]);
-#else
-		IOLog("]\n");
+		if (igpuEnabled)
+		{
+			gTriggeredIGPUPStates = gIGPUMultipliers;
+			IOLog("] GPU P-States [ ");
+			
+			for (currentBit = 17; currentBit <= 27; currentBit++)
+			{
+				value = (1ULL << currentBit);
+				
+				if ((gTriggeredIGPUPStates & value) == value)
+				{
+					if (currentBit == currentIgpuMultiplier)
+					{
+						IOLog("(%d) ", currentBit);
+					}
+					else
+					{
+						IOLog("%d ", currentBit);
+					}
+				}
+			}
+		}
 #endif
+		IOLog("]\n");
 	}
 
 	loopLock = false;
@@ -216,39 +254,45 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				}
 
 #if REPORT_GPU_STATS
-				/*
-				 * TODO: Pike, add check a to see if there is a GPU and if it is enabled!
-				 */
-				IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
-				memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionIn);
-				
-				if (memDescriptor != NULL)
+				if ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK))
 				{
-					if ((result = memDescriptor->prepare()) == kIOReturnSuccess)
+					IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
+					memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionInOut);
+				
+					if (memDescriptor != NULL)
 					{
-						memoryMap = memDescriptor->map();
-						
-						if (memoryMap != NULL)
+						if ((result = memDescriptor->prepare()) == kIOReturnSuccess)
 						{
-							gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
-							IOLog("AICPUPMI: Graphics Core Ratios:\n");
-							IOLog("AICPUPMI: Current Ratio       : 0x%02x\n", (UInt8)gMchbar[1]);
-							IOLog("AICPUPMI: Max Non-Turbo Ratio : 0x%02x\n", (UInt8)gMchbar[0x51]);
-							IOLog("AICPUPMI: Max Turbo Ratio     : 0x%02x\n", (UInt8)gMchbar[0x50]);
+							memoryMap = memDescriptor->map();
+						
+							if (memoryMap != NULL)
+							{
+								igpuEnabled = true; // IGPU Enabled and Visible
+								gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
+
+								IOLog("AICPUPMI: IGPU Current Freq..: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x01]));
+								IOLog("AICPUPMI: IGPU Max Frequency.: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x51]));
+								IOLog("AICPUPMI: IGPU Max Turbo Freq: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x50]));
+								//
+								// Example-1: 17 (multiplier) * 50 (frequency in MHz) =  850 MHz
+								// Example-2: 22 (multiplier) * 50 (frequency in MHz) = 1100 MHz
+								// 6 P-States: 850, 900, 950, 1000, 1050 and 1100 MHz
+								//
+							}
+							else
+							{
+								IOLog("AICPUPMI: Error: memoryMap == NULL\n");
+							}
 						}
 						else
 						{
-							IOLog("AICPUPMI: Error: memoryMap == NULL\n");
+							IOLog("AICPUPMI: Error: memDescriptor->prepare() failed!\n");
 						}
 					}
 					else
 					{
-						IOLog("Error: memDescriptor->prepare() failed!\n");
+						IOLog("AICPUPMI: Error: memDescriptor == NULL\n");
 					}
-				}
-				else
-				{
-					IOLog("Error: memDescriptor == NULL\n");
 				}
 #endif
 				timerEventSource->setTimeoutMS(1000);
@@ -290,16 +334,19 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 void AppleIntelCPUPowerManagementInfo::free()
 {
 #if REPORT_GPU_STATS
-	if (memoryMap)
+	if (igpuEnabled)
 	{
-		memoryMap->release();
-		memoryMap = NULL;
-	}
+		if (memoryMap)
+		{
+			memoryMap->release();
+			memoryMap = NULL;
+		}
 
-	if (memDescriptor)
-	{
-		memDescriptor->release();
-		memDescriptor = NULL;
+		if (memDescriptor)
+		{
+			memDescriptor->release();
+			memDescriptor = NULL;
+		}
 	}
 #endif
 
