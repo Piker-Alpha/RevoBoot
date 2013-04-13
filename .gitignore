@@ -27,6 +27,8 @@ i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo/secretCode.h
 i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo.xcodeproj/xcuserdata
 i386/libsaio/cpu/tools/PMinfo/AppleIntelCPUPowerManagementInfo.xcodeproj/project.xcworkspace
 
+i386/libsaio/cpu/tools/PMinfoBackup
+
 i386/libsaio/smbios/tools/smbios2struct3
 i386/libsaio/smbios/tools/smbios2struct4
 
