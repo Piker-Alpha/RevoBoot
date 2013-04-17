@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 6.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 6.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -66,6 +66,7 @@
 #			- Show warnings for Sandy Bridge systems as well (Jeroen, March 2013)
 #			- New Intel Haswell processors added (Jeroen, April 2013)
 #			- Improved Processor declaration detection (Jeroen/Pike, April 2013)
+#			- New path for Clover revision 1277 (Jeroen, April 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -167,7 +168,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=6.0
+gScriptVersion=6.1
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1152,7 +1153,14 @@ function _setDestinationPath
     fi
 
     #
-    # Checking for Clover
+    # Checking for Clover rev 1277 (projectosx.com/forum/index.php?showtopic=2656&p=29129&#entry29129)
+    #
+    if [ -d /EFI/Clover/ACPI/patched ]; then
+        gDestinationPath="/EFI/Clover/ACPI/patched/"
+    fi
+
+    #
+    # Checking for Clover (older versions)
     #
     if [ -d /EFI/ACPI/patched ]; then
         gDestinationPath="/EFI/ACPI/patched/"
@@ -1917,11 +1925,11 @@ if (($gCallIasl)); then
     #
     if (($gAutoCopy)); then
         if [ -f ${gPath}/${gSsdtID}.aml ]; then
+            _setDestinationPath
             echo -e
             read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
             case "$choice" in
-                y|Y ) _setDestinationPath
-                      sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
+                y|Y ) sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
                       ;;
             esac
         fi
