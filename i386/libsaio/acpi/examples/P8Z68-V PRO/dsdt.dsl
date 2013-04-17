@@ -39,8 +39,6 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
     OperationRegion (GNVS, SystemMemory, OPRE, 0x0163)
     Field (GNVS, AnyAcc, Lock, Preserve)
     {
-                Offset (0x0B), 
-        P80D,   32,
                 Offset (0x3C), 
         IGDS,   8,
                 Offset (0xAA), 
@@ -68,23 +66,11 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
         GP27,   1
     }
 
-    OperationRegion (DEB0, SystemIO, 0x80, One)
-    Field (DEB0, ByteAcc, NoLock, Preserve)
-    {
-        DBG8,   8
-    }
-
-    OperationRegion (PRT0, SystemIO, 0x80, 0x04)
-    Field (PRT0, DWordAcc, Lock, Preserve)
-    {
-        P80H,   32
-    }
-
     Method (_PIC, 1, NotSerialized)
     {
     }
 
-    Scope (_PR)
+    Scope (\_PR)
     {
         Processor (CPU0, 0x01, 0x00000410, 0x06) {}
         Processor (CPU1, 0x02, 0x00000410, 0x06) {}
@@ -1142,8 +1128,6 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
         Method (_L01, 0, NotSerialized)
         {
             Add (L01C, One, L01C)
-            P8XH (Zero, One)
-            P8XH (One, L01C)
         }
 
         Method (_L02, 0, NotSerialized)
@@ -1185,38 +1169,8 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
     Name (_S4, Package (0x03) { 0x06, 0x06, Zero })
     Name (_S5, Package (0x03) { 0x07, 0x07, Zero })
 
-    Method (P8XH, 2, Serialized)
-    {
-        If (LEqual (Arg0, Zero))
-        {
-            Store (Or (And (P80D, 0xFFFFFF00), Arg1), P80D)
-        }
-
-        If (LEqual (Arg0, One))
-        {
-            Store (Or (And (P80D, 0xFFFF00FF), ShiftLeft (Arg1, 0x08)
-                ), P80D)
-        }
-
-        If (LEqual (Arg0, 0x02))
-        {
-            Store (Or (And (P80D, 0xFF00FFFF), ShiftLeft (Arg1, 0x10)
-                ), P80D)
-        }
-
-        If (LEqual (Arg0, 0x03))
-        {
-            Store (Or (And (P80D, 0x00FFFFFF), ShiftLeft (Arg1, 0x18)
-                ), P80D)
-        }
-
-        Store (P80D, P80H)
-    }
-
     Method (_PTS, 1, NotSerialized)
     {
-        Store (Zero, P80D)
-        P8XH (Zero, Arg0)
         If (Arg0)
         {
             Store (One, \_SB.PCI0.LPCB.SLPX)
@@ -1231,7 +1185,6 @@ DefinitionBlock ("dsdt.aml", "DSDT", 2, "APPLE", "Macmini", 0x00050001)
 
     Method (_WAK, 1, Serialized)
     {
-        ShiftLeft (Arg0, 0x04, DBG8)
         \_SB.PCI0.LPCB.SWAK (Arg0)
         Store (Zero, \_SB.PCI0.LPCB.PLED)
         Return (Package (0x02)
