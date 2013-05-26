@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 6.1 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 6.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -67,11 +67,17 @@
 #			- New Intel Haswell processors added (Jeroen, April 2013)
 #			- Improved Processor declaration detection (Jeroen/Pike, April 2013)
 #			- New path for Clover revision 1277 (Jeroen, April 2013)
+#			- Haswell's minimum core frequency is 800 MHz (Jeroen, April 2013)
+#			- CPU signature output added (Jeroen/Pike, April 2013)
+#			- Updating to v6.4 after Jeroen's accidental RM of my local RevoBoot directory (Pike, May 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
 #			- Thanks to 'stinga11' for Sandy Bridge (E5) data and processor list errors.
 #			- Many thanks to Jeroen for the CPU data, cleanups, renaming stuff and other improvements.
+#			- Thanks to 'philip_petev' for his help with Snow Leopard/egrep incompatibility.
+#			- Thanks to 'RehabMan' for his help with Snow Leopard/egrep incompatibility.
+#			- Thanks to 'BigDonkey' for his help with LFM (800 MHz) for Sandy Bridge mobility models.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -130,7 +136,7 @@ gDestinationPath="/Extra/"
 #
 # This is the filename used for the copy process
 #
-gDestinationFile="ssdt.aml"
+gDestinationFile="ssdt_pr.aml"
 
 #
 # A value of 1 will make this script call iasl (compiles ssdt_pr.dsl)
@@ -168,7 +174,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=6.1
+gScriptVersion=6.5
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -198,11 +204,13 @@ let SANDY_BRIDGE=2
 let gTypeCPU=0
 gProcessorData="Unknown CPU"
 gProcessorNumber=""
+gBusFrequency=100
+gUnmountEFIPartition=false
 
 #
 # Maximum Turbo Clock Speed (user configurable)
 #
-let gMaxOCFrequency=5000
+let gMaxOCFrequency=6300
 
 let MAX_TURBO_FREQUENCY_ERROR=2
 let MAX_TDP_ERROR=3
@@ -239,6 +247,7 @@ E3-1220,80,0,3100,3400,4,4
 )
 
 gDesktopSandyBridgeCPUList=(
+i7-35355,120,1600,2666,2666,4,4
 # i7 Desktop Extreme Series
 i7-3970X,150,0,3500,4000,6,12
 i7-3960X,130,0,3300,3900,6,12
@@ -278,56 +287,56 @@ i3-2100,65,1600,3100,0,2,4
 
 gMobileSandyBridgeCPUList=(
 # i7 Mobile Extreme Series
-i7-2960XM,55,0,2700,3700,4,8
-i7-2920XM,55,0,2500,3500,4,8
+i7-2960XM,55,800,2700,3700,4,8
+i7-2920XM,55,800,2500,3500,4,8
 # i7 Mobile Series
-i7-2860QM,45,0,2500,3600,4,8
-i7-2820QM,45,0,2300,3400,4,8
-i7-2760QM,45,0,2400,3500,4,8
-i7-2720QM,45,0,2200,3300,4,8
-i7-2715QE,45,0,2100,3000,4,8
-i7-2710QE,45,0,2100,3000,4,8
-i7-2677M,17,0,1800,2900,2,4
-i7-2675QM,45,0,2200,3100,4,8
-i7-2670QM,45,0,2200,3100,4,8
-i7-2675M,17,0,1600,2700,2,4
-i7-2655LE,25,0,2200,2900,2,4
-i7-2649M,25,0,2300,3200,2,4
-i7-26740M,32,0,2800,3500,2,4
-i7-2637M,17,0,1700,2800,2,4
-i7-2635QM,45,0,2000,2900,4,8
-i7-2630QM,45,0,2000,2900,4,8
-i7-2629M,25,0,2100,3000,2,4
-i7-2620M,35,0,2700,3400,2,4
-i7-2617M,17,0,1500,2600,2,4
-i7-2610UE,17,0,1500,2400,2,4
+i7-2860QM,45,800,2500,3600,4,8
+i7-2820QM,45,800,2300,3400,4,8
+i7-2760QM,45,800,2400,3500,4,8
+i7-2720QM,45,800,2200,3300,4,8
+i7-2715QE,45,800,2100,3000,4,8
+i7-2710QE,45,800,2100,3000,4,8
+i7-2677M,17,800,1800,2900,2,4
+i7-2675QM,45,800,2200,3100,4,8
+i7-2670QM,45,800,2200,3100,4,8
+i7-2675M,17,800,1600,2700,2,4
+i7-2655LE,25,800,2200,2900,2,4
+i7-2649M,25,800,2300,3200,2,4
+i7-26740M,32,800,2800,3500,2,4
+i7-2637M,17,800,1700,2800,2,4
+i7-2635QM,45,800,2000,2900,4,8
+i7-2630QM,45,800,2000,2900,4,8
+i7-2629M,25,800,2100,3000,2,4
+i7-2620M,35,800,2700,3400,2,4
+i7-2617M,17,800,1500,2600,2,4
+i7-2610UE,17,800,1500,2400,2,4
 # i5 Mobile Series
-i5-2467M,17,0,1600,2300,2,4
+i5-2467M,17,800,1600,2300,2,4
 i5-2450M,35,800,2300,3100,2,4
-i5-2435M,35,0,2400,3000,2,4
-i5-2430M,35,0,2400,3000,2,4
-i5-2410M,35,0,2300,2900,2,4
-i5-2557M,17,0,1700,2700,2,4
-i5-2540M,35,0,2600,3300,2,4
-i5-2537M,17,0,1400,2300,2,4
-i5-2520M,35,0,2500,3200,2,4
-i5-2515E,35,0,2500,3100,2,4
-i5-2510E,35,0,2500,3100,2,4
+i5-2435M,35,800,2400,3000,2,4
+i5-2430M,35,800,2400,3000,2,4
+i5-2410M,35,800,2300,2900,2,4
+i5-2557M,17,800,1700,2700,2,4
+i5-2540M,35,800,2600,3300,2,4
+i5-2537M,17,800,1400,2300,2,4
+i5-2520M,35,800,2500,3200,2,4
+i5-2515E,35,800,2500,3100,2,4
+i5-2510E,35,800,2500,3100,2,4
 # i3 2300 Mobile Series
-i3-2377M,17,0,1500,0,2,4
-i3-2370M,35,0,2400,0,2,4
-i3-2367M,17,0,1400,0,2,4
-i3-2365M,17,0,1400,0,2,4
-i3-2357M,17,0,1300,0,2,4
-i3-2350M,35,0,2300,0,2,4
-i3-2348M,35,0,2300,0,2,4
-i3-2340UE,17,0,1300,0,2,4
-i3-2330M,35,0,2200,0,2,4
-i3-2330E,35,0,2200,0,2,4
-i3-2328M,35,0,2200,0,2,4
-i3-2312M,35,0,2100,0,2,4
-i3-2310M,35,0,2100,0,2,4
-i3-2310E,35,0,2100,0,2,4
+i3-2377M,17,800,1500,0,2,4
+i3-2370M,35,800,2400,0,2,4
+i3-2367M,17,800,1400,0,2,4
+i3-2365M,17,800,1400,0,2,4
+i3-2357M,17,800,1300,0,2,4
+i3-2350M,35,800,2300,0,2,4
+i3-2348M,35,800,2300,0,2,4
+i3-2340UE,17,800,1300,0,2,4
+i3-2330M,35,800,2200,0,2,4
+i3-2330E,35,800,2200,0,2,4
+i3-2328M,35,800,2200,0,2,4
+i3-2312M,35,800,2100,0,2,4
+i3-2310M,35,800,2100,0,2,4
+i3-2310E,35,800,2100,0,2,4
 )
 
 
@@ -452,31 +461,31 @@ gServerHaswellCPUList=(
 
 gDesktopHaswellCPUList=(
 # Socket 2011 (Premium Power)
-i7-4960K,130,0,3600,4000,6,12
-i7-4930K,130,0,3400,3900,6,12
-i5-4820K,130,0,3700,3900,4,8
+i7-4960K,130,800,3600,4000,6,12
+i7-4930K,130,800,3400,3900,6,12
+i5-4820K,130,800,3700,3900,4,8
 # Socket 1150 (Standard Power)
-i7-4770K,84,00,3500,3900,4,8
-i7-4770,84,0,3400,3900,4,8
-i5-4670K,84,0,3400,3800,4,4
-i5-4670,84,0,3400,3800,4,4
-i5-4570,84,0,3200,3600,4,4
-i5-4430,84,0,3000,3200,4,4
+i7-4770K,84,800,3500,3900,4,8
+i7-4770,84,800,3400,3900,4,8
+i5-4670K,84,800,3400,3800,4,4
+i5-4670,84,800,3400,3800,4,4
+i5-4570,84,800,3200,3600,4,4
+i5-4430,84,800,3000,3200,4,4
 # Socket 1150 (Low Power)
-i7-4770S,65,0,3100,3900,4,8
-i7-4770T,45,0,2500,3700,4,8
-i7-4765T,35,0,2000,3000,4,8
-i5-4670S,65,0,3100,3800,4,4
-i5-4670T,45,0,2300,3300,4,4
-i5-4570S,65,0,2900,3600,4,4
-i5-4570T,35,0,2900,3600,2,4
-i5-4430S,65,0,2700,3200,4,4
+i7-4770S,65,800,3100,3900,4,8
+i7-4770T,45,800,2500,3700,4,8
+i7-4765T,35,800,2000,3000,4,8
+i5-4670S,65,800,3100,3800,4,4
+i5-4670T,45,800,2300,3300,4,4
+i5-4570S,65,800,2900,3600,4,4
+i5-4570T,35,800,2900,3600,2,4
+i5-4430S,65,800,2700,3200,4,4
 )
 
 gMobileHaswellCPUList=(
-i7-4930MX,57,0,3000,3900,4,8
-i7-4900MQ,47,0,2800,3800,4,8
-i7-4800MQ,47,0,2700,3700,4,8
+i7-4930MX,57,800,3000,3900,4,8
+i7-4900MQ,47,800,2800,3800,4,8
+i7-4800MQ,47,800,2700,3700,4,8
 )
 
 #--------------------------------------------------------------------------------
@@ -526,6 +535,7 @@ function _printDebugInfo()
         echo '    Store ("ssdtPRGen version: '$gScriptVersion'", Debug)'                >> $gSsdtPR
         echo '    Store ("baseFrequency    : '$gBaseFrequency'", Debug)'                >> $gSsdtPR
         echo '    Store ("frequency        : '$frequency'", Debug)'                     >> $gSsdtPR
+        echo '    Store ("busFrequency     : '$gBusFrequency'", Debug)'                 >> $gSsdtPR
         echo '    Store ("logicalCPUs      : '$gLogicalCPUs'", Debug)'                  >> $gSsdtPR
         echo '    Store ("tdp              : '$gTdp'", Debug)'                          >> $gSsdtPR
         echo '    Store ("packageLength    : '$packageLength'", Debug)'                 >> $gSsdtPR
@@ -629,9 +639,9 @@ function _printPackages()
     local maxNonTurboFrequency=$2
     local frequency=$3
 
-    let minRatio=($gBaseFrequency/100)
-    let p1Ratio=($maxNonTurboFrequency/100)
-    let ratio=($frequency/100)
+    let minRatio=($gBaseFrequency/$gBusFrequency)
+    let p1Ratio=($maxNonTurboFrequency/$gBusFrequency)
+    let ratio=($frequency/$gBusFrequency)
     let powerRatio=($p1Ratio-1)
 
     #
@@ -677,7 +687,7 @@ function _printPackages()
             printf "0x0A, 0x0A, 0x%02X00, 0x%02X00 }" $ratio $ratio                     >> $gSsdtPR
 
             let ratio-=1
-            let frequency-=100
+            let frequency-=$gBusFrequency
 
             if [ $ratio -ge $minRatio ];
                 then
@@ -1061,11 +1071,14 @@ function _updateProcessorNames()
 
 function _getProcessorScope()
 {
-    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 | egrep -o 'DSDT"=<[0-9a-f]+5b830b') ]]; then
+    #
+    # We run egrep twice here for Snow Leopard compatibility, otherwise it fails.
+    #
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5b830b') ]]; then
         printf 'Processor Declaration(s) Found in DSDT'
     fi
 
-    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 | egrep -o 'DSDT"=<[0-9a-f]+5f50525f') ]];
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5f50525f') ]];
         then
             gScope="\_PR_"
             echo ' (ACPI 1.0 compliant)'
@@ -1096,6 +1109,16 @@ function _getCPUModel()
     # Returns the hexadecimal value of machdep.cpu.model
     #
     echo 0x$(echo "obase=16; `sysctl machdep.cpu.model | sed -e 's/^machdep.cpu.model: //'`" | bc)
+}
+
+#--------------------------------------------------------------------------------
+
+function _getCPUSignature()
+{
+    #
+    # Returns the hexadecimal value of machdep.cpu.signature
+    #
+    echo 0x$(echo "obase=16; `sysctl machdep.cpu.signature | sed -e 's/^machdep.cpu.signature: //'`" | bc)
 }
 
 #--------------------------------------------------------------------------------
@@ -1150,13 +1173,50 @@ function _setDestinationPath
     #
     if [ -d /Extra/ACPI ]; then
         gDestinationPath="/Extra/ACPI/"
+        echo 'ACPI target directory changed to: $gDestinationPath'
+        return
     fi
 
     #
-    # Checking for Clover rev 1277 (projectosx.com/forum/index.php?showtopic=2656&p=29129&#entry29129)
+    # Checking for Clover rev 1277 and greater (projectosx.com/forum/index.php?showtopic=2656&p=29129&#entry29129)
     #
-    if [ -d /EFI/Clover/ACPI/patched ]; then
-        gDestinationPath="/EFI/Clover/ACPI/patched/"
+    if [ -d /EFI/Clover/ACPI/patched ];
+        then
+            gDestinationPath="/EFI/Clover/ACPI/patched/"
+            echo 'ACPI target directory changed to: $gDestinationPath'
+            return
+        else
+            if [ -d /Volumes/EFI ];
+                then
+                    if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
+                        gDestinationPath="/Volumes/EFI/Clover/ACPI/patched/"
+                        echo 'ACPI target directory changed to: $gDestinationPath'
+                        return
+                    fi
+                else
+                    #
+                    # http://www.tonymacx86.com/ssdt/86906-ssdt-generation-script-ivybridge-pm-40.html#post604496
+                    #
+                    if [ -f /Library/Logs/CloverEFI/boot.log ];
+                        then
+                            echo 'Clover boot.log found'
+                            return
+                        else
+                            echo 'Warning: Failed to locate the Clover boot.log'
+                            echo 'Creating temporarily mount point: /Volumes/EFI'
+                            sudo mkdir /Volumes/EFI
+                            echo 'Mounting EFI partition...'
+                            sudo mount_hfs /dev/disk0s1 /Volumes/EFI
+
+                            if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
+                                gUnmountEFIPartition=true;
+                                gDestinationPath="/Volumes/EFI/Clover/ACPI/patched/"
+                                echo 'ACPI target directory changed to: $gDestinationPath'
+                                return
+                            fi
+                    fi
+
+            fi
     fi
 
     #
@@ -1164,6 +1224,8 @@ function _setDestinationPath
     #
     if [ -d /EFI/ACPI/patched ]; then
         gDestinationPath="/EFI/ACPI/patched/"
+        echo 'ACPI target directory changed to: $gDestinationPath'
+        return
     fi
 }
 
@@ -1354,17 +1416,22 @@ function _checkPlatformSupport()
         return 0
     }
 
-    __searchList 'SupportedModelProperties' $1
+    #
+    # This check is required for Snow Leopard compatibility!
+    #
+    if [ -f /System/Library/CoreServices/PlatformSupport.plist ];
+        then
+            __searchList 'SupportedModelProperties' $1
 
-    if (($? == 0)); then
-        echo 'Warning: Model identifier ['$1'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
-    fi
+            if (($? == 0)); then
+                echo 'Warning: Model identifier ['$1'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
+            fi
 
-    __searchList 'SupportedBoardIds' $2
+            __searchList 'SupportedBoardIds' $2
 
-    if (($? == 0)); then
-        echo 'Warning: boardID ['$2'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
-
+            if (($? == 0)); then
+                echo 'Warning: boardID ['$2'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
+            fi
     fi
 }
 
@@ -1644,10 +1711,11 @@ function main()
         fi
 
         # Haswell
-        if (($model==0x30)); then
+        if (($model==0x3C)); then
             let assumedTDP=1
             let gTdp=84
             let gBridgeType=8
+            let gMaxOCFrequency=8000
         fi
 
         # Haswell ULT
@@ -1676,9 +1744,10 @@ function main()
     local modelID=$(_getModelName)
     local cpu_type=$(_getCPUtype)
     local currentSystemType=$(_getSystemType)
+    local cpuSignature=$(_getCPUSignature)
 
     echo "Generating ${gSsdtID}.dsl for a $modelID [$boardID]"
-    echo "$bridgeTypeString Core $gProcessorNumber processor [0x$cpu_type] setup"
+    echo "$bridgeTypeString Core $gProcessorNumber processor [$cpuSignature] setup [0x$cpu_type]"
 
     #
     # gTypeCPU is greater than 0 when the processor is found in one of the CPU lists
@@ -1930,6 +1999,13 @@ if (($gCallIasl)); then
             read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
             case "$choice" in
                 y|Y ) sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
+
+                      if (($gUnmountEFIPartition)); then
+                          echo 'Unmounting EFI partition...'
+                          # sudo unmount -f /Volumes/EFI
+                          echo 'Removing temporarily mount point...'
+                          # sudo rm -rf /Volumes/EFI
+                      fi
                       ;;
             esac
         fi
