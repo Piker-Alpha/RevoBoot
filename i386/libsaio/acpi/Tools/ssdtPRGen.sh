@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 6.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 6.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -70,6 +70,7 @@
 #			- Haswell's minimum core frequency is 800 MHz (Jeroen, April 2013)
 #			- CPU signature output added (Jeroen/Pike, April 2013)
 #			- Updating to v6.4 after Jeroen's accidental RM of my local RevoBoot directory (Pike, May 2013)
+#			- Updating to v6.5 with bugs fixes and EFI partition checking for Clover compatibility (Pike, May 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -78,6 +79,7 @@
 #			- Thanks to 'philip_petev' for his help with Snow Leopard/egrep incompatibility.
 #			- Thanks to 'RehabMan' for his help with Snow Leopard/egrep incompatibility.
 #			- Thanks to 'BigDonkey' for his help with LFM (800 MHz) for Sandy Bridge mobility models.
+#			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -205,7 +207,7 @@ let gTypeCPU=0
 gProcessorData="Unknown CPU"
 gProcessorNumber=""
 gBusFrequency=100
-gUnmountEFIPartition=false
+let gUnmountEFIPartition=0
 
 #
 # Maximum Turbo Clock Speed (user configurable)
@@ -1173,7 +1175,7 @@ function _setDestinationPath
     #
     if [ -d /Extra/ACPI ]; then
         gDestinationPath="/Extra/ACPI/"
-        echo 'ACPI target directory changed to: $gDestinationPath'
+        echo -e '\nACPI target directory changed to: '$gDestinationPath
         return
     fi
 
@@ -1183,14 +1185,14 @@ function _setDestinationPath
     if [ -d /EFI/Clover/ACPI/patched ];
         then
             gDestinationPath="/EFI/Clover/ACPI/patched/"
-            echo 'ACPI target directory changed to: $gDestinationPath'
+            echo -e '\nACPI target directory changed to: $gDestinationPath'
             return
         else
             if [ -d /Volumes/EFI ];
                 then
                     if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
                         gDestinationPath="/Volumes/EFI/Clover/ACPI/patched/"
-                        echo 'ACPI target directory changed to: $gDestinationPath'
+                        echo -e '\nACPI target directory changed to: $gDestinationPath'
                         return
                     fi
                 else
@@ -1202,14 +1204,17 @@ function _setDestinationPath
                             echo 'Clover boot.log found'
                             return
                         else
-                            echo 'Warning: Failed to locate the Clover boot.log'
+                            echo -e '\nWarning: Failed to locate the Clover boot.log'
                             echo 'Creating temporarily mount point: /Volumes/EFI'
                             sudo mkdir /Volumes/EFI
-                            echo 'Mounting EFI partition...'
+                            printf 'Mounting EFI partition...\n'
+                            #
+                            # TODO: Get target disk from diskutil list
+                            #
                             sudo mount_hfs /dev/disk0s1 /Volumes/EFI
+                            let gUnmountEFIPartition=1
 
-                            if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
-                                gUnmountEFIPartition=true;
+                            if [ -f /Volumes/EFI/Clover/ACPI/patched ]; then
                                 gDestinationPath="/Volumes/EFI/Clover/ACPI/patched/"
                                 echo 'ACPI target directory changed to: $gDestinationPath'
                                 return
@@ -1367,7 +1372,7 @@ function _showLowPowerStates()
         # Haswell    : C0, C1, C1E, C2E, C3, C4, C6 and C7
         # Haswell-ULT: C0, C1, C1E, C2E, C3, C4, C6, C7, C8, C9 and C10
         #
-        for state in C1 C2 C3 C6 C7
+        for state in C1 C2 C3 C6 C7 C8 C9 C10
         do
             if (($cStates & $mask)); then
                if (($mask > 1)); then
@@ -1432,6 +1437,8 @@ function _checkPlatformSupport()
             if (($? == 0)); then
                 echo 'Warning: boardID ['$2'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
             fi
+        else
+            echo 'Warning: /S*/L*/C*/PlatformSupport.plist not found (normal for Snow Leopard)!'
     fi
 }
 
@@ -1550,70 +1557,147 @@ function _initIvyBridgeSetup()
 			gMacModelIdentifier="iMac13,1"
 			gACST_CPU0=13   # C1, C3 and C6
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-FC02E91DDD3FA6A4)
 			gSystemType=1
 			gMacModelIdentifier="iMac13,2"
 			gACST_CPU0=13   # C1, C3 and C6
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-031AEE4D24BFF0B1)
 			gSystemType=1
 			gMacModelIdentifier="Macmini6,1"
 			gACST_CPU0=13   # C1, C3 and C6
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-F65AE981FFA204ED)
 			gSystemType=1
 			gMacModelIdentifier="Macmini6,2"
 			gACST_CPU0=13   # C1, C3 and C6
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-4B7AC7E43945597E)
 			gSystemType=2
 			gMacModelIdentifier="MacBookPro9,1"
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-6F01561E16C75D06)
 			gSystemType=2
 			gMacModelIdentifier="MacBookPro9,2"
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-C3EC7CD22292981F)
 			gSystemType=2
 			gMacModelIdentifier="MacBookPro10,1"
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-AFD8A9D944EA4843)
 			gSystemType=2
 			gMacModelIdentifier="MacBookPro10,2"
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-66F35F19FE2A0D05)
 			gSystemType=2
 			gMacModelIdentifier="MacBookAir5,1"
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
 
 		Mac-2E6FAB96566FE58C)
 			gSystemType=2
 			gMacModelIdentifier="MacBookAir5,2"
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
-			;;
+		;;
+	esac
+}
+
+#--------------------------------------------------------------------------------
+
+function _initHaswellSetup()
+{
+	case $boardID in
+		Mac-)
+			gSystemType=1
+			gMacModelIdentifier="iMac14,1"
+			gACST_CPU0=13   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
+
+		Mac-)
+			gSystemType=1
+			gMacModelIdentifier="iMac14,2"
+			gACST_CPU0=13   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
+
+		Mac-)
+			gSystemType=1
+			gMacModelIdentifier="Macmini7,1"
+			gACST_CPU0=13   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
+
+		Mac-)
+			gSystemType=1
+			gMacModelIdentifier="Macmini7,2"
+			gACST_CPU0=13   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
+
+		Mac-)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro11,1"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
+
+		Mac-)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro11,2"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
+
+		Mac-)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro12,1"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
+
+		Mac-)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro12,2"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
+
+		Mac-)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir6,1"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
+
+		Mac-)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir6,2"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
 	esac
 }
 
@@ -1999,15 +2083,15 @@ if (($gCallIasl)); then
             read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
             case "$choice" in
                 y|Y ) sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
-
-                      if (($gUnmountEFIPartition)); then
-                          echo 'Unmounting EFI partition...'
-                          # sudo unmount -f /Volumes/EFI
-                          echo 'Removing temporarily mount point...'
-                          # sudo rm -rf /Volumes/EFI
-                      fi
                       ;;
             esac
+
+            if (($gUnmountEFIPartition)); then
+                echo -e '\nUnmounting EFI partition...'
+                sudo umount -f /Volumes/EFI
+                echo 'Removing temporarily mount point...'
+                sudo rm -r /Volumes/EFI
+            fi
         fi
     fi
 
