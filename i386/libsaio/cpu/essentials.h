@@ -174,12 +174,8 @@
 #define CPU_MODEL_IB_CORE_EX		0x3B	// Ivy Bridge Core Processors (LGA 2011)
 #define CPU_MODEL_IB_CORE_XEON		0x3E
 
-#define CPU_MODEL_HASWELL			0x30
-#define CPU_MODEL_HASWELL_ULT		0x40
-
-// #define CPU_MODEL_HASWELL			0x3C
-// #define CPU_MODEL_HASWELL_CORE		0x3F
-// #define CPU_MODEL_HASWELL_CORE_EX	0x45
+#define CPU_MODEL_HASWELL			0x3C
+#define CPU_MODEL_HASWELL_ULT		0x45
 
 #define DALES_BRIDGE	1
 #define SANDY_BRIDGE	2
