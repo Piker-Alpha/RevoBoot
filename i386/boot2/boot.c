@@ -512,7 +512,7 @@ void boot(int biosdev)
 				
 				_BOOT_DEBUG_DUMP("adler32: %08X\n", adler32);
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Also for Mountain Lion, which has bit 2 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 2 set like Lion.
 
 				_BOOT_DEBUG_DUMP("Checking for kernelcache...\n");
 
@@ -528,7 +528,7 @@ void boot(int biosdev)
 
 			_BOOT_DEBUG_ELSE_DUMP("Failed to locate the kernelcache (directory)!\n");
 		}
-#else // Not for (Mountain) Lion, go easy with the Snow Leopard.
+#else // Not for Mavericks/Mountain Lion/Lion, go easy with the Snow Leopard.
 
 				/* static char preLinkedKernelPath[128];
 				static char adler32Key[PLATFORM_NAME_LEN + ROOT_PATH_LEN];

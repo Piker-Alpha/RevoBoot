@@ -198,7 +198,9 @@ void initPlatform(int biosDevice)
 		gPlatform.CPU.Mobile		= true;	// Will be initialized in cpu/cpu_dynamic.h (used in smbios/dynamic_data.h)
 	}
 
-#if (MAKE_TARGET_OS == LION)
+#if (MAKE_TARGET_OS == MAVERICKS)
+	gPlatform.OSVersion				= strdup("10.9");
+#elif (MAKE_TARGET_OS == LION)
 	gPlatform.OSVersion				= strdup("10.7");
 #elif (MAKE_TARGET_OS == MOUNTAIN_LION)
 	gPlatform.OSVersion				= strdup("10.8");

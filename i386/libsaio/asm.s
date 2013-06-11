@@ -334,7 +334,7 @@ LABEL(_halt)
     call    _bgetc
     jmp     _halt
 
-#if ((MAKE_TARGET_OS & LION) == LION)
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks, Mountain Lion and Lion
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // disableIRQs()
 //
@@ -365,7 +365,7 @@ LABEL(_disableIRQs)
 // Passes boot arguments in %eax.
 //
 LABEL(_startMachKernel)
-#if ((MAKE_TARGET_OS & LION) == LION)
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks, Mountain Lion and Lion
 	call    _disableIRQs	// Taking care of a ACPI bug.
 #endif
 	push    %ebp

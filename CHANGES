@@ -1,7 +1,13 @@
-RevoBoot v1.5.40 (Next Major Release)
+RevoBoot v1.5.50 (Next Major Release)
 ================
 - Improved CPU detection (with new/additional CPU's).
 - Improved P-State generation (less settings).
+
+
+RevoBoot v1.5.40
+================
+- Support for OS X 10.9 aka Mavericks added (Piker, June 2013).
+- VERSION updated to v1.5.40
 
 
 RevoBoot v1.5.39

@@ -62,7 +62,10 @@ else
 		MAKE_TARGET_OS = 6;
 		MAKEGOAL = mountain-lion
 	else
-		ifeq ($(MAKECMDGOALS), lion)
+		ifeq ($(MAKECMDGOALS), mavericks)
+			MAKE_TARGET_OS = 12;
+			MAKEGOAL = mavericks
+		else ifeq ($(MAKECMDGOALS), lion)
 			MAKE_TARGET_OS = 2;
 			MAKEGOAL = lion
 		else ifeq ($(MAKECMDGOALS), legacy)
@@ -73,7 +76,7 @@ else
 endif
 
 #
-# Export our make goal i.e. mountain-lion, lion or legacy (snow-leopard or leopard).
+# Export our make goal i.e. mavericks, mountain-lion, lion or legacy (snow-leopard or leopard).
 #
 
 export MAKEGOAL
