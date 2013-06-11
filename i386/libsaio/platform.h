@@ -64,6 +64,7 @@
 
 #define MACBOOK_AIR_41			(MACBOOK_AIR | (1 << 15))
 #define MACBOOK_AIR_42			(MACBOOK_AIR | (2 << 15))
+#define MACBOOK_AIR_61			(MACBOOK_AIR | (3 << 15))
 #define MACBOOK_AIR_62			 MACBOOK_AIR				// Defaults to MacBookAir6,2
 
 #define MACBOOK_PRO_61			(MACBOOK_PRO | (1 << 15))
