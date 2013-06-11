@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 6.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 6.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -71,6 +71,9 @@
 #			- CPU signature output added (Jeroen/Pike, April 2013)
 #			- Updating to v6.4 after Jeroen's accidental RM of my local RevoBoot directory (Pike, May 2013)
 #			- Updating to v6.5 with bugs fixes and EFI partition checking for Clover compatibility (Pike, May 2013)
+#			- Output of Clover ACPI directory detection fixed (Pike, June 2013)
+#			- Haswell CPUs added (Jeroen, June 2013)
+#			- board-id's for new MacBookAir6,[1/2] added (Pike, June 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -176,7 +179,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=6.5
+gScriptVersion=6.6
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -459,6 +462,20 @@ i3-3110M,35,0,2400,0,2,4
 # New Haswell processors (with HD-4600 graphics)
 #
 gServerHaswellCPUList=(
+# E3-1200 V3 Xeon Processor Series
+'E3-1285L V3',65,800,3100,3900,4,8
+'E3-1285 V3',84,800,3600,4000,4,8
+'E3-1280 V3',82,800,3600,4000,4,8
+'E3-1275 V3',84,800,3500,3900,4,8
+'E3-1270 V3',80,800,3500,3900,4,8
+'E3-1268L V3',45,800,2300,3300,4,8
+'E3-1265L V3',45,800,2500,3700,4,8
+'E3-1245 V3',84,800,3400,3800,4,8
+'E3-1240 V3',80,800,3400,3800,4,8
+'E3-1230L V3',25,800,1800,2800,4,8
+'E3-1230 V3',80,800,3300,3700,4,8
+'E3-1225 V3',80,800,3200,3600,4,4
+'E3-1220 V3',80,800,3100,3500,4,4
 )
 
 gDesktopHaswellCPUList=(
@@ -482,12 +499,30 @@ i5-4670T,45,800,2300,3300,4,4
 i5-4570S,65,800,2900,3600,4,4
 i5-4570T,35,800,2900,3600,2,4
 i5-4430S,65,800,2700,3200,4,4
+# BGA
+i7-4770R,65,800,3200,3900,4,8
+# Haswell ULT
+i5-4288U,28,800,2600,3100,2,4
+i5-4258U,28,800,2400,2900,2,4
+i5-4250U,15,800,1300,2600,2,4
+i5-4200Y,12,800,1400,1900,2,4
+i5-4200U,15,800,1600,2600,2,4
 )
 
 gMobileHaswellCPUList=(
+i7-4950HQ,47,800,2400,3600,4,8
+i7-4850HQ,47,800,2300,3500,4,8
+i7-4750HQ,47,800,2000,3200,4,8
+# Extreme Edition Series - socket FCPGA946
 i7-4930MX,57,800,3000,3900,4,8
+# Socket FCPGA946
 i7-4900MQ,47,800,2800,3800,4,8
 i7-4800MQ,47,800,2700,3700,4,8
+i7-4702MQ,37,800,2200,3200,4,8
+i7-4700MQ,47,800,2400,3600,4,8
+# Socket FCBGA1364
+i7-4700HQ,47,800,2400,3600,4,8
+i7-4702HQ,37,800,2200,3200,4,8
 )
 
 #--------------------------------------------------------------------------------
@@ -1191,8 +1226,8 @@ function _setDestinationPath
             if [ -d /Volumes/EFI ];
                 then
                     if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
-                        gDestinationPath="/Volumes/EFI/Clover/ACPI/patched/"
-                        echo -e '\nACPI target directory changed to: $gDestinationPath'
+                        gDestinationPath="/Volumes/EFI/CLOVER/ACPI/patched/"
+                        echo -e '\nACPI target directory changed to: '$gDestinationPath
                         return
                     fi
                 else
@@ -1212,12 +1247,19 @@ function _setDestinationPath
                             # TODO: Get target disk from diskutil list
                             #
                             sudo mount_hfs /dev/disk0s1 /Volumes/EFI
-                            let gUnmountEFIPartition=1
 
-                            if [ -f /Volumes/EFI/Clover/ACPI/patched ]; then
-                                gDestinationPath="/Volumes/EFI/Clover/ACPI/patched/"
-                                echo 'ACPI target directory changed to: $gDestinationPath'
-                                return
+                            if [ -f /Volumes/EFI/Clover/ACPI/patched ];
+                                then
+                                    let gUnmountEFIPartition=1
+                                    gDestinationPath="/Volumes/EFI/CLOVER/ACPI/patched/"
+                                    echo 'ACPI target directory changed to: '$gDestinationPath
+                                    return
+                                else
+                                    echo -e '\nUnmounting EFI partition...'
+                                    sudo umount -f /Volumes/EFI
+                                    echo 'Removing temporarily mount point...'
+#                                   sudo rm -r /Volumes/EFI
+                                    return
                             fi
                     fi
 
@@ -1229,7 +1271,7 @@ function _setDestinationPath
     #
     if [ -d /EFI/ACPI/patched ]; then
         gDestinationPath="/EFI/ACPI/patched/"
-        echo 'ACPI target directory changed to: $gDestinationPath'
+        echo 'ACPI target directory changed to: '$gDestinationPath
         return
     fi
 }
@@ -1685,14 +1727,14 @@ function _initHaswellSetup()
 			gACST_CPU1=31   # C1, C2, C3, C6 and C7
 		;;
 
-		Mac-)
+		Mac-35C1E88140C3E6CF)
 			gSystemType=2
 			gMacModelIdentifier="MacBookAir6,1"
 			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
 			gACST_CPU1=31   # C1, C2, C3, C6 and C7
 		;;
 
-		Mac-)
+		Mac-7DF21CB3ED6977E5)
 			gSystemType=2
 			gMacModelIdentifier="MacBookAir6,2"
 			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
