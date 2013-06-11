@@ -87,13 +87,20 @@
 		#define SMB_PRODUCT_NAME	"MacBookAir4,1"
 		#define SMB_BOARD_PRODUCT	"Mac-C08A6BB70A942AC2"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'A', 'i', 'r', '4', ',', '1' }
-	#else // Defaults to MacBookAir4,2
+	#elif (TARGET_MODEL == MACBOOK_AIR_42)
 		// Intel Core i5-2557M @ 1.7GHz (2 cores - 4 threads)
 		// Intel Core i7-2677M @ 1.8GHz (2 cores - 4 threads)
 		#define SMB_BIOS_VERSION	"MBA41.88Z.0077.B08.1109011050"
 		#define SMB_PRODUCT_NAME	"MacBookAir4,2"
 		#define SMB_BOARD_PRODUCT	"Mac-742912EFDBEE19B3"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'A', 'i', 'r', '4', ',', '2' }
+	#else // Defaults to MacBookAir6,2
+		// Intel Core i5-4250U @ 1.30 GHz (2 cores - 4 threads)
+		// Intel Core i7-4650U @ 1.70 GHz (2 cores - 4 threads)
+		#define SMB_BIOS_VERSION	"MBA61.88Z.0099.B00.1305241529"
+		#define SMB_PRODUCT_NAME	"MacBookAir6,2"
+		#define SMB_BOARD_PRODUCT	"Mac-7DF21CB3ED6977E5"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'A', 'i', 'r', '6', ',', '2' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
