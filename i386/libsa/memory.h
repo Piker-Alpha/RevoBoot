@@ -91,7 +91,7 @@
 
 //							0x00100000L
 #define KERNEL_ADDR			(VIDEO_ADDR + VIDEO_LEN)			// Kernel and MKexts/drivers.
-#define KERNEL_LEN			0x04000000L							// Size: 64 MB (128 MB for Chameleon).
+#define KERNEL_LEN			0x06000000L							// Size: 96 MB (128 MB for Chameleon).
 																//
 																// Note: Can cause a stop("Kernel overflows available space")
 // Based on KERNEL_LEN		0x04100000L
