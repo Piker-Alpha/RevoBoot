@@ -87,7 +87,7 @@ void initKernelBootConfig(void)
 	// EFI selection is based on the CPU type.
 	bootArgs->efiMode = (gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? kBootArgsEfiMode64 : kBootArgsEfiMode32;
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 2 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Lion's new debug output (replacing a couple of former boot arguments).
 	bootArgs->debugMode = EFI_DEBUG_MODE;					// Defined in config/settings.h
 #endif
@@ -171,7 +171,7 @@ void finalizeKernelBootConfig(void)
     bootArgs->deviceTreeP = (uint32_t)addr;
     bootArgs->deviceTreeLength = size;
 	
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 2 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Adding a 16 KB log space.
 	bootArgs->performanceDataSize	= 0;
 	bootArgs->performanceDataStart	= 0;
@@ -184,7 +184,7 @@ void finalizeKernelBootConfig(void)
 	bootArgs->bootMemStart	= 0;
 #endif
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 2 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
 	bootArgs->FSBFrequency	= gPlatform.CPU.FSBFrequency;
 #endif
 }

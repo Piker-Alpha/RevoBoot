@@ -512,7 +512,7 @@ void boot(int biosdev)
 				
 				_BOOT_DEBUG_DUMP("adler32: %08X\n", adler32);
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 2 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
 
 				_BOOT_DEBUG_DUMP("Checking for kernelcache...\n");
 
