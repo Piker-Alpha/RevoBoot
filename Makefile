@@ -63,7 +63,7 @@ else
 		MAKEGOAL = mountain-lion
 	else
 		ifeq ($(MAKECMDGOALS), mavericks)
-			MAKE_TARGET_OS = 12;
+			MAKE_TARGET_OS = 10;
 			MAKEGOAL = mavericks
 		else ifeq ($(MAKECMDGOALS), lion)
 			MAKE_TARGET_OS = 2;

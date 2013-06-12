@@ -22,6 +22,7 @@
 #define	SNOW_LEOPARD			1	// Snow Leopard.
 #define LION					2	// Lion (the default).
 #define MOUNTAIN_LION			6	// Mountain Lion (includes Lion changes).
+#define MAVERICKS				10	// Mavericks (includes Lion changes).
 
 //------------------------------------------------------------------------------
 
