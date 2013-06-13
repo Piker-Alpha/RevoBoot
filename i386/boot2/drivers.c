@@ -95,7 +95,7 @@ enum
 // Private functions.
 static unsigned long localAdler32(unsigned char * buffer, long length);
 
-#if (MAKE_TARGET_OS == 1) // Snow Leopard only!
+#if (MAKE_TARGET_OS == SNOW_LEOPARD)
 	static int loadMultiKext(char *fileSpec);
 #endif
 
@@ -173,7 +173,7 @@ long loadDrivers(char * dirSpec)
 		return -1;
 	}
 
-#if (MAKE_TARGET_OS == 1) // Snow Leopard only!
+#if (MAKE_TARGET_OS == SNOW_LEOPARD)
 	bool shouldLoadMKext = ((gBootMode & kBootModeSafe) == 0);
 
 	_DRIVERS_DEBUG_DUMP("shouldLoadMKext: %s\n", shouldLoadMKext ? "true" : "false");
@@ -200,12 +200,18 @@ long loadDrivers(char * dirSpec)
 		if ((gKextLoadStatus & 1) == 0)
 		{
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/System/Library/Extensions\");\n");
-
+			// System kexts
 			if (loadKexts("/System/Library/Extensions", 0) == EFI_SUCCESS)
 			{
 				_DRIVERS_DEBUG_DUMP("loadKexts(1) OK.\n");
 			}
-
+#if (MAKE_TARGET_OS == MAVERICKS)
+			// Signed kexts for Mavericks only!
+			if (loadKexts("/Library/Extensions", 0) == EFI_SUCCESS)
+			{
+				_DRIVERS_DEBUG_DUMP("loadKexts(2) OK.\n");
+			}
+#endif
 			_DRIVERS_DEBUG_DUMP("\n");
 		}
 	}
@@ -219,7 +225,7 @@ long loadDrivers(char * dirSpec)
 }
 
 
-#if (MAKE_TARGET_OS == 1) // Snow Leopard only!
+#if (MAKE_TARGET_OS == SNOW_LEOPARD)
 //==============================================================================
 // Returns 0 on success, -1 when not found, -2 on load failures and -3 on 
 // verification (signatures, length, adler32) errors.
