@@ -157,13 +157,19 @@
 		#define SMB_PRODUCT_NAME	"MacBookPro10,1"
 		#define SMB_BOARD_PRODUCT	"Mac-C3EC7CD22292981F"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '1' }
-	#else // Defaults to MacBookPro10,2
+	#elif (TARGET_MODEL == MACBOOK_PRO_102)
 		// Intel Core i5-3230QM @ 2.60 GHz - 2 cores / 4 threads.
 		// Intel Core i7-3540QM @ 3.00 GHz - 2 cores / 4 threads.
 		#define SMB_BIOS_VERSION	"MBP102.88Z.0106.B03.1211161133"
 		#define SMB_PRODUCT_NAME	"MacBookPro10,2"
 		#define SMB_BOARD_PRODUCT	"Mac-AFD8A9D944EA4843"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '2' }
+	#else // Defaults to MacBookPro11,1
+		// Intel Core i5-4258U @ 2.90 GHz - 2 cores / 4 threads.
+		#define SMB_BIOS_VERSION	"MBP111.88Z.0098.B00.1306051054"
+		#define SMB_PRODUCT_NAME	"MacBookPro11,1"
+		#define SMB_BOARD_PRODUCT	"Mac-189A3D4F975D5FFC"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '1', ',', '1' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
@@ -203,12 +209,17 @@
 		#define SMB_PRODUCT_NAME	"Macmini6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-031AEE4D24BFF0B1"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '1' }
-	#else // Defaults to Macmini6,2
+	#elif (TARGET_MODEL == MACMINI_62) // Defaults to Macmini6,2
 		// Intel Core i7-3615QM @ 2.30 GHz (4 cores - 8 threads)
 		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B00.1208091121"
 		#define SMB_PRODUCT_NAME	"Macmini6,2"
 		#define SMB_BOARD_PRODUCT	"Mac-F65AE981FFA204ED"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '2' }
+	#else // Defaults to Macmini7,1
+		#define SMB_BIOS_VERSION	"MM71.88Z.0106.B00.1307301121"
+		#define SMB_PRODUCT_NAME	"Macmini7,1"
+		#define SMB_BOARD_PRODUCT	"Mac-031B6874CF7F642A"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '7', ',', '1' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
@@ -228,11 +239,16 @@
 		#define SMB_PRODUCT_NAME	"MacPro4,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F221BEC8"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '4', ',', '1' }
-	#else // Defaults to MacPro5,1
+	#elif (TARGET_MODEL == MACPRO_51)
 		#define SMB_BIOS_VERSION	"MP51.88Z.007F.B03.1010071432"
 		#define SMB_PRODUCT_NAME	"MacPro5,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F221BEC8"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '5', ',', '1' }
+	#else // Defaults to MacPro6,1
+		#define SMB_BIOS_VERSION	"MP61.88Z.007F.B03.1010071432" // TODO: Verify this!
+		#define SMB_PRODUCT_NAME	"MacPro6,1"
+		#define SMB_BOARD_PRODUCT	"Mac-F60DEB81FF30ACF6"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '6', ',', '1' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
