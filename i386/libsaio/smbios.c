@@ -38,7 +38,7 @@ void setupSMBIOS(void)
     newEPS->checksum			= 0;
     newEPS->entryPointLength	= 0x1f;		// sizeof(* newEPS)
     newEPS->majorVersion		= 2;
-    newEPS->minorVersion		= 4;
+    newEPS->minorVersion		= 6;
 	newEPS->maxStructureSize	= STATIC_SMBIOS_SM_MAX_STRUCTURE_SIZE;	// Defined in RevoBoot/i386/config/SMBIOS/data-template.h
     newEPS->entryPointRevision	= 0;
     
