@@ -59,13 +59,17 @@
 #define IMAC_121				(IMAC | (2 << 15))
 #define IMAC_122				(IMAC | (3 << 15))
 #define IMAC_131				(IMAC | (4 << 15))
-#define IMAC_132				 IMAC						// Defaults to iMac13,2
+#define IMAC_132				(IMAC | (5 << 15))
+#define IMAC_142				(IMAC | (6 << 15))
+#define IMAC_141				 IMAC						// Defaults to iMac14,1
 
 #define MACBOOK_41				 MACBOOK					// Defaults to MacBook4,1
 
 #define MACBOOK_AIR_41			(MACBOOK_AIR | (1 << 15))
 #define MACBOOK_AIR_42			(MACBOOK_AIR | (2 << 15))
-#define MACBOOK_AIR_61			(MACBOOK_AIR | (3 << 15))
+#define MACBOOK_AIR_51			(MACBOOK_AIR | (3 << 15))
+#define MACBOOK_AIR_52			(MACBOOK_AIR | (4 << 15))
+#define MACBOOK_AIR_61			(MACBOOK_AIR | (5 << 15))
 #define MACBOOK_AIR_62			 MACBOOK_AIR				// Defaults to MacBookAir6,2
 
 #define MACBOOK_PRO_61			(MACBOOK_PRO | (1 << 15))
@@ -75,18 +79,23 @@
 #define MACBOOK_PRO_91			(MACBOOK_PRO | (5 << 15))
 #define MACBOOK_PRO_92			(MACBOOK_PRO | (6 << 15))
 #define MACBOOK_PRO_101			(MACBOOK_PRO | (7 << 15))
-#define MACBOOK_PRO_102			 MACBOOK_PRO				// Defaults to MacBookPro10,2
+#define MACBOOK_PRO_102			(MACBOOK_PRO | (8 << 15))
+#define MACBOOK_PRO_112			(MACBOOK_PRO | (9 << 15))
+#define MACBOOK_PRO_111			 MACBOOK_PRO				// Defaults to MacBookPro11,1
 
 #define MACMINI_41				(MACMINI | (1 << 15))
 #define MACMINI_51				(MACMINI | (2 << 15))
 #define MACMINI_52				(MACMINI | (3 << 15))
 #define MACMINI_53				(MACMINI | (4 << 15))
 #define MACMINI_61				(MACMINI | (5 << 15))
-#define MACMINI_62				 MACMINI					// Defaults to Macmini5,1
+#define MACMINI_62				(MACMINI | (6 << 15))
+#define MACMINI_72				(MACMINI | (7 << 15))
+#define MACMINI_71				 MACMINI					// Defaults to Macmini7,1
 
 #define MACPRO_31				(MACPRO | (1 << 15))
 #define MACPRO_41				(MACPRO | (2 << 15))
-#define MACPRO_51				 MACPRO						// Defaults to MacPro5,1
+#define MACPRO_51				(MACPRO | (3 << 15))
+#define MACPRO_61				 MACPRO						// Defaults to MacPro6,1
 
 //------------------------------------------------------------------------------
 
