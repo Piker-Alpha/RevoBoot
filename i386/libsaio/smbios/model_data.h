@@ -245,7 +245,7 @@
 		#define SMB_BOARD_PRODUCT	"Mac-F221BEC8"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '5', ',', '1' }
 	#else // Defaults to MacPro6,1
-		#define SMB_BIOS_VERSION	"MP61.88Z.007F.B03.1010071432" // TODO: Verify this!
+		#define SMB_BIOS_VERSION	"MP61.88Z.0099.B00.1306121724" // TODO: Verify this!
 		#define SMB_PRODUCT_NAME	"MacPro6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F60DEB81FF30ACF6"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '6', ',', '1' }
