@@ -74,6 +74,7 @@
 #			- Output of Clover ACPI directory detection fixed (Pike, June 2013)
 #			- Haswell CPUs added (Jeroen, June 2013)
 #			- board-id's for new MacBookAir6,[1/2] added (Pike, June 2013)
+#			- board-id's for new iMac14,[1/2/3] added (Pike, October 2013)
 #			- board-id's for new MacBookPro11,[1/2/3] added (Pike, October 2013)
 #			- Cleanups and board-id for new MacPro6,1 added (Pike, October 2013)
 #
@@ -1706,7 +1707,7 @@ function _initHaswellSetup()
 			gACST_CPU1=7    # C1, C2 and C3
 		;;
 
-		Mac-77EB7D7DAF985)
+		Mac-77EB7D7DAF985301)
 			gSystemType=1
 			gMacModelIdentifier="iMac14,3"
 			gACST_CPU0=13   # C1, C2, C3, C6
