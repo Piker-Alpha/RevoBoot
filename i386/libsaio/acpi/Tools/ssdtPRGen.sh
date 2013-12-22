@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by † RevoGirl
-# Version 6.8 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 6.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -78,6 +78,7 @@
 #			- board-id's for new MacBookPro11,[1/2/3] added (Pike, October 2013)
 #			- Cleanups and board-id for new MacPro6,1 added (Pike, October 2013)
 #			- Frequency error in i7-4700MQ data fixed, thanks to RehabMan (Pike, November 2013)
+#			- Intel i5-4200M added (Pike, December 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -183,7 +184,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=6.8
+gScriptVersion=6.9
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -531,6 +532,7 @@ i7-4900MQ,47,800,2800,3800,4,8
 i7-4800MQ,47,800,2700,3700,4,8
 i7-4702MQ,37,800,2200,3200,4,8
 i7-4700MQ,47,800,2400,3400,4,8
+i5-4200M,37,800,2500,3100,2,4
 # Socket FCBGA1364
 i7-4700HQ,47,800,2400,3600,4,8
 i7-4702HQ,37,800,2200,3200,4,8
