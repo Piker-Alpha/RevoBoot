@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by † RevoGirl
-# Version 6.9 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -79,6 +79,7 @@
 #			- Cleanups and board-id for new MacPro6,1 added (Pike, October 2013)
 #			- Frequency error in i7-4700MQ data fixed, thanks to RehabMan (Pike, November 2013)
 #			- Intel i5-4200M added (Pike, December 2013)
+#			- LFM fixed in the Intel i7-3930K data (Pike, December 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -88,6 +89,7 @@
 #			- Thanks to 'RehabMan' for his help with Snow Leopard/egrep incompatibility.
 #			- Thanks to 'BigDonkey' for his help with LFM (800 MHz) for Sandy Bridge mobility models.
 #			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
+#			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -184,7 +186,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=6.9
+gScriptVersion=7.0
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -261,7 +263,7 @@ i7-35355,120,1600,2666,2666,4,4
 # i7 Desktop Extreme Series
 i7-3970X,150,0,3500,4000,6,12
 i7-3960X,130,0,3300,3900,6,12
-i7-3930K,130,0,3200,3800,6,12
+i7-3930K,130,1200,3200,3800,6,12
 i7-3820,130,0,3600,3800,4,8
 # i7 Desktop series
 i7-2600S,65,1600,2800,3800,4,8
