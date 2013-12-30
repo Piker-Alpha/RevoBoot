@@ -8,145 +8,452 @@
  *
  */
 
-#include <IOKit/IOLib.h>
-#include <IOKit/IOService.h>
-#include <IOKit/IOWorkLoop.h>
-#include <IOKit/IOMemoryDescriptor.h>
-#include <IOKit/IOTimerEventSource.h>
+#include "AppleIntelCPUPowerManagementInfo.h"
 
-#include <i386/cpuid.h>
-#include <i386/proc_reg.h>
 
-#include "../../../essentials.h"
+//==============================================================================
 
-#define super IOService
-
-#define REPORT_MSRS			1
-#define REPORT_GPU_STATS	1
-#define REPORT_C_STATES		1
-
-#define NB_BUS	0x00
-#define NB_DEV	0x00
-#define NB_FUN	0x00
-
-#define DEVEN	(0x54)
-#define DEVEN_D2EN_MASK	(0x10)
-
-#define NB_PCICFG_SPACE_INDEX_REG	0xcf8
-#define NB_PCICFG_SPACE_DATA_REG	0xcfc
-
-#define BIT31						0x80000000
-
-#define PCIEX_BASE_ADDRESS			0xF8000000
-#define NB_MCH_BASE_ADDRESS			0xFED10000	// (G)MCH Memory Mapped Register Range Base Address (D0:F0:Rx48).
-
-#define READ_PCI8(Bx, Dx, Fx, Rx)	ReadPci8(Bx, Dx, Fx, Rx)
-#define READ_PCI8_NB(Rx)			READ_PCI8(NB_BUS, NB_DEV, NB_FUN, Rx)
-#define MMIO_READ8(Address)			(*(volatile UInt8  *)(Address))
-
-#define IGPU_RATIO_TO_FREQUENCY(ratio)	((ratio * 100) / 2)
-
-#define NB_PCI_CFG_ADDRESS(bus, dev, func, reg) \
-	(UInt64) ((((UInt8)(bus) << 24) + ((UInt8)(dev) << 16) + \
-	((UInt8)(func) << 8) + ((UInt8)(reg))) & 0xffffffff)
-
-#define NB_PCIE_CFG_ADDRESS(bus, dev, func, reg) \
-	((UInt32)(PCIEX_BASE_ADDRESS + ((UInt8)(bus) << 20) + \
-	((UInt8)(dev) << 15) + ((UInt8)(func) << 12) + (reg)))
-
-static __inline__ unsigned char inb(UInt16 port)
+void AppleIntelCPUPowerManagementInfo::reportMSRs(void)
 {
-	UInt8 value;
-	__asm__ volatile("inb %w1, %b0" : "=a" (value) : "Nd" (port));
-	return (value);
-}
+	IOLog("AICPUPMI: MSR_CORE_THREAD_COUNT......(0x35)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_THREAD_COUNT));
 
-static __inline__ void outl(UInt16 port, UInt32 value)
-{
-	__asm__ volatile("outl %0, %w1" : : "a" (value), "Nd" (port));
-}
+	IOLog("AICPUPMI: MSR_PLATFORM_INFO..........(0xCE)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PLATFORM_INFO));
 
-UInt8 ReadPci8(UInt8 Bus, UInt8 Dev, UInt8 Fun, UInt16 Reg)
-{
-	if (Reg >= 0x100)
+	IOLog("AICPUPMI: MSR_PMG_CST_CONFIG_CONTROL.(0xE2)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_CST_CONFIG_CONTROL));
+	IOLog("AICPUPMI: MSR_PMG_IO_CAPTURE_BASE....(0xE4)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PMG_IO_CAPTURE_BASE));
+	IOLog("AICPUPMI: IA32_MPERF.................(0xE7)  : 0x%llX\n", (unsigned long long)rdmsr64(IA32_MPERF));
+	IOLog("AICPUPMI: IA32_APERF.................(0xE8)  : 0x%llX\n", (unsigned long long)rdmsr64(IA32_APERF));
+
+	IOLog("AICPUPMI: MSR_FLEX_RATIO.............(0x194) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_FLEX_RATIO));
+	IOLog("AICPUPMI: MSR_IA32_PERF_STATUS.......(0x198) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_IA32_PERF_STATUS));
+	IOLog("AICPUPMI: MSR_IA32_PERF_CONTROL......(0x199) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_IA32_PERF_CONTROL));
+	IOLog("AICPUPMI: IA32_CLOCK_MODULATION......(0x19A) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_CLOCK_MODULATION));
+	IOLog("AICPUPMI: IA32_THERM_STATUS..........(0x19C) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_THERM_STATUS));
+
+	IOLog("AICPUPMI: IA32_MISC_ENABLES..........(0x1A0) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_MISC_ENABLES));
+	IOLog("AICPUPMI: MSR_MISC_PWR_MGMT..........(0x1AA) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_MISC_PWR_MGMT));
+	IOLog("AICPUPMI: MSR_TURBO_RATIO_LIMIT......(0x1AD) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_RATIO_LIMIT));
+
+	IOLog("AICPUPMI: IA32_ENERGY_PERF_BIAS......(0x1B0) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_ENERGY_PERF_BIAS));
+
+	IOLog("AICPUPMI: MSR_POWER_CTL..............(0x1FC) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_POWER_CTL));
+
+	IOLog("AICPUPMI: MSR_RAPL_POWER_UNIT........(0x606) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_RAPL_POWER_UNIT));
+	IOLog("AICPUPMI: MSR_PKG_POWER_LIMIT........(0x610) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_POWER_LIMIT));
+	IOLog("AICPUPMI: MSR_PKG_ENERGY_STATUS......(0x611) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_ENERGY_STATUS));
+
+	IOLog("AICPUPMI: MSR_PKGC3_IRTL.............(0x60a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC3_IRTL));
+	IOLog("AICPUPMI: MSR_PKGC6_IRTL.............(0x60b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC6_IRTL));
+	IOLog("AICPUPMI: MSR_PKGC7_IRTL.............(0x60c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC7_IRTL));
+
+	IOLog("AICPUPMI: MSR_PP0_CURRENT_CONFIG.....(0x601) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_CURRENT_CONFIG));
+	IOLog("AICPUPMI: MSR_PP0_POWER_LIMIT........(0x638) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POWER_LIMIT));
+	IOLog("AICPUPMI: MSR_PP0_ENERGY_STATUS......(0x639) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_ENERGY_STATUS));
+	IOLog("AICPUPMI: MSR_PP0_POLICY.............(0x63a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POLICY));
+
+	/* IOLog("AICPUPMI: MSR_PP1_CURRENT_CONFIG.....(0x602) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_CURRENT_CONFIG));
+	IOLog("AICPUPMI: MSR_PP1_POWER_LIMIT........(0x640) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POWER_LIMIT));
+	IOLog("AICPUPMI: MSR_PP1_ENERGY_STATUS......(0x641) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_ENERGY_STATUS));
+	IOLog("AICPUPMI: MSR_PP1_POLICY.............(0x642) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POLICY)); */
+
+	IOLog("AICPUPMI: MSR_CONFIG_TDP_NOMINAL.....(0x648) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_NOMINAL));
+	IOLog("AICPUPMI: MSR_CONFIG_TDP_LEVEL1......(0x649) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL1));
+	IOLog("AICPUPMI: MSR_CONFIG_TDP_LEVEL2......(0x64a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL2));
+	IOLog("AICPUPMI: MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
+	IOLog("AICPUPMI: MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
+
+	IOLog("AICPUPMI: MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
+	IOLog("AICPUPMI: MSR_PKG_C3_RESIDENCY.......(0x3f8) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C3_RESIDENCY));
+	IOLog("AICPUPMI: MSR_PKG_C6_RESIDENCY.......(0x3f9) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C6_RESIDENCY));
+	IOLog("AICPUPMI: MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+	
+	if (gCPUModel == CPU_MODEL_HASWELL_ULT)
 	{
-		// return MMIO_READ8(NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
-		return MMIO_READ8((UInt64)NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
+		IOLog("AICPUPMI: MSR_PKG_C8_RESIDENCY.......(0x630) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("AICPUPMI: MSR_PKG_C9_RESIDENCY.......(0x631) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("AICPUPMI: MSR_PKG_C10_RESIDENCY......(0x632) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		
+		IOLog("AICPUPMI: MSR_PKG_C8_LATENCY.........(0x633) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("AICPUPMI: MSR_PKG_C9_LATENCY.........(0x634) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("AICPUPMI: MSR_PKG_C10_LATENCY........(0x635) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
 	}
-	else
-	{
-		outl(NB_PCICFG_SPACE_INDEX_REG, BIT31 | (Bus << 16) | (Dev << 11) | (Fun << 8) | (Reg & 0xfc));
-		return inb(NB_PCICFG_SPACE_DATA_REG | (UInt8)(Reg & 3));
-    }
 }
 
-extern "C" void mp_rendezvous_no_intrs(void (*action_func)(void *), void * arg);
-extern "C" int cpu_number(void);
+//==============================================================================
 
-class AppleIntelCPUPowerManagementInfo : public IOService
+inline void getCStates(void *magic)
 {
-	OSDeclareDefaultStructors (AppleIntelCPUPowerManagementInfo);
+	UInt32 logicalCoreNumber = cpu_number();
 
-private:
-	IOSimpleLock		*simpleLock;
-	IOWorkLoop			*workLoop;
-	IOTimerEventSource	*timerEventSource;
+	if (gCheckC3 && rdmsr64(MSR_CORE_C3_RESIDENCY) > 0)
+	{
+		gC3Cores |= (1 << logicalCoreNumber);
+	}
+
+	if (gCheckC6 && rdmsr64(MSR_CORE_C6_RESIDENCY) > 0)
+	{
+		gC6Cores |= (1 << logicalCoreNumber);
+	}
+
+	if (gCheckC7 && rdmsr64(MSR_CORE_C7_RESIDENCY) > 0)
+	{
+		gC7Cores |= (1 << logicalCoreNumber);
+	}
+}
+
+//==============================================================================
+
+IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
+{
+	UInt8 currentMultiplier = (rdmsr64(MSR_IA32_PERF_STS) >> 8);
+	gCoreMultipliers |= (1ULL << currentMultiplier);
 
 #if REPORT_GPU_STATS
-	IOMemoryDescriptor	*memDescriptor;
-	IOMemoryMap			*memoryMap;
+	UInt8 currentIgpuMultiplier = 0;
+
+	if (igpuEnabled)
+	{
+		currentIgpuMultiplier = (UInt8)gMchbar[1];
+		gIGPUMultipliers |= (1ULL << currentIgpuMultiplier);
+	}
 #endif
 
-	IOReturn result		= kIOReturnSuccess;
+	timerEventSource->setTimeoutTicks(Interval);
 
-	virtual IOReturn loopTimerEvent(void);
-
-	void reportMSRs(void);
-
-	bool loopLock = false;
-	bool dumpCStates = true;
-	bool igpuEnabled = true;
-
-	UInt16 Interval	= 50;
-
-	UInt64	gCoreMultipliers		= 0ULL;
-	UInt64	gTriggeredPStates		= 0ULL;
-
-	UInt64	gIGPUMultipliers		= 0ULL;
-	UInt64	gTriggeredIGPUPStates	= 0ULL;
-
-public:
-	virtual IOService *	probe(IOService * provider, SInt32 * score);
-	virtual bool start(IOService * provider);
-	virtual void stop(IOService * provider);
-	virtual void free(void);
-
-	UInt8	gMinRatio	= 0;
-	UInt8	gClockRatio	= 0;
-	UInt8	gMaxRatio	= 0;
-};
-
-OSDefineMetaClassAndStructors(AppleIntelCPUPowerManagementInfo, IOService)
-
-UInt8	gCPUModel	= 0x2A;
-UInt8	gCoreStates	= 0ULL;
+	if (loopLock)
+	{
+		return kIOReturnTimeout;
+	}
+	
+	loopLock = true;
 
 #if REPORT_C_STATES
-bool	gCheckC3	= true;
-bool	gCheckC6	= true;
-bool	gCheckC7	= false;
-
-UInt32	gC3Cores	= 0;
-UInt32	gC6Cores	= 0;
-UInt32	gC7Cores	= 0;
-
-UInt32	gTriggeredC3Cores	= 0;
-UInt32	gTriggeredC6Cores	= 0;
-UInt32	gTriggeredC7Cores	= 0;
+	if (dumpCStates)
+	{
+		UInt32 magic = 0;
+		// IOSimpleLockLock(simpleLock);
+		mp_rendezvous_no_intrs(getCStates, &magic);
+		IOSleep(1);
+		// IOSimpleLockUnlock(simpleLock);
+	}
 #endif
 
-UInt64	gCoreMultipliers = 0ULL;
+	int currentBit = 0;
+	UInt64 value = 0ULL;
 
 #if REPORT_GPU_STATS
-	UInt8	* gMchbar	= NULL;
+	if ((gCoreMultipliers != gTriggeredPStates) || (gIGPUMultipliers != gTriggeredIGPUPStates))
+#else
+	if (gCoreMultipliers != gTriggeredPStates)
 #endif
+	{
+		// int currentBit = 0;
+		// UInt64 value = 0ULL;
+
+		gTriggeredPStates = gCoreMultipliers;
+		IOLog("AICPUPMI: CPU P-States [ ");
+
+		for (currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
+		{
+			value = (1ULL << currentBit);
+			
+			if ((gTriggeredPStates & value) == value)
+			{
+				if (currentBit == currentMultiplier)
+				{
+					IOLog("(%d) ", currentBit);
+				}
+				else
+				{
+					IOLog("%d ", currentBit);
+				}
+			}
+		}
+
+#if REPORT_GPU_STATS
+		if (igpuEnabled)
+		{
+			gTriggeredIGPUPStates = gIGPUMultipliers;
+			IOLog("] iGPU P-States [ ");
+			
+			for (currentBit = 1; currentBit <= 32; currentBit++)
+			{
+				value = (1ULL << currentBit);
+				
+				if ((gTriggeredIGPUPStates & value) == value)
+				{
+					if (currentBit == currentIgpuMultiplier)
+					{
+						IOLog("(%d) ", currentBit);
+					}
+					else
+					{
+						IOLog("%d ", currentBit);
+					}
+				}
+			}
+		}
+#endif
+		IOLog("]\n");
+	}
+
+#if REPORT_C_STATES
+	if (gTriggeredC3Cores != gC3Cores)
+	{
+		gTriggeredC3Cores = gC3Cores;
+		IOLog("AICPUPMI: CPU C3-Cores [ ");
+	
+		for (currentBit = 0; currentBit <= 16; currentBit++)
+		{
+			value = (1ULL << currentBit);
+		
+			if ((gTriggeredC3Cores & value) == value)
+			{
+				IOLog("%d ", currentBit);
+			}
+		}
+
+		IOLog("]\n");
+	}
+
+	if (gTriggeredC6Cores != gC6Cores)
+	{
+		gTriggeredC6Cores = gC6Cores;
+		IOLog("AICPUPMI: CPU C6-Cores [ ");
+	
+		for (currentBit = 0; currentBit <= 16; currentBit++)
+		{
+			value = (1ULL << currentBit);
+		
+			if ((gTriggeredC6Cores & value) == value)
+			{
+				IOLog("%d ", currentBit);
+			}
+		}
+	
+		IOLog("]\n");
+	}
+
+	if (gTriggeredC7Cores != gC7Cores)
+	{
+		gTriggeredC7Cores = gC7Cores;
+		IOLog("AICPUPMI: CPU C7-Cores [ ");
+	
+		for (currentBit = 0; currentBit <= 16; currentBit++)
+		{
+			value = (1ULL << currentBit);
+		
+			if ((gTriggeredC7Cores & value) == value)
+			{
+				IOLog("%d ", currentBit);
+			}
+		}
+	
+		IOLog("]\n");
+	}
+#endif
+
+	loopLock = false;
+
+	return kIOReturnSuccess;
+}
+
+//==============================================================================
+
+IOService* AppleIntelCPUPowerManagementInfo::probe(IOService *provider, SInt32 *score)
+{
+	IOService *ret = super::probe(provider, score);
+	
+	if (ret != this)
+	{
+		return 0;
+	}
+	
+	return ret;
+}
+
+//==============================================================================
+
+bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
+{
+	if (IOService::start(provider))
+	{
+		simpleLock = IOSimpleLockAlloc();
+
+		if (simpleLock)
+		{
+			timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::loopTimerEvent));
+			workLoop = getWorkLoop();
+
+			if (timerEventSource && workLoop && (kIOReturnSuccess == workLoop->addEventSource(timerEventSource)))
+			{
+				this->registerService(0);
+
+				UInt64  msr = rdmsr64(MSR_IA32_PERF_STS);
+				gCoreMultipliers |= (1ULL << (msr >> 8));
+
+				// wrmsr64(IA32_ENERGY_PERF_BIAS, 15);
+				// wrmsr64(MSR_IA32_PERF_CONTROL, 0x2000);
+				
+				uint32_t cpuid_reg[4];
+				do_cpuid(0x00000001, cpuid_reg);
+
+				gCPUModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
+
+				// MWAIT information
+				do_cpuid(0x00000005, cpuid_reg);
+				uint32_t supportedMwaitCStates = bitfield32(cpuid_reg[edx], 31,  0);
+				
+				IOLog("AICPUPMI: MWAIT C-States     : %d\n", supportedMwaitCStates);
+
+#if REPORT_MSRS
+				reportMSRs();
+#endif
+				msr = rdmsr64(MSR_PLATFORM_INFO);
+				gMinRatio = (UInt8)((msr >> 40) & 0xff);
+				IOLog("AICPUPMI: Low Frequency Mode : %d00 MHz\n", gMinRatio);
+ 
+				gClockRatio = (UInt8)((msr >> 8) & 0xff);
+				IOLog("AICPUPMI: Clock Speed        : %d00 MHz\n", gClockRatio);
+
+				if (!((rdmsr64(IA32_MISC_ENABLES) >> 32) & 0x40))	// Turbo Mode Enabled?
+				{
+					msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
+					gMaxRatio = (UInt8)(msr & 0xff);
+					IOLog("AICPUPMI: Max Turbo Frequency: %d00 MHz\n", gMaxRatio);
+				}
+				else
+				{
+					gMaxRatio = gClockRatio;
+					IOLog("AICPUPMI: Max Frequency      : %d00 MHz\n", gMaxRatio);
+				}
+
+#if REPORT_GPU_STATS
+				if ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK))
+				{
+					IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
+					memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionInOut);
+				
+					if (memDescriptor != NULL)
+					{
+						if ((result = memDescriptor->prepare()) == kIOReturnSuccess)
+						{
+							memoryMap = memDescriptor->map();
+						
+							if (memoryMap != NULL)
+							{
+								igpuEnabled = true; // IGPU Enabled and Visible
+								gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
+
+								// Preventing a stupid (UEFI) BIOS limit.
+								if (gMchbar[0x4C] < gMchbar[0x50])
+								{
+									gMchbar[0x4C] = gMchbar[0x50];
+								}
+
+								//
+								// Examples:
+								//			17 (multiplier) * 50 (frequency in MHz) =  850 MHz
+								//			22 (multiplier) * 50 (frequency in MHz) = 1100 MHz
+								//			6 P-States: 850, 900, 950, 1000, 1050 and 1100 MHz
+								//
+								//
+								// Current RP-State, when the graphics engine is in RC6, this reflects the last used ratio.
+								IOLog("AICPUPMI: IGPU Current Frequency..: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x01])); // RP_STATE_RATIO (CURRENT_FREQUENCY)
+								// Maximum RPN base frequency capability for the Integrated GFX Engine (GT).
+								IOLog("AICPUPMI: IGPU Min Frequency......: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x52])); // RPN_CAP (MIN_FREQUENCY)
+								// Maximum RP1 base frequency capability for the Integrated GFX Engine (GT).
+								IOLog("AICPUPMI: IGPU Max Non-Turbo Freq.: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x51])); // RP1_CAP (MAX_NON_TURBO)
+								// Maximum RP0 base frequency capability for the Integrated GFX Engine (GT).
+								IOLog("AICPUPMI: IGPU Max Turbo Frequency: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x50])); // RP0_CAP (MAX_TURBO))
+
+								// Maximum base frequency limit for the Integrated GFX Engine (GT) allowed during run-time.
+								if (gMchbar[0x4C] == 255)
+								{
+									IOLog("AICPUPMI: IGPU Maximum limit......: No Limit\n"); // RPSTT_LIM
+								}
+								else
+								{
+									IOLog("AICPUPMI: IGPU Maximum limit......: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x4C])); // RPSTT_LIM
+								}
+							}
+							else
+							{
+								IOLog("AICPUPMI: Error: memoryMap == NULL\n");
+							}
+						}
+						else
+						{
+							IOLog("AICPUPMI: Error: memDescriptor->prepare() failed!\n");
+						}
+					}
+					else
+					{
+						IOLog("AICPUPMI: Error: memDescriptor == NULL\n");
+					}
+				}
+#endif
+				
+#if REPORT_C_STATES
+				if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN) || (gCPUModel == CPU_MODEL_HASWELL))
+				{
+					gCheckC7 = true;
+				}
+#endif
+				timerEventSource->setTimeoutMS(1000);
+
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+//==============================================================================
+
+void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
+{
+	if (simpleLock)
+	{
+		IOSimpleLockFree(simpleLock);
+	}
+
+	if (timerEventSource)
+	{
+		if (workLoop)
+		{
+			timerEventSource->cancelTimeout();
+			workLoop->removeEventSource(timerEventSource);
+		}
+
+		timerEventSource->release();
+		timerEventSource = NULL;
+	}
+
+	super::stop(provider);
+}
+
+//==============================================================================
+
+void AppleIntelCPUPowerManagementInfo::free()
+{
+#if REPORT_GPU_STATS
+	if (igpuEnabled)
+	{
+		if (memoryMap)
+		{
+			memoryMap->release();
+			memoryMap = NULL;
+		}
+
+		if (memDescriptor)
+		{
+			memDescriptor->release();
+			memDescriptor = NULL;
+		}
+	}
+#endif
+
+	super::free();
+}
