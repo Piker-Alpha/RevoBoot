@@ -2,8 +2,8 @@
 #
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
-# Version 0.9 - Copyright (c) 2012 by † RevoGirl
-# Version 7.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 0.9 - Copyright (c) 2012 by RevoGirl
+# Version 7.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -77,7 +77,7 @@
 #			- board-id's for new iMac14,[1/2/3] added (Pike, October 2013)
 #			- board-id's for new MacBookPro11,[1/2/3] added (Pike, October 2013)
 #			- Cleanups and board-id for new MacPro6,1 added (Pike, October 2013)
-#			- Frequency error in i7-4700MQ data fixed, thanks to RehabMan (Pike, November 2013)
+#			– Frequency error in i7-4700MQ data fixed, thanks to RehabMan (Pike, November 2013)
 #			- Intel i5-4200M added (Pike, December 2013)
 #			- LFM fixed in the Intel i7-3930K data (Pike, December 2013)
 #
@@ -162,8 +162,9 @@ let gCallIasl=1
 #
 let gCallOpen=0
 
-#
-# Change this to 0 to stop it from injecting debug data.
+# 0 = no debug injection/debug statements executed.
+# 1 = inject debug data.
+# 3 = inject debug data and execute _debugPrint statements.
 #
 let gDebug=1
 
@@ -186,7 +187,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=7.0
+gScriptVersion=7.3
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -218,6 +219,10 @@ gProcessorData="Unknown CPU"
 gProcessorNumber=""
 gBusFrequency=100
 let gUnmountEFIPartition=0
+
+gProductName=$(sw_vers -productName)
+gProductVersion="$(sw_vers -productVersion)"
+gBuildVersion=$(sw_vers -buildVersion)
 
 #
 # Maximum Turbo Clock Speed (user configurable)
@@ -261,8 +266,8 @@ E3-1220,80,0,3100,3400,4,4
 gDesktopSandyBridgeCPUList=(
 i7-35355,120,1600,2666,2666,4,4
 # i7 Desktop Extreme Series
-i7-3970X,150,0,3500,4000,6,12
-i7-3960X,130,0,3300,3900,6,12
+i7-3970X,150,1200,3500,4000,6,12
+i7-3960X,130,1200,3300,3900,6,12
 i7-3930K,130,1200,3200,3800,6,12
 i7-3820,130,0,3600,3800,4,8
 # i7 Desktop series
@@ -557,142 +562,157 @@ i3-4010Y,12,800,1300,1300,2,4
 
 function _printHeader()
 {
-echo '/*'                                                                             >  $gSsdtPR
-echo ' * Intel ACPI Component Architecture'                                           >> $gSsdtPR
-echo ' * AML Disassembler version 20130210-00 [Feb 10 2013]'                          >> $gSsdtPR
-echo ' * Copyright (c) 2000 - 2013 Intel Corporation'                                 >> $gSsdtPR
-echo ' * '                                                                            >> $gSsdtPR
-echo ' * Original Table Header:'                                                      >> $gSsdtPR
-echo ' *     Signature        "SSDT"'                                                 >> $gSsdtPR
-echo ' *     Length           0x0000036A (874)'                                       >> $gSsdtPR
-echo ' *     Revision         0x01'                                                   >> $gSsdtPR
-echo ' *     Checksum         0x00'                                                   >> $gSsdtPR
-echo ' *     OEM ID           "APPLE "'                                               >> $gSsdtPR
-echo ' *     OEM Table ID     "CpuPm"'                                                >> $gSsdtPR
-printf ' *     OEM Revision     '$gRevision' (%d)\n' $gRevision                         >> $gSsdtPR
-echo ' *     Compiler ID      "INTL"'                                                 >> $gSsdtPR
-echo ' *     Compiler Version 0x20130210 (538116624)'                                 >> $gSsdtPR
-echo ' */'                                                                            >> $gSsdtPR
-echo ''                                                                               >> $gSsdtPR
-echo 'DefinitionBlock ("'$gSsdtID'.aml", "SSDT", 1, "APPLE ", "CpuPm", '$gRevision')' >> $gSsdtPR
-echo '{'                                                                              >> $gSsdtPR
+    echo '/*'                                                                             >  $gSsdtPR
+    echo ' * Intel ACPI Component Architecture'                                           >> $gSsdtPR
+    echo ' * AML Disassembler version 20130210-00 [Feb 10 2013]'                          >> $gSsdtPR
+    echo ' * Copyright (c) 2000 - 2013 Intel Corporation'                                 >> $gSsdtPR
+    echo ' * '                                                                            >> $gSsdtPR
+    echo ' * Original Table Header:'                                                      >> $gSsdtPR
+    echo ' *     Signature        "SSDT"'                                                 >> $gSsdtPR
+    echo ' *     Length           0x0000036A (874)'                                       >> $gSsdtPR
+    echo ' *     Revision         0x01'                                                   >> $gSsdtPR
+    echo ' *     Checksum         0x00'                                                   >> $gSsdtPR
+    echo ' *     OEM ID           "APPLE "'                                               >> $gSsdtPR
+    echo ' *     OEM Table ID     "CpuPm"'                                                >> $gSsdtPR
+  printf ' *     OEM Revision     '$gRevision' (%d)\n' $gRevision                         >> $gSsdtPR
+    echo ' *     Compiler ID      "INTL"'                                                 >> $gSsdtPR
+    echo ' *     Compiler Version 0x20130210 (538116624)'                                 >> $gSsdtPR
+    echo ' */'                                                                            >> $gSsdtPR
+    echo ''                                                                               >> $gSsdtPR
+    echo 'DefinitionBlock ("'$gSsdtID'.aml", "SSDT", 1, "APPLE ", "CpuPm", '$gRevision')' >> $gSsdtPR
+    echo '{'                                                                              >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
 
 function _printExternals()
 {
-let currentCPU=0;
+    let currentCPU=0;
 
-while [ $currentCPU -lt $gLogicalCPUs ]; do
-echo '    External ('${gScope}'.'${gProcessorNames[$currentCPU]}', DeviceObj)'  >> $gSsdtPR
-let currentCPU+=1
-done
+    while [ $currentCPU -lt $gLogicalCPUs ]; do
+        echo '    External ('${gScope}'.'${gProcessorNames[$currentCPU]}', DeviceObj)'  >> $gSsdtPR
+        let currentCPU+=1
+    done
 
-echo ''                                                                             >> $gSsdtPR
+    echo ''                                                                             >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
 
-function _printDebugInfo()
+function _injectDebugInfo()
 {
-if ((gDebug)); then
-echo '    Store ("ssdtPRGen version: '$gScriptVersion'", Debug)'                >> $gSsdtPR
-echo '    Store ("baseFrequency    : '$gBaseFrequency'", Debug)'                >> $gSsdtPR
-echo '    Store ("frequency        : '$frequency'", Debug)'                     >> $gSsdtPR
-echo '    Store ("busFrequency     : '$gBusFrequency'", Debug)'                 >> $gSsdtPR
-echo '    Store ("logicalCPUs      : '$gLogicalCPUs'", Debug)'                  >> $gSsdtPR
-echo '    Store ("tdp              : '$gTdp'", Debug)'                          >> $gSsdtPR
-echo '    Store ("packageLength    : '$packageLength'", Debug)'                 >> $gSsdtPR
-echo '    Store ("turboStates      : '$turboStates'", Debug)'                   >> $gSsdtPR
-echo '    Store ("maxTurboFrequency: '$maxTurboFrequency'", Debug)'             >> $gSsdtPR
-echo ''                                                                         >> $gSsdtPR
-fi
+    xcpm=0
+
+    #
+    # 'machdep.xcpm' is introduced in 10.8.5
+    #
+    if [[ $productVersion > "10.8.4" ]]; then
+      xcpm=$(/usr/sbin/sysctl -n machdep.xcpm.mode)
+    fi
+
+    echo '        Method (_INI, 0, NotSerialized)'                                      >> $gSsdtPR
+    echo '        {'                                                                    >> $gSsdtPR
+    echo '            Store ("ssdtPRGen version: '$gScriptVersion' / '$gProductName' '$gProductVersion' ('$gBuildVersion')", Debug)'  >> $gSsdtPR
+    echo '            Store ("baseFrequency    : '$gBaseFrequency'", Debug)'            >> $gSsdtPR
+    echo '            Store ("frequency        : '$frequency'", Debug)'                 >> $gSsdtPR
+    echo '            Store ("busFrequency     : '$gBusFrequency'", Debug)'             >> $gSsdtPR
+    echo '            Store ("logicalCPUs      : '$gLogicalCPUs'", Debug)'              >> $gSsdtPR
+    echo '            Store ("tdp              : '$gTdp'", Debug)'                      >> $gSsdtPR
+    echo '            Store ("packageLength    : '$packageLength'", Debug)'             >> $gSsdtPR
+    echo '            Store ("turboStates      : '$turboStates'", Debug)'               >> $gSsdtPR
+    echo '            Store ("maxTurboFrequency: '$maxTurboFrequency'", Debug)'         >> $gSsdtPR
+    echo '            Store ("machdep.xcpm.mode: '$xcpm'", Debug)'                      >> $gSsdtPR
+    echo '        }'                                                                    >> $gSsdtPR
+    echo ''                                                                             >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
 
 function _printProcessorDefinitions()
 {
-let currentCPU=0;
+    let currentCPU=0;
 
-while [ $currentCPU -lt $1 ]; do
-echo '    External ('${gScope}'.'${gProcessorNames[$currentCPU]}', DeviceObj)'  >> $gSsdtPR
-let currentCPU+=1
-done
+    while [ $currentCPU -lt $1 ]; do
+        echo '    External ('${gScope}'.'${gProcessorNames[$currentCPU]}', DeviceObj)'  >> $gSsdtPR
+        let currentCPU+=1
+    done
 
-echo ''                                                                             >> $gSsdtPR
+    echo ''                                                                             >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
 
 function _printScopeStart()
 {
-let turboStates=$1
-let packageLength=$2
+    let turboStates=$1
+    let packageLength=$2
 
-# TODO: Remove this when CPUPM for IB works properly!
-let useWorkArounds=0
+    # TODO: Remove this when CPUPM for IB works properly!
+    let useWorkArounds=0
 
-echo '    Scope ('${gScope}'.'${gProcessorNames[0]}')'                              >> $gSsdtPR
-echo '    {'                                                                        >> $gSsdtPR
+    echo '    Scope ('${gScope}'.'${gProcessorNames[0]}')'                              >> $gSsdtPR
+    echo '    {'                                                                        >> $gSsdtPR
 
-#
-# Do we need to create additional (Low Frequency) P-States?
-#
+    if (( gDebug & 1 )); then
+        _injectDebugInfo
+    fi
 
-if [ $gBridgeType -eq $IVY_BRIDGE ];
-then
-let lowFrequencyPStates=($gBaseFrequency/100)-8
-let packageLength=($2+$lowFrequencyPStates)
+    #
+    # Do we need to create additional (Low Frequency) P-States?
+    #
 
-printf "        Name (APLF, 0x%02x" $lowFrequencyPStates                    >> $gSsdtPR
-echo ')'                                                                    >> $gSsdtPR
+    if [ $gBridgeType -ne $SANDY_BRIDGE ];
+        then
+            let lowFrequencyPStates=($gBaseFrequency/100)-8
+            let packageLength=($2+$lowFrequencyPStates)
 
-# TODO: Remove this when CPUPM for IB works properly!
-if ((gIvyWorkAround)); then
-let useWorkArounds=1
-fi
-fi
+            printf "        Name (APLF, 0x%02x" $lowFrequencyPStates                    >> $gSsdtPR
+            echo ')'                                                                    >> $gSsdtPR
 
-#
-# Check number of Turbo states (for IASL optimization).
-#
+            # TODO: Remove this when CPUPM for IB works properly!
+            if [[ gIvyWorkAround && $gBridgeType -eq $IVY_BRIDGE ]]; then
+                let useWorkArounds=1
+            fi
+    fi
 
-if [ $turboStates -eq 0 ];
-then
-# TODO: Remove this when CPUPM for IB works properly!
-if (($useWorkArounds));
-then
-echo '        Name (APSN, One)'                                     >> $gSsdtPR
-else
-echo '        Name (APSN, Zero)'                                    >> $gSsdtPR
-fi
-else
-# TODO: Remove this when CPUPM for IB works properly!
-if ((useWorkArounds)); then
-let turboStates+=1
-fi
+    #
+    # Check number of Turbo states (for IASL optimization).
+    #
 
-printf "        Name (APSN, 0x%02X)\n" $turboStates                           >> $gSsdtPR
-fi
+    if [ $turboStates -eq 0 ];
+        then
+            # TODO: Remove this when CPUPM for IB works properly!
+            if (($useWorkArounds));
+                then
+                    echo '        Name (APSN, One)'                                     >> $gSsdtPR
+                else
+                    echo '        Name (APSN, Zero)'                                    >> $gSsdtPR
+            fi
+        else
+          # TODO: Remove this when CPUPM for IB works properly!
+          if ((useWorkArounds)); then
+              let turboStates+=1
+          fi
 
-# TODO: Remove this when CPUPM for IB works properly!
-if (($useWorkArounds)); then
-let packageLength+=1
-fi
+          printf "        Name (APSN, 0x%02X)\n" $turboStates                           >> $gSsdtPR
+    fi
 
-printf "        Name (APSS, Package (0x%02X)\n" $packageLength                        >> $gSsdtPR
-echo '        {'                                                                    >> $gSsdtPR
+    # TODO: Remove this when CPUPM for IB works properly!
+    if (($useWorkArounds)); then
+        let packageLength+=1
+    fi
 
-# TODO: Remove this when CPUPM for IB works properly!
-if (($useWorkArounds)); then
-let extraF=($maxTurboFrequency+1)
-let maxTDP=($gTdp*1000)
-let extraR=($maxTurboFrequency/100)+1
-echo "            /* Workaround for the Ivy Bridge PM 'bug' */"                 >> $gSsdtPR
-printf "            Package (0x06) { 0x%04X, 0x%06X, 0x0A, 0x0A, 0x%02X00, 0x%02X00 },\n" $extraF $maxTDP $extraR $extraR >> $gSsdtPR
-fi
+  printf "        Name (APSS, Package (0x%02X)\n" $packageLength                        >> $gSsdtPR
+    echo '        {'                                                                    >> $gSsdtPR
+
+    # TODO: Remove this when CPUPM for IB works properly!
+    if (($useWorkArounds)); then
+        let extraF=($maxTurboFrequency+1)
+        let maxTDP=($gTdp*1000)
+        let extraR=($maxTurboFrequency/100)+1
+        echo "            /* Workaround for the Ivy Bridge PM 'bug' */"                 >> $gSsdtPR
+      printf "            Package (0x06) { 0x%04X, 0x%06X, 0x0A, 0x0A, 0x%02X00, 0x%02X00 },\n" $extraF $maxTDP $extraR $extraR >> $gSsdtPR
+    fi
 }
 
 
@@ -700,71 +720,70 @@ fi
 
 function _printPackages()
 {
-let maxTDP=($1*1000)
-local maxNonTurboFrequency=$2
-local frequency=$3
+    let maxTDP=($1*1000)
+    local maxNonTurboFrequency=$2
+    local frequency=$3
 
-let minRatio=($gBaseFrequency/$gBusFrequency)
-let p1Ratio=($maxNonTurboFrequency/$gBusFrequency)
-let ratio=($frequency/$gBusFrequency)
-let powerRatio=($p1Ratio-1)
+    let minRatio=($gBaseFrequency/$gBusFrequency)
+    let p1Ratio=($maxNonTurboFrequency/$gBusFrequency)
+    let ratio=($frequency/$gBusFrequency)
+    let powerRatio=($p1Ratio-1)
 
-#
-# Do we need to create additional (Low Frequency) P-States for Ivy bridge?
-#
-if [ $gBridgeType -eq $IVY_BRIDGE ]; then
-let minRatio=8
-fi
+    #
+    # Do we need to create additional (Low Frequency) P-States for Ivy bridge?
+    #
+    if [ $gBridgeType -eq $IVY_BRIDGE ]; then
+        let minRatio=8
+    fi
 
-if (($turboStates)); then
-echo '            /* High Frequency Modes (turbo) */'                           >> $gSsdtPR
-fi
+    if (($turboStates)); then
+        echo '            /* High Frequency Modes (turbo) */'                           >> $gSsdtPR
+    fi
 
-while [ $ratio -ge $minRatio ];
-do
-if [ $frequency -eq $gBaseFrequency ];
-then
-echo '            /* Low Frequency Mode */'                         >> $gSsdtPR
-fi
+    while [ $ratio -ge $minRatio ];
+        do
+            if [ $frequency -eq $gBaseFrequency ];
+                then
+                    echo '            /* Low Frequency Mode */'                         >> $gSsdtPR
+            fi
 
-if [ $frequency -eq $maxNonTurboFrequency ];
-then
-echo '            /* High Frequency Modes (non-turbo) */'           >> $gSsdtPR
-fi
+            if [ $frequency -eq $maxNonTurboFrequency ];
+                then
+                    echo '            /* High Frequency Modes (non-turbo) */'           >> $gSsdtPR
+            fi
 
-printf "            Package (0x06) { 0x%04X, " $frequency                   >> $gSsdtPR
+            printf "            Package (0x06) { 0x%04X, " $frequency                   >> $gSsdtPR
 
-if [ $frequency -lt $maxNonTurboFrequency ];
-then
-power=$(echo "scale=6;m=((1.1-(($p1Ratio-$powerRatio)*0.00625))/1.1);(($powerRatio/$p1Ratio)*(m*m)*$maxTDP);" | bc | sed -e 's/.[0-9A-F]*$//')
-let powerRatio-=1
-else
-power=$maxTDP
-fi
+            if [ $frequency -lt $maxNonTurboFrequency ];
+                then
+                    power=$(echo "scale=6;m=((1.1-(($p1Ratio-$powerRatio)*0.00625))/1.1);(($powerRatio/$p1Ratio)*(m*m)*$maxTDP);" | bc | sed -e 's/.[0-9A-F]*$//')
+                    let powerRatio-=1
+                else
+                    power=$maxTDP
+            fi
 
-if [ $frequency -ge $gBaseFrequency ];
-then
-printf "0x%06X, " $power                                            >> $gSsdtPR
-else
-printf '    Zero, '                                                 >> $gSsdtPR
-fi
+            if [ $frequency -ge $gBaseFrequency ];
+                then
+                    printf "0x%06X, " $power                                            >> $gSsdtPR
+                else
+                    printf '    Zero, '                                                 >> $gSsdtPR
+            fi
 
-printf "0x0A, 0x0A, 0x%02X00, 0x%02X00 }" $ratio $ratio                     >> $gSsdtPR
+            printf "0x0A, 0x0A, 0x%02X00, 0x%02X00 }" $ratio $ratio                     >> $gSsdtPR
 
-let ratio-=1
-let frequency-=$gBusFrequency
+            let ratio-=1
+            let frequency-=$gBusFrequency
 
-if [ $ratio -ge $minRatio ];
-then
-echo ','                                                            >> $gSsdtPR
-else
-echo ''                                                             >> $gSsdtPR
-fi
+            if [ $ratio -ge $minRatio ];
+                then
+                    echo ','                                                            >> $gSsdtPR
+                else
+                    echo ''                                                             >> $gSsdtPR
+            fi
 
-done
+        done
 
-echo '        })'                                                                   >> $gSsdtPR
-echo ''                                                                             >> $gSsdtPR
+    echo '        })'                                                                   >> $gSsdtPR
 }
 
 
@@ -772,30 +791,48 @@ echo ''                                                                         
 
 function _printMethodDSM()
 {
-#
-# New stand-alone version of Method _DSM - Copyright (c) 2009 by Master Chief
-#
-echo ''                                                                             >> $gSsdtPR
-echo '        Method (_DSM, 4, NotSerialized)'                                      >> $gSsdtPR
-echo '        {'                                                                    >> $gSsdtPR
-echo '            If (LEqual (Arg2, Zero))'                                         >> $gSsdtPR
-echo '            {'                                                                >> $gSsdtPR
-echo '                Return (Buffer (One)'                                         >> $gSsdtPR
-echo '                {'                                                            >> $gSsdtPR
-echo '                    0x03'                                                     >> $gSsdtPR
-echo '                })'                                                           >> $gSsdtPR
-echo '            }'                                                                >> $gSsdtPR
-echo ''                                                                             >> $gSsdtPR
-#
-# This property is required to get X86Platform[Plugin/Shim].kext loaded.
-#
-echo '            Return (Package (0x02)'                                           >> $gSsdtPR
-echo '            {'                                                                >> $gSsdtPR
-echo '                "plugin-type",'                                               >> $gSsdtPR
-echo '                One'                                                          >> $gSsdtPR
-echo '            })'                                                               >> $gSsdtPR
-echo '        }'                                                                    >> $gSsdtPR
-echo '    }'                                                                        >> $gSsdtPR
+    #
+    # New stand-alone version of Method _DSM - Copyright (c) 2009 by Master Chief
+    #
+    echo ''                                                                             >> $gSsdtPR
+    echo '        Method (_DSM, 4, NotSerialized)'                                      >> $gSsdtPR
+    echo '        {'                                                                    >> $gSsdtPR
+
+    if ((gDebug)); then
+        #
+        # Note: This will be called twice!
+        #
+        echo '            Store ("Method '${gProcessorNames[0]}'._DSM Called", Debug)'  >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+    fi
+
+    echo '            If (LEqual (Arg2, Zero))'                                         >> $gSsdtPR
+    echo '            {'                                                                >> $gSsdtPR
+    echo '                Return (Buffer (One)'                                         >> $gSsdtPR
+    echo '                {'                                                            >> $gSsdtPR
+    echo '                    0x03'                                                     >> $gSsdtPR
+    echo '                })'                                                           >> $gSsdtPR
+    echo '            }'                                                                >> $gSsdtPR
+    echo ''                                                                             >> $gSsdtPR
+    #
+    # This property is required to get X86Platform[Plugin/Shim].kext loaded.
+    #
+    echo '            Return (Package (0x02)'                                           >> $gSsdtPR
+    echo '            {'                                                                >> $gSsdtPR
+    echo '                "plugin-type",'                                               >> $gSsdtPR
+    echo '                One'                                                          >> $gSsdtPR
+    echo '            })'                                                               >> $gSsdtPR
+    echo '        }'                                                                    >> $gSsdtPR
+    echo '    }'                                                                        >> $gSsdtPR
+}
+
+#--------------------------------------------------------------------------------
+
+function _debugPrint()
+{
+    if (( gDebug & 2 )); then
+        echo "$1"
+    fi
 }
 
 #--------------------------------------------------------------------------------
@@ -814,223 +851,240 @@ function _printScopeACST()
 #
 # Note: C-state latency in uS and C-state power in mW.
 
-let C1=0
-let C2=0
-let C3=0
-let C6=0
-let C7=0
-local pkgLength=2
-local numberOfCStates=0
+    let C1=0
+    let C2=0
+    let C3=0
+    let C6=0
+    let C7=0
+    local pkgLength=2
+    local numberOfCStates=0
 
-#   echo ''                                                                             >> $gSsdtPR
-echo '        Method (ACST, 0, NotSerialized)'                                      >> $gSsdtPR
-echo '        {'                                                                    >> $gSsdtPR
+    #
+    # Are we injecting C-States for CPU1?
+    #
+    if [ $1 -eq 1 ];
+      then
+        let targetCPU=1
+      else
+        let targetCPU=0
+    fi
 
-#
-# Are we injecting C-States for CPU1?
-#
-if [ $1 -eq 1 ];
-then
-# Yes (also used by CPU2, CPU3 and greater).
-let targetCStates=$gACST_CPU1
-latency_C1=0x03E8
-latency_C2=0x94
-latency_C3=0xC6
+    echo ''                                                                             >> $gSsdtPR
+    echo '        Method (ACST, 0, NotSerialized)'                                      >> $gSsdtPR
+    echo '        {'                                                                    >> $gSsdtPR
 
-if ((gDebug)); then
-echo '            Store ("'${gProcessorNames[1]}' C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
-echo ''                                                                 >> $gSsdtPR
-fi
-else
-#
-# C-States override for Mobile processors (CPU0 only)
-#
-if (($gTypeCPU == $gMobileCPU)); then
-echo 'Adjusting C-States for detected (mobile) processor'
-gACST_CPU0=29
-fi
+    if ((gDebug)); then
+        echo '            Store ("Method '${gProcessorNames[$targetCPU]}'.ACST Called", Debug)'  >> $gSsdtPR
+    fi
 
-let targetCStates=$gACST_CPU0
-latency_C1=Zero
-latency_C3=0xCD
-latency_C6=0xF5
-latency_C7=0xF5
+    #
+    # Are we injecting C-States for CPU1?
+    #
+    if [ $targetCPU -eq 1 ];
+        then
+            # Yes (also used by CPU2, CPU3 and greater).
+            let targetCStates=$gACST_CPU1
+            latency_C1=0x03E8
+            latency_C2=0x94
+            latency_C3=0xC6
+        else
+            #
+            # C-States override for Mobile processors (CPU0 only)
+            #
+            if (($gTypeCPU == $gMobileCPU)); then
+                echo 'Adjusting C-States for detected (mobile) processor'
+                let gACST_CPU0=29
+            fi
 
-if ((gDebug)); then
-echo '            Store ("'${gProcessorNames[0]}' C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
-echo ''                                                                 >> $gSsdtPR
-fi
-fi
+            let targetCStates=$gACST_CPU0
+            latency_C1=Zero
+            latency_C3=0xCD
+            latency_C6=0xF5
+            latency_C7=0xF5
+    fi
 
-#
-# Checks to determine which C-State(s) we should inject.
-#
-if (($targetCStates & 1)); then
-let C1=1
-let numberOfCStates+=1
-let pkgLength+=1
-fi
+    if ((gDebug)); then
+        echo '            Store ("'${gProcessorNames[$targetCPU]}' C-States    : '$targetCStates'", Debug)' >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+    fi
 
-if (($targetCStates & 2)); then
-let C2=1
-let numberOfCStates+=1
-let pkgLength+=1
-fi
 
-if (($targetCStates & 4)); then
-let C3=1
-let numberOfCStates+=1
-let pkgLength+=1
-fi
+    _debugPrint "targetCStates: $targetCStates"
 
-if (($targetCStates & 8)); then
-let C6=1
-let numberOfCStates+=1
-let pkgLength+=1
-fi
+    #
+    # Checks to determine which C-State(s) we should inject.
+    #
+    if (($targetCStates & 1)); then
+        _debugPrint "Adding C1"
+        let C1=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-if (($targetCStates & 16)); then
-let C7=1
-let numberOfCStates+=1
-let pkgLength+=1
-fi
+    if (($targetCStates & 2)); then
+        _debugPrint "Adding C2"
+        let C2=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-let hintCode=0x00
+    if (($targetCStates & 4)); then
+        _debugPrint "Adding C3"
+        let C3=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-echo "            /* Low Power Modes for ${gProcessorNames[$1]} */"                 >> $gSsdtPR
-printf "            Return (Package (0x%02x)\n" $pkgLength                            >> $gSsdtPR
-echo '            {'                                                                >> $gSsdtPR
-echo '                One,'                                                         >> $gSsdtPR
-printf "                0x%02x,\n" $numberOfCStates                                   >> $gSsdtPR
-echo '                Package (0x04)'                                               >> $gSsdtPR
-echo '                {'                                                            >> $gSsdtPR
-echo '                    ResourceTemplate ()'                                      >> $gSsdtPR
-echo '                    {'                                                        >> $gSsdtPR
-echo '                        Register (FFixedHW,'                                  >> $gSsdtPR
-echo '                            0x01,               // Bit Width'                 >> $gSsdtPR
-echo '                            0x02,               // Bit Offset'                >> $gSsdtPR
-printf "                            0x%016x, // Address\n" $hintCode                  >> $gSsdtPR
-echo '                            0x01,               // Access Size'               >> $gSsdtPR
-echo '                            )'                                                >> $gSsdtPR
-echo '                    },'                                                       >> $gSsdtPR
-echo '                    One,'                                                     >> $gSsdtPR
-echo '                    '$latency_C1','                                           >> $gSsdtPR
-echo '                    0x03E8'                                                   >> $gSsdtPR
+    if (($targetCStates & 8)); then
+        _debugPrint "Adding C6"
+        let C6=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-if (($C2)); then
-let hintCode+=0x10
-echo '                },'                                                       >> $gSsdtPR
-echo ''                                                                         >> $gSsdtPR
-echo '                Package (0x04)'                                           >> $gSsdtPR
-echo '                {'                                                        >> $gSsdtPR
-echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
-echo '                    {'                                                    >> $gSsdtPR
-echo '                        Register (FFixedHW,'                              >> $gSsdtPR
-echo '                            0x01,               // Bit Width'             >> $gSsdtPR
-echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
-printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
-echo '                            0x03,               // Access Size'           >> $gSsdtPR
-echo '                            )'                                            >> $gSsdtPR
-echo '                    },'                                                   >> $gSsdtPR
-echo '                    0x02,'                                                >> $gSsdtPR
-echo '                    '$latency_C2','                                       >> $gSsdtPR
-echo '                    0x01F4'                                               >> $gSsdtPR
-fi
+    if ((($targetCStates & 16) == 16)); then
+        _debugPrint "Adding C7"
+        let C7=1
+        let numberOfCStates+=1
+        let pkgLength+=1
+    fi
 
-if (($C3)); then
-let hintCode+=0x10
-local power_C3=0x01F4
-#
-# Is this for CPU1?
-#
-if (($1)); then
-if [[ ${modelID:0:7} == "iMac13," ]];
-then
-local power_C3=0x15E
-latency_C3=0xA9
-else
-local power_C3=0xC8
-let hintCode+=0x10
-fi
-fi
+    let hintCode=0x00
 
-echo '                },'                                                       >> $gSsdtPR
-echo ''                                                                         >> $gSsdtPR
-echo '                Package (0x04)'                                           >> $gSsdtPR
-echo '                {'                                                        >> $gSsdtPR
-echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
-echo '                    {'                                                    >> $gSsdtPR
-echo '                        Register (FFixedHW,'                              >> $gSsdtPR
-echo '                            0x01,               // Bit Width'             >> $gSsdtPR
-echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
-printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
-echo '                            0x03,               // Access Size'           >> $gSsdtPR
-echo '                            )'                                            >> $gSsdtPR
-echo '                    },'                                                   >> $gSsdtPR
-echo '                    0x03,'                                                >> $gSsdtPR
-echo '                    '$latency_C3','                                       >> $gSsdtPR
-echo '                    '$power_C3                                            >> $gSsdtPR
-fi
+    echo "            /* Low Power Modes for ${gProcessorNames[$1]} */"                 >> $gSsdtPR
+  printf "            Return (Package (0x%02x)\n" $pkgLength                            >> $gSsdtPR
+    echo '            {'                                                                >> $gSsdtPR
+    echo '                One,'                                                         >> $gSsdtPR
+  printf "                0x%02x,\n" $numberOfCStates                                   >> $gSsdtPR
+    echo '                Package (0x04)'                                               >> $gSsdtPR
+    echo '                {'                                                            >> $gSsdtPR
+    echo '                    ResourceTemplate ()'                                      >> $gSsdtPR
+    echo '                    {'                                                        >> $gSsdtPR
+    echo '                        Register (FFixedHW,'                                  >> $gSsdtPR
+    echo '                            0x01,               // Bit Width'                 >> $gSsdtPR
+    echo '                            0x02,               // Bit Offset'                >> $gSsdtPR
+  printf "                            0x%016x, // Address\n" $hintCode                  >> $gSsdtPR
+    echo '                            0x01,               // Access Size'               >> $gSsdtPR
+    echo '                            )'                                                >> $gSsdtPR
+    echo '                    },'                                                       >> $gSsdtPR
+    echo '                    One,'                                                     >> $gSsdtPR
+    echo '                    '$latency_C1','                                           >> $gSsdtPR
+    echo '                    0x03E8'                                                   >> $gSsdtPR
 
-if (($C6)); then
-let hintCode+=0x10
-echo '                },'                                                       >> $gSsdtPR
-echo ''                                                                         >> $gSsdtPR
-echo '                Package (0x04)'                                           >> $gSsdtPR
-echo '                {'                                                        >> $gSsdtPR
-echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
-echo '                    {'                                                    >> $gSsdtPR
-echo '                        Register (FFixedHW,'                              >> $gSsdtPR
-echo '                            0x01,               // Bit Width'             >> $gSsdtPR
-echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
-printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
-echo '                            0x03,               // Access Size'           >> $gSsdtPR
-echo '                            )'                                            >> $gSsdtPR
-echo '                    },'                                                   >> $gSsdtPR
-echo '                    0x06,'                                                >> $gSsdtPR
-echo '                    '$latency_C6','                                       >> $gSsdtPR
-echo '                    0x015E'                                               >> $gSsdtPR
-fi
+    if (($C2)); then
+        let hintCode+=0x10
+        echo '                },'                                                       >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+        echo '                Package (0x04)'                                           >> $gSsdtPR
+        echo '                {'                                                        >> $gSsdtPR
+        echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
+        echo '                    {'                                                    >> $gSsdtPR
+        echo '                        Register (FFixedHW,'                              >> $gSsdtPR
+        echo '                            0x01,               // Bit Width'             >> $gSsdtPR
+        echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
+      printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
+        echo '                            0x03,               // Access Size'           >> $gSsdtPR
+        echo '                            )'                                            >> $gSsdtPR
+        echo '                    },'                                                   >> $gSsdtPR
+        echo '                    0x02,'                                                >> $gSsdtPR
+        echo '                    '$latency_C2','                                       >> $gSsdtPR
+        echo '                    0x01F4'                                               >> $gSsdtPR
+    fi
 
-if (($C7)); then
-#
-# If $hintCode is already 0x30 then use 0x31 otherwise 0x30
-#
-if [ $hintCode -eq 48 ];
-then
-let hintCode+=0x01
-else
-let hintCode+=0x10
-fi
-echo '                },'                                                       >> $gSsdtPR
-echo ''                                                                         >> $gSsdtPR
-echo '                Package (0x04)'                                           >> $gSsdtPR
-echo '                {'                                                        >> $gSsdtPR
-echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
-echo '                    {'                                                    >> $gSsdtPR
-echo '                        Register (FFixedHW,'                              >> $gSsdtPR
-echo '                            0x01,               // Bit Width'             >> $gSsdtPR
-echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
-printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
-echo '                            0x03,               // Access Size'           >> $gSsdtPR
-echo '                            )'                                            >> $gSsdtPR
-echo '                    },'                                                   >> $gSsdtPR
-echo '                    0x07,'                                                >> $gSsdtPR
-echo '                    '$latency_C7','                                       >> $gSsdtPR
-echo '                    0xC8'                                                 >> $gSsdtPR
-fi
+    if (($C3)); then
+        let hintCode+=0x10
+        local power_C3=0x01F4
+        #
+        # Is this for CPU1?
+        #
+        if (($1)); then
+            if [[ ${modelID:0:7} == "iMac13," ]];
+                then
+                    local power_C3=0x15E
+                    latency_C3=0xA9
+                else
+                    local power_C3=0xC8
+                    let hintCode+=0x10
+            fi
+        fi
 
-echo '                }'                                                            >> $gSsdtPR
-echo '            })'                                                               >> $gSsdtPR
-echo '        }'                                                                    >> $gSsdtPR
+        echo '                },'                                                       >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+        echo '                Package (0x04)'                                           >> $gSsdtPR
+        echo '                {'                                                        >> $gSsdtPR
+        echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
+        echo '                    {'                                                    >> $gSsdtPR
+        echo '                        Register (FFixedHW,'                              >> $gSsdtPR
+        echo '                            0x01,               // Bit Width'             >> $gSsdtPR
+        echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
+      printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
+        echo '                            0x03,               // Access Size'           >> $gSsdtPR
+        echo '                            )'                                            >> $gSsdtPR
+        echo '                    },'                                                   >> $gSsdtPR
+        echo '                    0x03,'                                                >> $gSsdtPR
+        echo '                    '$latency_C3','                                       >> $gSsdtPR
+        echo '                    '$power_C3                                            >> $gSsdtPR
+    fi
 
-#
-# We don't need a closing bracket here when we add method _DSM for Ivy Bridge.
-#
+    if (($C6)); then
+        let hintCode+=0x10
+        echo '                },'                                                       >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+        echo '                Package (0x04)'                                           >> $gSsdtPR
+        echo '                {'                                                        >> $gSsdtPR
+        echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
+        echo '                    {'                                                    >> $gSsdtPR
+        echo '                        Register (FFixedHW,'                              >> $gSsdtPR
+        echo '                            0x01,               // Bit Width'             >> $gSsdtPR
+        echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
+      printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
+        echo '                            0x03,               // Access Size'           >> $gSsdtPR
+        echo '                            )'                                            >> $gSsdtPR
+        echo '                    },'                                                   >> $gSsdtPR
+        echo '                    0x06,'                                                >> $gSsdtPR
+        echo '                    '$latency_C6','                                       >> $gSsdtPR
+        echo '                    0x015E'                                               >> $gSsdtPR
+    fi
 
-if [ $gBridgeType -eq $SANDY_BRIDGE ]; then
-echo '    }'                                                                    >> $gSsdtPR
-fi
+	if (($C7)); then
+        #
+        # If $hintCode is already 0x30 then use 0x31 otherwise 0x30
+        #
+        if [ $hintCode -eq 48 ];
+            then
+                let hintCode+=0x01
+            else
+                let hintCode+=0x10
+        fi
+        echo '                },'                                                       >> $gSsdtPR
+        echo ''                                                                         >> $gSsdtPR
+        echo '                Package (0x04)'                                           >> $gSsdtPR
+        echo '                {'                                                        >> $gSsdtPR
+        echo '                    ResourceTemplate ()'                                  >> $gSsdtPR
+        echo '                    {'                                                    >> $gSsdtPR
+        echo '                        Register (FFixedHW,'                              >> $gSsdtPR
+        echo '                            0x01,               // Bit Width'             >> $gSsdtPR
+        echo '                            0x02,               // Bit Offset'            >> $gSsdtPR
+      printf "                            0x%016x, // Address\n" $hintCode              >> $gSsdtPR
+        echo '                            0x03,               // Access Size'           >> $gSsdtPR
+        echo '                            )'                                            >> $gSsdtPR
+        echo '                    },'                                                   >> $gSsdtPR
+        echo '                    0x07,'                                                >> $gSsdtPR
+        echo '                    '$latency_C7','                                       >> $gSsdtPR
+        echo '                    0xC8'                                                 >> $gSsdtPR
+    fi
+
+    echo '                }'                                                            >> $gSsdtPR
+    echo '            })'                                                               >> $gSsdtPR
+    echo '        }'                                                                    >> $gSsdtPR
+
+    #
+    # We don't need a closing bracket here when we add method _DSM for Ivy Bridge.
+    #
+
+    if [ $gBridgeType -eq $SANDY_BRIDGE ]; then
+        echo '    }'                                                                    >> $gSsdtPR
+	fi
 }
 
 
@@ -1038,331 +1092,351 @@ fi
 
 function _printScopeCPUn()
 {
-let currentCPU=1;
+    let currentCPU=1;
 
-while [ $currentCPU -lt $gLogicalCPUs ]; do
-echo ''                                                                         >> $gSsdtPR
-echo '    Scope ('${gScope}'.'${gProcessorNames[$currentCPU]}')'                >> $gSsdtPR
-echo '    {'                                                                    >> $gSsdtPR
-echo '        Method (APSS, 0, NotSerialized) { Return ('${gScope}'.'${gProcessorNames[0]}'.APSS) }' >> $gSsdtPR
+    while [ $currentCPU -lt $gLogicalCPUs ]; do
+        echo ''                                                                         >> $gSsdtPR
+        echo '    Scope ('${gScope}'.'${gProcessorNames[$currentCPU]}')'                >> $gSsdtPR
+        echo '    {'                                                                    >> $gSsdtPR
+        echo '        Method (APSS, 0, NotSerialized)'                                  >> $gSsdtPR
+        echo '        {'                                                                >> $gSsdtPR
 
-#
-# IB CPUPM tries to parse/execute CPUn.ACST (see debug data) and thus we add
-# this method, conditionally, since SB CPUPM doesn't seem to care about it.
-#
-if [ $gBridgeType -ge $IVY_BRIDGE ]; then
-if [ $currentCPU -eq 1 ];
-then
-_printScopeACST 1
-else
-echo '        Method (ACST, 0, NotSerialized) { Return ('${gScope}'.'${gProcessorNames[1]}'.ACST ()) }' >> $gSsdtPR
-fi
-fi
+        if ((gDebug)); then
+            echo '            Store ("Method '${gProcessorNames[$currentCPU]}'.APSS Called", Debug)'  >> $gSsdtPR
+            echo ''                                                                     >> $gSsdtPR
+        fi
 
-echo '    }'                                                                    >> $gSsdtPR
-let currentCPU+=1
-done
+        echo '            Return ('${gScope}'.'${gProcessorNames[0]}'.APSS)'            >> $gSsdtPR
+        echo '        }'                                                                >> $gSsdtPR
 
-echo '}'                                                                            >> $gSsdtPR
+        #
+        # IB CPUPM tries to parse/execute CPUn.ACST (see debug data) and thus we add
+        # this method, conditionally, since SB CPUPM doesn't seem to care about it.
+        #
+        if [ $gBridgeType -ge $IVY_BRIDGE ]; then
+            if [ $currentCPU -eq 1 ];
+                then
+                    _printScopeACST 1
+                else
+                    echo ''                                                             >> $gSsdtPR
+                    echo '        Method (ACST, 0, NotSerialized) { Return ('${gScope}'.'${gProcessorNames[1]}'.ACST ()) }' >> $gSsdtPR
+            fi
+        fi
+
+        echo '    }'                                                                    >> $gSsdtPR
+        let currentCPU+=1
+    done
+
+    echo '}'                                                                            >> $gSsdtPR
 }
 
 #--------------------------------------------------------------------------------
 
 function _getModelName()
 {
-#
-# Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
-#
-echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
+    #
+    # Grab 'compatible' property from ioreg (stripped with sed / RegEX magic).
+    #
+    echo `ioreg -p IODeviceTree -d 2 -k compatible | grep compatible | sed -e 's/ *["=<>]//g' -e 's/compatible//'`
 }
 
 #--------------------------------------------------------------------------------
 
 function _getBoardID()
 {
-#
-# Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
-#
-boardID=$(ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//')
+    #
+    # Grab 'board-id' property from ioreg (stripped with sed / RegEX magic).
+    #
+    boardID=$(ioreg -p IODeviceTree -d 2 -k board-id | grep board-id | sed -e 's/ *["=<>]//g' -e 's/board-id//')
 }
 
 #--------------------------------------------------------------------------------
 
 function _getProcessorNames()
 {
-local acpiNames=$(ioreg -p IODeviceTree -c IOACPIPlatformDevice -k cpu-type | egrep name  | sed -e 's/ *[-|="<a-z>]//g')
-gProcessorNames=($acpiNames)
+    local acpiNames=$(ioreg -p IODeviceTree -c IOACPIPlatformDevice -k cpu-type | egrep name  | sed -e 's/ *[-|="<a-z>]//g')
+    gProcessorNames=($acpiNames)
 
-if [[ ${#gProcessorNames[@]} -lt 2 ]]; then
-_exitWithError $PROCESSOR_NAMES_ERROR
-fi
+    if [[ ${#gProcessorNames[@]} -lt 2 ]]; then
+        _exitWithError $PROCESSOR_NAMES_ERROR
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _updateProcessorNames()
 {
-if [[ $gLogicalCPUs -le 0x0f ]];
-then
-local label=${gProcLabel:0:3}
-else
-local label=${gProcLabel:0:2}
-fi
+    if [[ $gLogicalCPUs -le 0x0f ]];
+        then
+             local label=${gProcLabel:0:3}
+        else
+             local label=${gProcLabel:0:2}
+    fi
 
-if [[ $1 -gt ${#gProcessorNames[@]} ]]; then
-echo -e "\nWarning: Target CPU has $gLogicalCPUs logical cores, the running system only ${#gProcessorNames[@]}"
-echo    "         Now using '$label' to extent the current range to $gLogicalCPUs..."
-echo -e "         You may want to check/verify the generated $gSsdtID.dsl\n"
-fi
+    if [[ $1 -gt ${#gProcessorNames[@]} ]]; then
+        echo -e "\nWarning: Target CPU has $gLogicalCPUs logical cores, the running system only ${#gProcessorNames[@]}"
+        echo    "         Now using '$label' to extent the current range to $gLogicalCPUs..."
+        echo -e "         You may want to check/verify the generated $gSsdtID.dsl\n"
+    fi
 
-let currentCPU=0
+    let currentCPU=0
 
-while [ $currentCPU -lt $1 ];
-do
-if [[ $1 -gt 0x0f && $currentCPU -le 0x0f ]];
-then
-local filler='0'
-else
-local filler=''
-fi
+    while [ $currentCPU -lt $1 ];
+    do
+        if [[ $1 -gt 0x0f && $currentCPU -le 0x0f ]];
+            then
+                local filler='0'
+            else
+                local filler=''
+        fi
 
-gProcessorNames[$currentCPU]=${label}${filler}$(echo "obase=16; ${currentCPU}" | bc)
+        gProcessorNames[$currentCPU]=${label}${filler}$(echo "obase=16; ${currentCPU}" | bc)
 
-let currentCPU+=1
-done
+        let currentCPU+=1
+    done
 }
 
 #--------------------------------------------------------------------------------
 
 function _getProcessorScope()
 {
-#
-# We run egrep twice here for Snow Leopard compatibility, otherwise it fails.
-#
-if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5b830b') ]]; then
-printf 'Processor Declaration(s) Found in DSDT'
-fi
+    #
+    # We run egrep twice here for Snow Leopard compatibility, otherwise it fails.
+    #
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5b830b') ]]; then
+        printf 'Processor Declaration(s) Found in DSDT'
+    fi
 
-if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5f50525f') ]];
-then
-gScope="\_PR_"
-echo ' (ACPI 1.0 compliant)'
-else
-gScope="\_SB_"
-fi
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5f50525f') ]];
+        then
+            gScope="\_PR_"
+            echo ' (ACPI 1.0 compliant)'
+            return
+        else
+            gScope="\_SB_"
+            return
+    fi
+    #
+    # Additional/experimental code for support of broken ACPI tables.
+    #
+    if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5f5052') ]];
+        then
+            gScope="\_PR_"
+            echo ' (ACPI 1.0 compliant)'
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUtype()
 {
-#
-# Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
-#
-local grepStr=$(ioreg -p IODeviceTree -n "${gProcessorNames[0]}"@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
+    #
+    # Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
+    #
+    local grepStr=$(ioreg -p IODeviceTree -n "${gProcessorNames[0]}"@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
 
-# Swap bytes with help of ${str:pos:num}
-#
-echo ${grepStr:2:2}${grepStr:0:2}
+    # Swap bytes with help of ${str:pos:num}
+    #
+    echo ${grepStr:2:2}${grepStr:0:2}
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUModel()
 {
-#
-# Returns the hexadecimal value of machdep.cpu.model
-#
-echo 0x$(echo "obase=16; `sysctl machdep.cpu.model | sed -e 's/^machdep.cpu.model: //'`" | bc)
+    #
+    # Returns the hexadecimal value of machdep.cpu.model
+    #
+    echo 0x$(echo "obase=16; `sysctl machdep.cpu.model | sed -e 's/^machdep.cpu.model: //'`" | bc)
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUSignature()
 {
-#
-# Returns the hexadecimal value of machdep.cpu.signature
-#
-echo 0x$(echo "obase=16; `sysctl machdep.cpu.signature | sed -e 's/^machdep.cpu.signature: //'`" | bc)
+    #
+    # Returns the hexadecimal value of machdep.cpu.signature
+    #
+    echo 0x$(echo "obase=16; `sysctl machdep.cpu.signature | sed -e 's/^machdep.cpu.signature: //'`" | bc)
 }
 
 #--------------------------------------------------------------------------------
 
 function _getSystemType()
 {
-#
-# Grab 'system-type' property from ioreg (stripped with sed / RegEX magic).
-#
-# Note: This property is checked (cmpb $0x02) in X86PlatformPlugin::configResourceCallback
-#
-echo `ioreg -p IODeviceTree -d 2 -k system-type | grep system-type | sed -e 's/ *[-="<0a-z>]//g'`
+    #
+    # Grab 'system-type' property from ioreg (stripped with sed / RegEX magic).
+    #
+    # Note: This property is checked (cmpb $0x02) in X86PlatformPlugin::configResourceCallback
+    #
+    echo `ioreg -p IODeviceTree -d 2 -k system-type | grep system-type | sed -e 's/ *[-="<0a-z>]//g'`
 }
 
 #--------------------------------------------------------------------------------
 
 function _findIasl()
 {
-if (($gCallIasl)); then
-#
-# Then we do a quick lookup of iasl (should also be there after the first run)
-#
-if [ ! -f /usr/local/bin/iasl ]; then
-printf "\nIASL not found. "
-#
-# First we check the target directory (should be there after the first run)
-#
-# XXX: Jeroen, try curl --create-dirs without the mkdir here ;)
-if [ ! -d /usr/local/bin ]; then
-printf "Creating target directory... "
-sudo mkdir -p /usr/local/bin/
-sudo chown -R root:wheel /usr/local/bin/
-fi
+    if (($gCallIasl)); then
+        #
+        # Then we do a quick lookup of iasl (should also be there after the first run)
+        #
+        if [ ! -f /usr/local/bin/iasl ]; then
+            printf "\nIASL not found. "
+            #
+            # First we check the target directory (should be there after the first run)
+            #
+            # XXX: Jeroen, try curl --create-dirs without the mkdir here ;)
+            if [ ! -d /usr/local/bin ]; then
+                printf "Creating target directory... "
+                sudo mkdir -p /usr/local/bin/
+                sudo chown -R root:wheel /usr/local/bin/
+            fi
 
-printf "Downloading iasl...\n"
-sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
+            printf "Downloading iasl...\n"
+            sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
 #           sudo curl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl -o /usr/local/bin/iasl --create-dirs
-sudo chmod +x /usr/local/bin/iasl
-echo 'Done.'
-fi
+            sudo chmod +x /usr/local/bin/iasl
+            echo 'Done.'
+        fi
 
-iasl=/usr/local/bin/iasl
-fi
+        iasl=/usr/local/bin/iasl
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _setDestinationPath
 {
-#
-# Checking for RevoBoot
-#
-if [ -d /Extra/ACPI ]; then
-gDestinationPath="/Extra/ACPI/"
-echo -e '\nACPI target directory changed to: '$gDestinationPath
-return
-fi
+    #
+    # Checking for RevoBoot
+    #
+    if [ -d /Extra/ACPI ]; then
+        gDestinationPath="/Extra/ACPI/"
+        echo -e '\nACPI target directory changed to: '$gDestinationPath
+        return
+    fi
 
-#
-# Checking for Clover rev 1277 and greater (projectosx.com/forum/index.php?showtopic=2656&p=29129&#entry29129)
-#
-if [ -d /EFI/Clover/ACPI/patched ];
-then
-gDestinationPath="/EFI/Clover/ACPI/patched/"
-echo -e '\nACPI target directory changed to: $gDestinationPath'
-return
-else
-if [ -d /Volumes/EFI ];
-then
-if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
-gDestinationPath="/Volumes/EFI/CLOVER/ACPI/patched/"
-echo -e '\nACPI target directory changed to: '$gDestinationPath
-return
-fi
-else
-#
-# http://www.tonymacx86.com/ssdt/86906-ssdt-generation-script-ivybridge-pm-40.html#post604496
-#
-if [ -f /Library/Logs/CloverEFI/boot.log ];
-then
-echo 'Clover boot.log found'
-return
-else
-echo -e '\nWarning: Failed to locate the Clover boot.log'
-echo 'Creating temporarily mount point: /Volumes/EFI'
-sudo mkdir /Volumes/EFI
-printf 'Mounting EFI partition...\n'
-#
-# TODO: Get target disk from diskutil list
-#
-sudo mount_hfs /dev/disk0s1 /Volumes/EFI
+    #
+    # Checking for Clover rev 1277 and greater (projectosx.com/forum/index.php?showtopic=2656&p=29129&#entry29129)
+    #
+    if [ -d /EFI/Clover/ACPI/patched ];
+        then
+            gDestinationPath="/EFI/Clover/ACPI/patched/"
+            echo -e '\nACPI target directory changed to: $gDestinationPath'
+            return
+        else
+            if [ -d /Volumes/EFI ];
+                then
+                    if [ -d /Volumes/EFI/Clover/ACPI/patched ]; then
+                        gDestinationPath="/Volumes/EFI/CLOVER/ACPI/patched/"
+                        echo -e '\nACPI target directory changed to: '$gDestinationPath
+                        return
+                    fi
+                else
+                    #
+                    # http://www.tonymacx86.com/ssdt/86906-ssdt-generation-script-ivybridge-pm-40.html#post604496
+                    #
+                    if [ -f /Library/Logs/CloverEFI/boot.log ];
+                        then
+                            echo 'Clover boot.log found'
+                            return
+                        else
+                            echo -e '\nWarning: Failed to locate the Clover boot.log'
+                            echo 'Creating temporarily mount point: /Volumes/EFI'
+                            sudo mkdir /Volumes/EFI
+                            printf 'Mounting EFI partition...\n'
+                            #
+                            # TODO: Get target disk from diskutil list
+                            #
+                            sudo mount_hfs /dev/disk0s1 /Volumes/EFI
 
-if [ -f /Volumes/EFI/Clover/ACPI/patched ];
-then
-let gUnmountEFIPartition=1
-gDestinationPath="/Volumes/EFI/CLOVER/ACPI/patched/"
-echo 'ACPI target directory changed to: '$gDestinationPath
-return
-else
-echo -e '\nUnmounting EFI partition...'
-sudo umount -f /Volumes/EFI
-echo 'Removing temporarily mount point...'
+                            if [ -f /Volumes/EFI/Clover/ACPI/patched ];
+                                then
+                                    let gUnmountEFIPartition=1
+                                    gDestinationPath="/Volumes/EFI/CLOVER/ACPI/patched/"
+                                    echo 'ACPI target directory changed to: '$gDestinationPath
+                                    return
+                                else
+                                    echo -e '\nUnmounting EFI partition...'
+                                    sudo umount -f /Volumes/EFI
+                                    echo 'Removing temporarily mount point...'
 #                                   sudo rm -r /Volumes/EFI
-return
-fi
-fi
+                                    return
+                            fi
+                    fi
 
-fi
-fi
+            fi
+    fi
 
-#
-# Checking for Clover (older versions)
-#
-if [ -d /EFI/ACPI/patched ]; then
-gDestinationPath="/EFI/ACPI/patched/"
-echo 'ACPI target directory changed to: '$gDestinationPath
-return
-fi
+    #
+    # Checking for Clover (older versions)
+    #
+    if [ -d /EFI/ACPI/patched ]; then
+        gDestinationPath="/EFI/ACPI/patched/"
+        echo 'ACPI target directory changed to: '$gDestinationPath
+        return
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _getCPUNumberFromBrandString
 {
-#
-# Get CPU brandstring
-#
-local brandString=$(echo `sysctl machdep.cpu.brand_string` | sed -e 's/machdep.cpu.brand_string: //')
-#
-# Save default (0) delimiter
-#
-local ifs=$IFS
-#
-# Change delimiter to a space character
-#
-IFS=" "
-#
-# Split brandstring into array (data)
-#
-local data=($brandString)
+    #
+    # Get CPU brandstring
+    #
+    local brandString=$(echo `sysctl machdep.cpu.brand_string` | sed -e 's/machdep.cpu.brand_string: //')
+    #
+    # Save default (0) delimiter
+    #
+    local ifs=$IFS
+    #
+    # Change delimiter to a space character
+    #
+    IFS=" "
+    #
+    # Split brandstring into array (data)
+    #
+    local data=($brandString)
 #   local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "V2" "@" "2.5GHz")
 #   local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "@" "2.5GHz")
-#
-# Example from a MacBookPro10,2
-#
-# echo "${data[0]}" # Intel(R)
-# echo "${data[1]}" # Core(TM)
-# echo "${data[2]}" # i5-3210M
-# echo "${data[3]}" # CPU
-# echo "${data[4]}" # @
-# echo "${data[5]}" # 2.50GHz
-#
-# or: "Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz"
-#
-# echo "${data[0]}" # Intel(R)
-# echo "${data[1]}" # Xeon(R)
-# echo "${data[2]}" # CPU
-# echo "${data[3]}" # E3-12XX
-# echo "${data[4]}" # V2
-# echo "${data[5]}" # @
-# echo "${data[6]}" # 3.30GHz
+    #
+    # Example from a MacBookPro10,2
+    #
+    # echo "${data[0]}" # Intel(R)
+    # echo "${data[1]}" # Core(TM)
+    # echo "${data[2]}" # i5-3210M
+    # echo "${data[3]}" # CPU
+    # echo "${data[4]}" # @
+    # echo "${data[5]}" # 2.50GHz
+    #
+    # or: "Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz"
+    #
+    # echo "${data[0]}" # Intel(R)
+    # echo "${data[1]}" # Xeon(R)
+    # echo "${data[2]}" # CPU
+    # echo "${data[3]}" # E3-12XX
+    # echo "${data[4]}" # V2
+    # echo "${data[5]}" # @
+    # echo "${data[6]}" # 3.30GHz
 
-#
-# Restore the default delimiter
-#
-IFS=$ifs
+    #
+    # Restore the default delimiter
+    #
+    IFS=$ifs
 
-let length=${#data[@]}
+    let length=${#data[@]}
 
-if ((length > 6)); then
-echo 'Warning: Unexpected brandstring > "'${data[@]}'"'
-fi
+    if ((length > 6)); then
+        echo 'Warning: Unexpected brandstring > "'${data[@]}'"'
+    fi
 
-if [[ ${data[1]} == "Xeon(R)" && ${data[4]} == "V2" ]];
-then
-gProcessorNumber="${data[3]} ${data[4]}"
-else
-gProcessorNumber="${data[2]}"
-fi
+    if [[ ${data[1]} == "Xeon(R)" && ${data[4]} == "V2" ]];
+        then
+            gProcessorNumber="${data[3]} ${data[4]}"
+        else
+            gProcessorNumber="${data[2]}"
+    fi
 
 #   echo $gProcessorNumber
 }
@@ -1371,745 +1445,754 @@ fi
 
 function _getCPUDataByProcessorNumber
 {
-#
-# Local function definition
-#
-function __searchList()
-{
-local ifs=$IFS
-let targetType=0
+    #
+    # Local function definition
+    #
+    function __searchList()
+    {
+        local ifs=$IFS
+        let targetType=0
 
-case $1 in
-2) local cpuSpecLists=("gDesktopSandyBridgeCPUList[@]" "gMobileSandyBridgeCPUList[@]" "gServerSandyBridgeCPUList[@]")
-;;
-4) local cpuSpecLists=("gDesktopIvyBridgeCPUList[@]" "gMobileIvyBridgeCPUList[@]" "gServerIvyBridgeCPUList[@]")
-;;
-8) local cpuSpecLists=("gDesktopHaswellCPUList[@]" "gMobileHaswellCPUList[@]" "gHaswellCPUList[@]")
-;;
-esac
+        case $1 in
+            2) local cpuSpecLists=("gDesktopSandyBridgeCPUList[@]" "gMobileSandyBridgeCPUList[@]" "gServerSandyBridgeCPUList[@]")
+               ;;
+            4) local cpuSpecLists=("gDesktopIvyBridgeCPUList[@]" "gMobileIvyBridgeCPUList[@]" "gServerIvyBridgeCPUList[@]")
+               ;;
+            8) local cpuSpecLists=("gDesktopHaswellCPUList[@]" "gMobileHaswellCPUList[@]" "gHaswellCPUList[@]")
+               ;;
+        esac
 
-for cpuList in ${cpuSpecLists[@]}
-do
-let targetType+=1
-local targetCPUList=("${!cpuList}")
+        for cpuList in ${cpuSpecLists[@]}
+        do
+            let targetType+=1
+            local targetCPUList=("${!cpuList}")
 
-for cpuData in "${targetCPUList[@]}"
-do
-IFS=","
-data=($cpuData)
+            for cpuData in "${targetCPUList[@]}"
+            do
+                IFS=","
+                data=($cpuData)
 
-if [[ ${data[0]} == $gProcessorNumber ]]; then
-gProcessorData="$cpuData"
-let gTypeCPU=$targetType
-let gBridgeType=$1
-IFS=$ifs
-return
-fi
-done
-done
+                if [[ ${data[0]} == $gProcessorNumber ]]; then
+                    gProcessorData="$cpuData"
+                    let gTypeCPU=$targetType
+                    let gBridgeType=$1
+                    IFS=$ifs
+                    return
+                fi
+            done
+        done
 
-IFS=$ifs
-}
+        IFS=$ifs
+    }
 
-#
-# Local function callers
-#
-__searchList $SANDY_BRIDGE
+    #
+    # Local function callers
+    #
+    __searchList $SANDY_BRIDGE
 
-if (!(($gTypeCPU))); then
-__searchList $IVY_BRIDGE
-fi
+    if (!(($gTypeCPU))); then
+        __searchList $IVY_BRIDGE
+    fi
 
-if (!(($gTypeCPU))); then
-__searchList $HASWELL
-fi
+    if (!(($gTypeCPU))); then
+        __searchList $HASWELL
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _showLowPowerStates()
 {
-#
-# Local function definition
-#
-function __print()
-{
-local mask=1
-local cStates=$1
+    #
+    # Local function definition
+    #
+    function __print()
+    {
+        local mask=1
+        local cStates=$1
 
-printf "Injected C-States for ${gProcessorNames[$2]} ("
-#
-# Haswell    : C0, C1, C1E, C2E, C3, C4, C6 and C7
-# Haswell-ULT: C0, C1, C1E, C2E, C3, C4, C6, C7, C8, C9 and C10
-#
-for state in C1 C2 C3 C6 C7 C8 C9 C10
-do
-if (($cStates & $mask)); then
-if (($mask > 1)); then
-printf ","
-fi
+        printf "Injected C-States for ${gProcessorNames[$2]} ("
+        #
+        # Haswell    : C0, C1, C1E, C2E, C3, C4, C6 and C7
+        # Haswell-ULT: C0, C1, C1E, C2E, C3, C4, C6, C7, C8, C9 and C10
+        #
+        for state in C1 C2 C3 C6 C7 C8 C9 C10
+        do
+            if (($cStates & $mask)); then
+               if (($mask > 1)); then
+                   printf ","
+               fi
 
-printf "$state"
-fi
+               printf "$state"
+            fi
 
-let mask=$(($mask << 1))
-done
+            let mask=$(($mask << 1))
+        done
 
-echo ')'
-}
+        echo ')'
+    }
 
-#
-# Local function callers
-#
-__print $gACST_CPU0 0
+    #
+    # Local function callers
+    #
+    __print $gACST_CPU0 0
 
-if [ $gBridgeType -ge $IVY_BRIDGE ]; then
-__print $gACST_CPU1 1
-fi
+    if [ $gBridgeType -ge $IVY_BRIDGE ]; then
+        __print $gACST_CPU1 1
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _checkPlatformSupport()
 {
-#
-# Local function definition
-#
-function __searchList()
-{
-local data=`awk '/<key>'${1}'<\/key>.*/,/<\/array>/' /System/Library/CoreServices/PlatformSupport.plist`
-local targetList=(`echo $data | egrep -o '(<string>.*</string>)' | sed -e 's/<\/*string>//g'`)
+    #
+    # Local function definition
+    #
+    function __searchList()
+    {
+        local data=`awk '/<key>'${1}'<\/key>.*/,/<\/array>/' /System/Library/CoreServices/PlatformSupport.plist`
+        local targetList=(`echo $data | egrep -o '(<string>.*</string>)' | sed -e 's/<\/*string>//g'`)
 
-for item in "${targetList[@]}"
-do
+        for item in "${targetList[@]}"
+        do
+          if [ "$item" == "$2" ]; then
+              return 1
+          fi
+        done
 
-if [ "$item" == "$2" ]; then
-return 1
-fi
-done
+        return 0
+    }
 
-return 0
-}
+    #
+    # This check is required for Snow Leopard compatibility!
+    #
+    if [ -f /System/Library/CoreServices/PlatformSupport.plist ];
+        then
+            __searchList 'SupportedModelProperties' $1
 
-#
-# This check is required for Snow Leopard compatibility!
-#
-if [ -f /System/Library/CoreServices/PlatformSupport.plist ];
-then
-__searchList 'SupportedModelProperties' $1
+            if (($? == 0)); then
+              __searchList 'SupportedBoardIds' $2
 
-if (($? == 0)); then
-echo 'Warning: Model identifier ['$1'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
-fi
-
-__searchList 'SupportedBoardIds' $2
-
-if (($? == 0)); then
-echo 'Warning: boardID ['$2'] is missing from: /S*/L*/CoreServices/PlatformSupport.plist'
-fi
-else
-echo 'Warning: /S*/L*/C*/PlatformSupport.plist not found (normal for Snow Leopard)!'
-fi
+              if (($? == 0)); then
+                echo 'Warning: Model identifier ['$1'] and board-id ['$2'] missing in: /S*/L*/CoreServices/PlatformSupport.plist'
+              fi
+            fi
+        else
+            echo 'Warning: /S*/L*/C*/PlatformSupport.plist not found (normal for Snow Leopard)!'
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _checkSMCKeys()
 {
-#
-# TODO: Check SMC keys to see if they are there and properly initialized!
-#
-# Note: Do <i>not</i> dump SMC keys with HWSensors/iStat or other SMC plug-ins installed!
-#
-local filename="/System/Library/Extensions/FakeSMC.kext/Contents/Info.plist"
-local data=`grep -so '<key>[a-zA-Z]*</key>' $filename | sed -e 's/<key>//' -e 's/<\/key>//g'`
+    #
+    # TODO: Check SMC keys to see if they are there and properly initialized!
+    #
+    # Note: Do <i>not</i> dump SMC keys with HWSensors/iStat or other SMC plug-ins installed!
+    #
+    local filename="/System/Library/Extensions/FakeSMC.kext/Contents/Info.plist"
+    local data=`grep -so '<key>[a-zA-Z]*</key>' $filename | sed -e 's/<key>//' -e 's/<\/key>//g'`
 
-local status=`echo $data | grep -oe 'DPLM'`
+    local status=`echo $data | grep -oe 'DPLM'`
 
-if [ $status == 'DPLM' ]; then
-# DPLM  [{lim]  (bytes 00 00 00 00 00)
-# CPU, Idle, IGPU, EGPU and Memory P-State limits
-echo "SMC key 'DPLM' found (OK)"
-fi
+    if [ $status == 'DPLM' ]; then
+        # DPLM  [{lim]  (bytes 00 00 00 00 00)
+        # CPU, Idle, IGPU, EGPU and Memory P-State limits
+        echo "SMC key 'DPLM' found (OK)"
+    fi
 set -x
-local status=`echo $data | grep -oe 'MSAL'`
+    local status=`echo $data | grep -oe 'MSAL'`
 
-if [ $status == 'MSAL' ]; then
-# MSAL  [hex_]  (bytes 4b)
-echo "SMC key 'MSAL' found (OK)"
-fi
+    if [ $status == 'MSAL' ]; then
+        # MSAL  [hex_]  (bytes 4b)
+        echo "SMC key 'MSAL' found (OK)"
+    fi
 }
 
 #--------------------------------------------------------------------------------
 
 function _initSandyBridgeSetup()
 {
-case $boardID in
-Mac-942B5BF58194151B)
-gSystemType=1
-gMacModelIdentifier="iMac12,1"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+	case $boardID in
+		Mac-942B5BF58194151B)
+			gSystemType=1
+			gMacModelIdentifier="iMac12,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-942B59F58194171B)
-gSystemType=1
-gMacModelIdentifier="iMac12,2"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-942B59F58194171B)
+			gSystemType=1
+			gMacModelIdentifier="iMac12,2"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-8ED6AF5B48C039E1)
-gSystemType=1
-gMacModelIdentifier="Macmini5,1"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-8ED6AF5B48C039E1)
+			gSystemType=1
+			gMacModelIdentifier="Macmini5,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-4BC72D62AD45599E)
-gSystemType=1
-gMacModelIdentifier="Macmini5,2"
-gACST_CPU0=13   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-4BC72D62AD45599E)
+			gSystemType=1
+			gMacModelIdentifier="Macmini5,2"
+			gACST_CPU0=13   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-7BA5B2794B2CDB12)
-gSystemType=1
-gMacModelIdentifier="Macmini5,3"
-gACST_CPU0=13   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-7BA5B2794B2CDB12)
+			gSystemType=1
+			gMacModelIdentifier="Macmini5,3"
+			gACST_CPU0=13   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-94245B3640C91C81)
-gSystemType=2
-gMacModelIdentifier="MacBookPro8,1"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-94245B3640C91C81)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro8,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-94245A3940C91C80)
-gSystemType=2
-gMacModelIdentifier="MacBookPro8,2"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-94245A3940C91C80)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro8,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-942459F5819B171B)
-gSystemType=2
-gMacModelIdentifier="MacBookPro8,3"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-942459F5819B171B)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro8,3"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-C08A6BB70A942AC2)
-gSystemType=2
-gMacModelIdentifier="MacBookAir4,1"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-C08A6BB70A942AC2)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir4,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
 
-Mac-742912EFDBEE19B3)
-gSystemType=2
-gMacModelIdentifier="MacBookAir4,2"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
-esac
+		Mac-742912EFDBEE19B3)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir4,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+			;;
+	esac
 }
 
 #--------------------------------------------------------------------------------
 
 function _initIvyBridgeSetup()
 {
-case $boardID in
-Mac-00BE6ED71E35EB86)
-gSystemType=1
-gMacModelIdentifier="iMac13,1"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+	case $boardID in
+		Mac-00BE6ED71E35EB86)
+			gSystemType=1
+			gMacModelIdentifier="iMac13,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-FC02E91DDD3FA6A4)
-gSystemType=1
-gMacModelIdentifier="iMac13,2"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-FC02E91DDD3FA6A4)
+			gSystemType=1
+			gMacModelIdentifier="iMac13,2"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-031AEE4D24BFF0B1)
-gSystemType=1
-gMacModelIdentifier="Macmini6,1"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-031AEE4D24BFF0B1)
+			gSystemType=1
+			gMacModelIdentifier="Macmini6,1"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-F65AE981FFA204ED)
-gSystemType=1
-gMacModelIdentifier="Macmini6,2"
-gACST_CPU0=13   # C1, C3 and C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-F65AE981FFA204ED)
+			gSystemType=1
+			gMacModelIdentifier="Macmini6,2"
+			gACST_CPU0=13   # C1, C3 and C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-4B7AC7E43945597E)
-gSystemType=2
-gMacModelIdentifier="MacBookPro9,1"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-4B7AC7E43945597E)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro9,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-6F01561E16C75D06)
-gSystemType=2
-gMacModelIdentifier="MacBookPro9,2"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-6F01561E16C75D06)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro9,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-C3EC7CD22292981F)
-gSystemType=2
-gMacModelIdentifier="MacBookPro10,1"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-C3EC7CD22292981F)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro10,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-AFD8A9D944EA4843)
-gSystemType=2
-gMacModelIdentifier="MacBookPro10,2"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-AFD8A9D944EA4843)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro10,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-66F35F19FE2A0D05)
-gSystemType=2
-gMacModelIdentifier="MacBookAir5,1"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-66F35F19FE2A0D05)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir5,1"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-2E6FAB96566FE58C)
-gSystemType=2
-gMacModelIdentifier="MacBookAir5,2"
-gACST_CPU0=29   # C1, C3, C6 and C7
-gACST_CPU1=7    # C1, C2 and C3
-;;
-esac
+		Mac-2E6FAB96566FE58C)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir5,2"
+			gACST_CPU0=29   # C1, C3, C6 and C7
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
+	esac
 }
 
 #--------------------------------------------------------------------------------
 
 function _initHaswellSetup()
 {
-case $boardID in
-Mac-031B6874CF7F642A)
-gSystemType=1
-gMacModelIdentifier="iMac14,1"
-gACST_CPU0=13   # C1, C2, C3, C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+	case $boardID in
+		Mac-031B6874CF7F642A)
+			gSystemType=1
+			gMacModelIdentifier="iMac14,1"
+			gACST_CPU0=13   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-27ADBB7B4CEE8E61)
-gSystemType=1
-gMacModelIdentifier="iMac14,2"
-gACST_CPU0=13   # C1, C2, C3, C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-27ADBB7B4CEE8E61)
+			gSystemType=1
+			gMacModelIdentifier="iMac14,2"
+			gACST_CPU0=15   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-77EB7D7DAF985301)
-gSystemType=1
-gMacModelIdentifier="iMac14,3"
-gACST_CPU0=13   # C1, C2, C3, C6
-gACST_CPU1=7    # C1, C2 and C3
-;;
+		Mac-77EB7D7DAF985301)
+			gSystemType=1
+			gMacModelIdentifier="iMac14,3"
+			gACST_CPU0=15   # C1, C2, C3, C6
+			gACST_CPU1=7    # C1, C2 and C3
+		;;
 
-Mac-189A3D4F975D5FFC)
-gSystemType=2
-gMacModelIdentifier="MacBookPro11,1"
-gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
-gACST_CPU1=31   # C1, C2, C3, C6 and C7
-;;
+		Mac-189A3D4F975D5FFC)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro11,1"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
 
-Mac-3CBD00234E554E41)
-gSystemType=2
-gMacModelIdentifier="MacBookPro11,2"
-gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
-gACST_CPU1=31   # C1, C2, C3, C6 and C7
-;;
+		Mac-3CBD00234E554E41)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro11,2"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
 
-Mac-2BD1B31983FE1663)
-gSystemType=2
-gMacModelIdentifier="MacBookPro11,3"
-gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
-gACST_CPU1=31   # C1, C2, C3, C6 and C7
-;;
+		Mac-2BD1B31983FE1663)
+			gSystemType=2
+			gMacModelIdentifier="MacBookPro11,3"
+			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
+			gACST_CPU1=31   # C1, C2, C3, C6 and C7
+		;;
 
-Mac-35C1E88140C3E6CF)
-gSystemType=2
-gMacModelIdentifier="MacBookAir6,1"
-gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
-gACST_CPU1=31   # C1, C2, C3, C6 and C7
-;;
+		Mac-35C1E88140C3E6CF)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir6,1"
+			gACST_CPU0=29   # C1, C3, C6, C7
+			gACST_CPU1=7    # C1, C2, C3
+		;;
 
-Mac-7DF21CB3ED6977E5)
-gSystemType=2
-gMacModelIdentifier="MacBookAir6,2"
-gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
-gACST_CPU1=31   # C1, C2, C3, C6 and C7
-;;
+		Mac-7DF21CB3ED6977E5)
+			gSystemType=2
+			gMacModelIdentifier="MacBookAir6,2"
+			gACST_CPU0=29   # C1, C3, C6, C7
+			gACST_CPU1=7    # C1, C2, C3
+		;;
 
-Mac-F60DEB81FF30ACF6)
-gSystemType=1
-gMacModelIdentifier="MacPro6,1"
-gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
-gACST_CPU1=31   # C1, C2, C3, C6 and C7
-;;
-esac
+		Mac-F60DEB81FF30ACF6)
+			gSystemType=3
+			gMacModelIdentifier="MacPro6,1"
+			gACST_CPU0=13   # C1, C3, C6
+			gACST_CPU1=13   # C1, C3, C6
+    esac
 }
 
 #--------------------------------------------------------------------------------
 
 function _exitWithError()
 {
-case "$1" in
-2) echo -e "\nError: 'MaxTurboFrequency' must be in the range of $frequency-$gMaxOCFrequency... exiting\n" 1>&2
-exit 2
-;;
-3) echo -e "\nError: 'TDP' must be in the range of 10-150 Watts... exiting\n" 1>&2
-exit 3
-;;
-4) echo -e "\nError: 'BridgeType' must be 0, 1 or 2... exiting\n" 1>&2
-exit 4
-;;
-5) echo -e "\nError: Unknown processor number... exiting\n" 1>&2
-exit 5
-;;
-6) echo -e "\nError: Processor label length is less than 3... exiting\n" 1>&2
-exit 6
-;;
-7) echo -e "\nError: Processor label not found... exiting\n" 1>&2
-exit 7
-;;
-8) echo -e "\nError: Processor Declaration not found... exiting\n" 1>&2
-exit 8
-;;
-*) exit 1
-;;
-esac
+    case "$1" in
+        2) echo -e "\nError: 'MaxTurboFrequency' must be in the range of $frequency-$gMaxOCFrequency... exiting\n" 1>&2
+           exit 2
+           ;;
+        3) echo -e "\nError: 'TDP' must be in the range of 10-150 Watts... exiting\n" 1>&2
+           exit 3
+           ;;
+        4) echo -e "\nError: 'BridgeType' must be 0, 1 or 2... exiting\n" 1>&2
+           exit 4
+           ;;
+        5) echo -e "\nError: Unknown processor number... exiting\n" 1>&2
+           exit 5
+           ;;
+        6) echo -e "\nError: Processor label length is less than 3... exiting\n" 1>&2
+           exit 6
+           ;;
+        7) echo -e "\nError: Processor label not found... exiting\n" 1>&2
+           exit 7
+           ;;
+        8) echo -e "\nError: Processor Declaration not found... exiting\n" 1>&2
+           exit 8
+           ;;
+        *) exit 1
+           ;;
+    esac
 }
 
 #--------------------------------------------------------------------------------
 
 function main()
 {
-printf "\nsdtPRGen.sh v$gScriptVersion Copyright (c) 2013 by Pike R. Alpha\n"
-echo   '----------------------------------------------------------------'
+    printf "\nssdtPRGen.sh v0.9 Copyright (c) 2011-2012 by † RevoGirl\n"
+    echo   '             v6.6 Copyright (c) 2013 by † Jeroen'
+    printf "             v$gScriptVersion Copyright (c) 2013-$(date "+%Y") by Pike R. Alpha\n"
+    echo   '----------------------------------------------------------------'
+    printf "System information: $gProductName $gProductVersion ($gBuildVersion)\n"
 
-let assumedTDP=0
-let modelSpecified=0
-let maxTurboFrequency=0
+    let assumedTDP=0
+    let modelSpecified=0
+    let maxTurboFrequency=0
 
-_getCPUNumberFromBrandString
+    _getCPUNumberFromBrandString
 
-if [[ "$1" != "" ]]; then
-# Sandy Bridge checks
-if [[ ${1:0:4} == "i3-2" || ${1:0:4} == "i5-2" || ${1:0:4} == "i7-2" ]]; then
-let modelSpecified=1
-gProcessorNumber=$1
-fi
-# Ivy Bridge checks
-if [[ ${1:0:4} == "i3-3" || ${1:0:4} == "i5-3" || ${1:0:4} == "i7-3" ]]; then
-let modelSpecified=1
-gProcessorNumber=$1
-fi
-# Haswell checks
-if [[ ${1:0:4} == "i3-4" || ${1:0:4} == "i5-4" || ${1:0:4} == "i7-4" ]]; then
-let modelSpecified=1
-gProcessorNumber=$1
-fi
-# Xeon check
-if [[ ${1:0:1} == "E" ]]; then
-let modelSpecified=1
-gProcessorNumber=$1
-fi
-fi
+    if [[ "$1" != "" ]]; then
+        # Sandy Bridge checks
+        if [[ ${1:0:4} == "i3-2" || ${1:0:4} == "i5-2" || ${1:0:4} == "i7-2" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+        # Ivy Bridge checks
+        if [[ ${1:0:4} == "i3-3" || ${1:0:4} == "i5-3" || ${1:0:4} == "i7-3" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+        # Haswell checks
+        if [[ ${1:0:4} == "i3-4" || ${1:0:4} == "i5-4" || ${1:0:4} == "i7-4" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+        # Xeon check
+        if [[ ${1:0:1} == "E" ]]; then
+            let modelSpecified=1
+            gProcessorNumber=$1
+        fi
+    fi
 
-_getCPUDataByProcessorNumber
+    _getCPUDataByProcessorNumber
 
-if [[ $modelSpecified -eq 1 && $gTypeCPU -eq 0 ]]; then
-_exitWithError $PROCESSOR_NUMBER_ERROR
-fi
+    if [[ $modelSpecified -eq 1 && $gTypeCPU -eq 0 ]]; then
+       _exitWithError $PROCESSOR_NUMBER_ERROR
+    fi
 
-if [[ $gBridgeType -eq 0 ]]; then
-local model=$(_getCPUModel)
+    if [[ $gBridgeType -eq 0 ]]; then
+        local model=$(_getCPUModel)
 
-if (($model==0x2A)); then
-let gTdp=95
-let gBridgeType=2
-fi
+        if (($model==0x2A)); then
+            let gTdp=95
+            let gBridgeType=2
+        fi
 
-if (($model==0x2D)); then
-let assumedTDP=1
-let gTdp=130
-let gBridgeType=2
-fi
+        if (($model==0x2D)); then
+            let assumedTDP=1
+            let gTdp=130
+            let gBridgeType=2
+        fi
 
-if (($model==0x3A || $model==0x3B || $model==0x3E)); then
-let assumedTDP=1
-let gTdp=77
-let gBridgeType=4
-fi
+        if (($model==0x3A || $model==0x3B || $model==0x3E)); then
+            let assumedTDP=1
+            let gTdp=77
+            let gBridgeType=4
+        fi
 
-# Haswell
-if (($model==0x3C)); then
-let assumedTDP=1
-let gTdp=84
-let gBridgeType=8
-let gMaxOCFrequency=8000
-fi
+        # Haswell
+        if (($model==0x3C)); then
+            let assumedTDP=1
+            let gTdp=84
+            let gBridgeType=8
+            let gMaxOCFrequency=8000
+        fi
 
-# Haswell ULT
-if (($model==0x40)); then
-let assumedTDP=1
-let gTdp=15
-let gBridgeType=8
-fi
-fi
+        # Haswell SVR
+        if (($model==0x3F)); then
+            let assumedTDP=1
+            let gTdp=130
+            let gBridgeType=8
+        fi
 
-case $gBridgeType in
-2) local bridgeTypeString="Sandy Bridge"
-;;
-4) local bridgeTypeString="Ivy Bridge"
-;;
-8) local bridgeTypeString="Haswell"
-;;
-*) local bridgeTypeString="Unknown"
-;;
-esac
+        # Haswell ULT
+        if (($model==0x45)); then
+            let assumedTDP=1
+            let gTdp=15
+            let gBridgeType=8
+        fi
+    fi
 
-_getBoardID
-_getProcessorNames
-_getProcessorScope
+    case $gBridgeType in
+        2) local bridgeTypeString="Sandy Bridge"
+           ;;
+        4) local bridgeTypeString="Ivy Bridge"
+           ;;
+        8) local bridgeTypeString="Haswell"
+           ;;
+        *) local bridgeTypeString="Unknown"
+           ;;
+    esac
 
-local modelID=$(_getModelName)
-local cpu_type=$(_getCPUtype)
-local currentSystemType=$(_getSystemType)
-local cpuSignature=$(_getCPUSignature)
+    _getBoardID
+    _getProcessorNames
+    _getProcessorScope
 
-echo "Generating ${gSsdtID}.dsl for a $modelID [$boardID]"
-echo "$bridgeTypeString Core $gProcessorNumber processor [$cpuSignature] setup [0x$cpu_type]"
+    local modelID=$(_getModelName)
+    local cpu_type=$(_getCPUtype)
+    local currentSystemType=$(_getSystemType)
+    local cpuSignature=$(_getCPUSignature)
 
-#
-# gTypeCPU is greater than 0 when the processor is found in one of the CPU lists
-#
-if (($gTypeCPU));
-then
-local ifs=$IFS
-IFS=","
-local cpuData=($gProcessorData)
-let gTdp=${cpuData[1]}
-let lfm=${cpuData[2]}
-let frequency=${cpuData[3]}
-let maxTurboFrequency=${cpuData[4]}
+    echo "Generating ${gSsdtID}.dsl for a $modelID [$boardID]"
+    echo "$bridgeTypeString Core $gProcessorNumber processor [$cpuSignature] setup [0x$cpu_type]"
 
-if [ $maxTurboFrequency == 0 ]; then
-let maxTurboFrequency=$frequency
-fi
+    #
+    # gTypeCPU is greater than 0 when the processor is found in one of the CPU lists
+    #
+    if (($gTypeCPU));
+        then
+            local ifs=$IFS
+            IFS=","
+            local cpuData=($gProcessorData)
+            let gTdp=${cpuData[1]}
+            let lfm=${cpuData[2]}
+            let frequency=${cpuData[3]}
+            let maxTurboFrequency=${cpuData[4]}
 
-let gLogicalCPUs=${cpuData[6]}
+            if [ $maxTurboFrequency == 0 ]; then
+                let maxTurboFrequency=$frequency
+            fi
 
-IFS=$ifs
+            let gLogicalCPUs=${cpuData[6]}
 
-echo 'With a maximum TDP of '$gTdp' Watt, as specified by Intel'
+            IFS=$ifs
 
-#
-# Check Low Frequency Mode (may be 0 aka still unknown)
-#
-if (($lfm > 0));
-then
-let gBaseFrequency=$lfm
-else
-echo -e "\nWarning: Low Frequency Mode is 0 (unknown)"
+            echo 'With a maximum TDP of '$gTdp' Watt, as specified by Intel'
 
-if (($gTypeCPU == gMobileCPU));
-then
-echo -e "         Now using 1200 MHz for Mobile processor\n"
-let gBaseFrequency=1200
-else
-echo -e "         Now using 1600 MHz for Server/Desktop processors\n"
-let gBaseFrequency=1600
-fi
-fi
-else
-let gLogicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
-let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
-let frequency=($frequency / 1000000)
+            #
+            # Check Low Frequency Mode (may be 0 aka still unknown)
+            #
+            if (($lfm > 0));
+                then
+                    let gBaseFrequency=$lfm
+                else
+                    echo -e "\nWarning: Low Frequency Mode is 0 (unknown/unconfirmed)"
 
-if [[ $assumedTDP -eq 1 ]]; then
-echo 'With a maximum TDP of '$gTdp' Watt - assumed, may require override value!'
-fi
-fi
+                    if (($gTypeCPU == gMobileCPU));
+                        then
+                            echo -e "         Now using 1200 MHz for Mobile processor\n"
+                            let gBaseFrequency=1200
+                        else
+                            echo -e "         Now using 1600 MHz for Server/Desktop processors\n"
+                            let gBaseFrequency=1600
+                    fi
+            fi
+        else
+            let gLogicalCPUs=$(echo `sysctl machdep.cpu.thread_count` | sed -e 's/^machdep.cpu.thread_count: //')
+            let frequency=$(echo `sysctl hw.cpufrequency` | sed -e 's/^hw.cpufrequency: //')
+            let frequency=($frequency / 1000000)
 
-#
-# Script argument checks
-#
+            if [[ $assumedTDP -eq 1 ]]; then
+                echo 'With a maximum TDP of '$gTdp' Watt - assumed, may require override value!'
+            fi
+    fi
 
-if [[ $# -ge 2 ]]; then
-if [[ "$2" =~ ^[0-9]+$ ]]; then
-if [[ $2 -lt $frequency || $2 -gt $gMaxOCFrequency ]];
-then
-_exitWithError $MAX_TURBO_FREQUENCY_ERROR
-else
-if [[ $2 -gt $maxTurboFrequency ]]; then
-echo "Override value: Max Turbo Frequency, now using: $2 MHz!"
-let maxTurboFrequency=$2
-fi
-fi
-fi
-fi
+    #
+    # Script argument checks
+    #
 
-if [ $# -ge 3 ]; then
-if [[ "$3" =~ ^[0-9]+$ ]];
-then
-if [[ $3 -lt 10 || $3 -gt 150 ]];
-then
-_exitWithError $MAX_TDP_ERROR
-else
-if [[ $gTdp != $3 ]]; then
-let gTdp=$3
-echo "Override value: Max TDP, now using: $gTdp Watt!"
-fi
-fi
-else
-_exitWithError $MAX_TDP_ERROR
-fi
-fi
+    if [[ $# -ge 2 ]]; then
+        if [[ "$2" =~ ^[0-9]+$ ]]; then
+            if [[ $2 -lt $frequency || $2 -gt $gMaxOCFrequency ]];
+                then
+                    _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+                else
+                    if [[ $2 -gt $maxTurboFrequency ]]; then
+                        echo "Override value: Max Turbo Frequency, now using: $2 MHz!"
+                        let maxTurboFrequency=$2
+                    fi
+            fi
+        fi
+    fi
 
-if [ $# -ge 4 ]; then
-if [[ "$4" =~ ^[0-9]+$ ]];
-then
-local detectedBridgeType=$gBridgeType
+    if [ $# -ge 3 ]; then
+        if [[ "$3" =~ ^[0-9]+$ ]];
+            then
+                if [[ $3 -lt 10 || $3 -gt 150 ]];
+                    then
+                        _exitWithError $MAX_TDP_ERROR
+                    else
+                        if [[ $gTdp != $3 ]]; then
+                            let gTdp=$3
+                            echo "Override value: Max TDP, now using: $gTdp Watt!"
+                        fi
+                fi
+            else
+                _exitWithError $MAX_TDP_ERROR
+        fi
+    fi
 
-case "$4" in
-0) let gBridgeType=2
-local bridgeTypeString='Sandy Bridge'
-;;
-1) let gBridgeType=4
-local bridgeTypeString='Ivy Bridge'
-;;
-2) let gBridgeType=8
-local bridgeTypeString='Haswell'
-;;
-*) _exitWithError $TARGET_CPU_ERROR
-;;
-esac
+    if [ $# -ge 4 ]; then
+        if [[ "$4" =~ ^[0-9]+$ ]];
+            then
+                local detectedBridgeType=$gBridgeType
 
-if [[ $detectedBridgeType -ne $((2 << $4)) ]]; then
-echo "Override value: CPU type, now using: $bridgeTypeString"
-fi
-else
-_exitWithError $TARGET_CPU_ERROR
-fi
-fi
+                case "$4" in
+                    0) let gBridgeType=2
+                       local bridgeTypeString='Sandy Bridge'
+                       ;;
+                    1) let gBridgeType=4
+                       local bridgeTypeString='Ivy Bridge'
+                       ;;
+                    2) let gBridgeType=8
+                       local bridgeTypeString='Haswell'
+                       ;;
+                    *) _exitWithError $TARGET_CPU_ERROR
+                       ;;
+                esac
 
-if [ $# -eq 5 ]; then
-if [ ${#5} -eq 3 ];
-then
-gProcLabel=$(echo "$5" | tr '[:lower:]' '[:upper:]')
-echo "Override value: Now using '$gProcLabel' for ACPI processor names!"
-_updateProcessorNames ${#gProcessorNames[@]}
-else
-_exitWithError $PROCESSOR_LABEL_LENGTH_ERROR
-fi
-fi
+                if [[ $detectedBridgeType -ne $((2 << $4)) ]]; then
+                    echo "Override value: CPU type, now using: $bridgeTypeString"
+                fi
+            else
+                _exitWithError $TARGET_CPU_ERROR
+        fi
+    fi
 
-echo "Number logical CPU's: $gLogicalCPUs (Core Frequency: $frequency MHz)"
+    if [ $# -eq 5 ]; then
+        if [ ${#5} -eq 3 ];
+            then
+                gProcLabel=$(echo "$5" | tr '[:lower:]' '[:upper:]')
+                echo "Override value: Now using '$gProcLabel' for ACPI processor names!"
+                _updateProcessorNames ${#gProcessorNames[@]}
+            else
+                _exitWithError $PROCESSOR_LABEL_LENGTH_ERROR
+        fi
+    fi
 
-if [ $gLogicalCPUs -gt ${#gProcessorNames[@]} ]; then
-_updateProcessorNames $gLogicalCPUs
-fi
+    echo "Number logical CPU's: $gLogicalCPUs (Core Frequency: $frequency MHz)"
 
-#
-# Check maxTurboFrequency
-#
-if [ $maxTurboFrequency -eq 0 ]; then
-_exitWithError $MAX_TURBO_FREQUENCY_ERROR
-fi
+    if [ $gLogicalCPUs -gt ${#gProcessorNames[@]} ]; then
+        _updateProcessorNames $gLogicalCPUs
+    fi
 
-#
-# Get number of Turbo states.
-#
-let turboStates=$(echo "(($maxTurboFrequency - $frequency) / 100)" | bc)
+    #
+    # Check maxTurboFrequency
+    #
+    if [ $maxTurboFrequency -eq 0 ]; then
+        _exitWithError $MAX_TURBO_FREQUENCY_ERROR
+    fi
 
-#
-# Check number of Turbo states.
-#
-if [ $turboStates -lt 0 ]; then
-let turboStates=0
-fi
+	#
+    # Get number of Turbo states.
+    #
+    let turboStates=$(echo "(($maxTurboFrequency - $frequency) / 100)" | bc)
 
-#
-# Report number of Turbo States
-#
-if [ $turboStates -gt 0 ];
-then
-let minTurboFrequency=($frequency+100)
-echo "Number of Turbo States: $turboStates ($minTurboFrequency-$maxTurboFrequency MHz)"
+    #
+    # Check number of Turbo states.
+    #
+    if [ $turboStates -lt 0 ]; then
+        let turboStates=0
+    fi
 
-else
-echo "Number of Turbo States: 0"
-fi
+    #
+    # Report number of Turbo States
+    #
+    if [ $turboStates -gt 0 ];
+        then
+            let minTurboFrequency=($frequency+100)
+            echo "Number of Turbo States: $turboStates ($minTurboFrequency-$maxTurboFrequency MHz)"
 
-local packageLength=$(echo "((($maxTurboFrequency - $gBaseFrequency)+100) / 100)" | bc)
+        else
+            echo "Number of Turbo States: 0"
+    fi
 
-echo "Number of P-States: $packageLength ($gBaseFrequency-$maxTurboFrequency MHz)"
+    local packageLength=$(echo "((($maxTurboFrequency - $gBaseFrequency)+100) / 100)" | bc)
 
-_printHeader
-_printExternals
-_printDebugInfo
-_printScopeStart $turboStates $packageLength
-_printPackages $gTdp $frequency $maxTurboFrequency
+    echo "Number of P-States: $packageLength ($gBaseFrequency-$maxTurboFrequency MHz)"
 
-if [ $gBridgeType -eq $SANDY_BRIDGE ];
-then
-local cpuTypeString="06"
+    _printHeader
+    _printExternals
+    _printScopeStart $turboStates $packageLength
+    _printPackages $gTdp $frequency $maxTurboFrequency
 
-_initSandyBridgeSetup
+    case "$gBridgeType" in
+        $SANDY_BRIDGE)
+            local cpuTypeString="06"
+            _initSandyBridgeSetup
+            _printScopeACST 0
+            _printScopeCPUn
+            ;;
+        $IVY_BRIDGE)
+            local cpuTypeString="07"
+            _initIvyBridgeSetup
+            _printScopeACST 0
+            _printMethodDSM
+            _printScopeCPUn
+            ;;
+        $HASWELL)
+            local cpuTypeString="08"
+            _initHaswellSetup
+            _printScopeACST 0
+            _printMethodDSM
+            _printScopeCPUn
+           ;;
+    esac
 
-_printScopeACST 0
-_printScopeCPUn
-else
-local cpuTypeString="07"
+    _showLowPowerStates
+    _checkPlatformSupport $modelID $boardID
 
-_initIvyBridgeSetup
+    #
+    # Some Sandy Bridge/Ivy Bridge CPUPM specific configuration checks
+    #
+    if [ $gBridgeType -ne $HASWELL ]; then
+        if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
+            echo -e "\nWarning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
+        fi
 
-_printScopeACST 0
-_printMethodDSM
-_printScopeCPUn
-fi
+        if [ $gSystemType -eq 0 ];
+            then
+                echo -e "\nWarning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
+            else
+                if [ "$gMacModelIdentifier" != "$modelID" ]; then
+                    echo "Error: board-id [$boardID] and model [$modelID] mismatch"
+                fi
+        fi
+    fi
 
-_showLowPowerStates
-_checkPlatformSupport $modelID $boardID
-
-#
-# Some IB CPUPM specific configuration checks
-#
-if [ $gBridgeType -ne $HASWELL ];
-then
-if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
-echo -e "\nWarning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
-fi
-
-if [ $gSystemType -eq 0 ];
-then
-echo -e "\nWarning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
-else
-if [ "$gMacModelIdentifier" != "$modelID" ]; then
-echo "Error: board-id [$boardID] and model [$modelID] mismatch"
-fi
-
-if [ $currentSystemType -ne $gSystemType ]; then
-echo -e "\nWarning: 'system-type' may be set improperly ($currentSystemType instead of $gSystemType)"
-fi
-fi
-fi
+    if [ $currentSystemType -ne $gSystemType ]; then
+        echo -e "\nWarning: 'system-type' may be set improperly ($currentSystemType instead of $gSystemType)"
+    fi
 }
 
 #==================================== START =====================================
@@ -2117,51 +2200,51 @@ fi
 clear
 
 if [ $# -eq 0 ];
-then
-main "" $1 $2 $3 $4
-else
-if [[ "$1" =~ ^[0-9]+$ ]];
-then
-main "" $1 $2 $3 $4
-else
-main "$1" $2 $3 $4 $5
-fi
+    then
+        main "" $1 $2 $3 $4
+    else
+        if [[ "$1" =~ ^[0-9]+$ ]];
+            then
+                main "" $1 $2 $3 $4
+            else
+                main "$1" $2 $3 $4 $5
+        fi
 fi
 
 _findIasl
 
 if (($gCallIasl)); then
-#
-# Compile ssdt.dsl
-#
-"$iasl" $gSsdtPR
+    #
+    # Compile ssdt.dsl
+    #
+    sudo "$iasl" $gSsdtPR
 
-#
-# Copy ssdt_pr.aml to /Extra/ssdt.aml (example)
-#
-if (($gAutoCopy)); then
-if [ -f ${gPath}/${gSsdtID}.aml ]; then
-_setDestinationPath
-echo -e
-read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
-case "$choice" in
-y|Y ) sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
-;;
-esac
+    #
+    # Copy ssdt_pr.aml to /Extra/ssdt.aml (example)
+    #
+    if (($gAutoCopy)); then
+        if [ -f ${gPath}/${gSsdtID}.aml ]; then
+            _setDestinationPath
+            echo -e
+            read -p "Do you want to copy ${gPath}/${gSsdtID}.aml to ${gDestinationPath}${gDestinationFile}? (y/n)?" choice
+            case "$choice" in
+                y|Y ) sudo cp ${gPath}/${gSsdtID}.aml ${gDestinationPath}${gDestinationFile}
+                      ;;
+            esac
 
-if (($gUnmountEFIPartition)); then
-echo -e '\nUnmounting EFI partition...'
-sudo umount -f /Volumes/EFI
-echo 'Removing temporarily mount point...'
-sudo rm -r /Volumes/EFI
-fi
-fi
-fi
+            if (($gUnmountEFIPartition)); then
+                echo -e '\nUnmounting EFI partition...'
+                sudo umount -f /Volumes/EFI
+                echo 'Removing temporarily mount point...'
+                sudo rm -r /Volumes/EFI
+            fi
+        fi
+    fi
 
 fi
 
 if ((gCallOpen)); then
-open $gSsdtPR
+    open $gSsdtPR
 fi
 
 exit 0
