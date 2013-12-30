@@ -54,11 +54,26 @@
 		#define SMB_PRODUCT_NAME	"iMac13,1"
 		#define SMB_BOARD_PRODUCT	"Mac-00BE6ED71E35EB86"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '1' }
-	#else // Defaults to iMac13,2
+	#elif (TARGET_MODEL == IMAC_132)
 		#define SMB_BIOS_VERSION	"IM131.88Z.00CE.B00.1203281326"
 		#define SMB_PRODUCT_NAME	"iMac13,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FC02E91DDD3FA6A4"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '2' }
+	#elif (TARGET_MODEL == IMAC_141)
+		#define SMB_BIOS_VERSION	"IM141.88Z.0118.B00.1309031248"
+		#define SMB_PRODUCT_NAME	"iMac14,1"
+		#define SMB_BOARD_PRODUCT	"Mac-031B6874CF7F642A"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '1' }
+	#elif (TARGET_MODEL == IMAC_141)
+		#define SMB_BIOS_VERSION	"IM141.88Z.0118.B00.1309031249"
+		#define SMB_PRODUCT_NAME	"iMac14,2"
+		#define SMB_BOARD_PRODUCT	"Mac-27ADBB7B4CEE8E61"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '2' }
+	#else // Defaults to iMac 14,3
+        #define SMB_BIOS_VERSION	"IM143.88Z.0118.B00.1309031249"
+        #define SMB_PRODUCT_NAME	"iMac14,3"
+        #define SMB_BOARD_PRODUCT	"Mac-77EB7D7DAF985301"
+        #define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '3' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
@@ -97,14 +112,14 @@
 	#elif (TARGET_MODEL == MACBOOK_AIR_61)
 		// Intel Core i5-4250U @ 1.30 GHz (2 cores - 4 threads)
 		// Intel Core i7-4650U @ 1.70 GHz (2 cores - 4 threads)
-		#define SMB_BIOS_VERSION	"MBA61.88Z.0099.B00.1305241529"
+		#define SMB_BIOS_VERSION	"MBA61.88Z.0099.B04.1309271229"
 		#define SMB_PRODUCT_NAME	"MacBookAir6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-35C1E88140C3E6CF"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'A', 'i', 'r', '6', ',', '1' }
 	#else // Defaults to MacBookAir6,2
 		// Intel Core i5-4250U @ 1.30 GHz (2 cores - 4 threads)
 		// Intel Core i7-4650U @ 1.70 GHz (2 cores - 4 threads)
-		#define SMB_BIOS_VERSION	"MBA61.88Z.0099.B00.1305241529"
+		#define SMB_BIOS_VERSION	"MBA61.88Z.0099.B04.1309271229"
 		#define SMB_PRODUCT_NAME	"MacBookAir6,2"
 		#define SMB_BOARD_PRODUCT	"Mac-7DF21CB3ED6977E5"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'A', 'i', 'r', '6', ',', '2' }
@@ -164,15 +179,23 @@
 		#define SMB_PRODUCT_NAME	"MacBookPro10,2"
 		#define SMB_BOARD_PRODUCT	"Mac-AFD8A9D944EA4843"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '0', ',', '2' }
-	#else // Defaults to MacBookPro11,1
+	#elif (TARGET_MODEL == MACBOOK_PRO_111)
 		// Intel Core i5-4258U @ 2.90 GHz - 2 cores / 4 threads.
-		#define SMB_BIOS_VERSION	"MBP111.88Z.0098.B00.1306051054"
+		#define SMB_BIOS_VERSION	"MBP111.88Z.0138.B03.1310291227"
 		#define SMB_PRODUCT_NAME	"MacBookPro11,1"
 		#define SMB_BOARD_PRODUCT	"Mac-189A3D4F975D5FFC"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '1', ',', '1' }
+	#else // Defaults to MacBookPro11,2 (with NVIDIA graphics)
+		// Intel Core i5-4258U @ 2.90 GHz - 2 cores / 4 threads.
+		#define SMB_BIOS_VERSION	"MBP112.88Z.0138.B03.1310291227"
+		#define SMB_PRODUCT_NAME	"MacBookPro11,2"
+		#define SMB_BOARD_PRODUCT	"Mac-3CBD00234E554E41"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '1', ',', '2' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
+
+
 
 
 #if TARGET_MODEL & MACMINI														// 16
@@ -205,13 +228,13 @@
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '5', ',', '3' }
 	#elif (TARGET_MODEL == MACMINI_61)
 		// Intel Core i5-3210M @ 2.50 GH (2 cores - 4 theeads)
-		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B00.1208091121"
+		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B03.1211161202"
 		#define SMB_PRODUCT_NAME	"Macmini6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-031AEE4D24BFF0B1"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '1' }
 	#elif (TARGET_MODEL == MACMINI_62) // Defaults to Macmini6,2
 		// Intel Core i7-3615QM @ 2.30 GHz (4 cores - 8 threads)
-		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B00.1208091121"
+		#define SMB_BIOS_VERSION	"MM61.88Z.0106.B03.1211161202"
 		#define SMB_PRODUCT_NAME	"Macmini6,2"
 		#define SMB_BOARD_PRODUCT	"Mac-F65AE981FFA204ED"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '2' }
@@ -245,7 +268,7 @@
 		#define SMB_BOARD_PRODUCT	"Mac-F221BEC8"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '5', ',', '1' }
 	#else // Defaults to MacPro6,1
-		#define SMB_BIOS_VERSION	"MP61.88Z.0099.B00.1306121724" // TODO: Verify this!
+		#define SMB_BIOS_VERSION	"MP61.88Z.0116.B04.1312061508"
 		#define SMB_PRODUCT_NAME	"MacPro6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F60DEB81FF30ACF6"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '6', ',', '1' }

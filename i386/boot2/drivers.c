@@ -199,19 +199,21 @@ long loadDrivers(char * dirSpec)
 
 		if ((gKextLoadStatus & 1) == 0)
 		{
+#if (MAKE_TARGET_OS == MAVERICKS)
+			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/Library/Extensions\");\n");
+
+			// For Mavericks we first load the signed kexts.
+			if (loadKexts("/Library/Extensions", 0) == EFI_SUCCESS)
+			{
+				_DRIVERS_DEBUG_DUMP("loadKexts(1) OK.\n");
+			}
+#endif
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/System/Library/Extensions\");\n");
 			// System kexts
 			if (loadKexts("/System/Library/Extensions", 0) == EFI_SUCCESS)
 			{
-				_DRIVERS_DEBUG_DUMP("loadKexts(1) OK.\n");
-			}
-#if (MAKE_TARGET_OS == MAVERICKS)
-			// Signed kexts for Mavericks only!
-			if (loadKexts("/Library/Extensions", 0) == EFI_SUCCESS)
-			{
 				_DRIVERS_DEBUG_DUMP("loadKexts(2) OK.\n");
 			}
-#endif
 			_DRIVERS_DEBUG_DUMP("\n");
 		}
 	}

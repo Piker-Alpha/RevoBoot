@@ -91,6 +91,11 @@ void initEFITree(void)
 
 	// The use of sizeof() here is mandatory (to prevent breakage).
 	DT__AddProperty(platformNode, "Model", sizeof(MODEL_NAME), (EFI_CHAR16*) MODEL_NAME);
+
+	// Satisfying X86PlatformPlugin.kext
+	static EFI_UINT8 const STARTUP_POWER_EVENTS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	DT__AddProperty(platformNode, "StartupPowerEvents", sizeof(STARTUP_POWER_EVENTS), (EFI_UINT8*) &STARTUP_POWER_EVENTS);
+
 	DT__AddProperty(platformNode, "SystemSerialNumber", sizeof(SYSTEM_SERIAL_NUMBER), (EFI_CHAR16*) SYSTEM_SERIAL_NUMBER);
 
 	if (gPlatform.CPU.FSBFrequency)

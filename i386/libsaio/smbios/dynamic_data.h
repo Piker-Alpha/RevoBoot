@@ -222,8 +222,8 @@ void setupSMBIOS(void)
 	newEPS->anchor[3]			= 0x5f;							// _
 	newEPS->checksum			= 0;							// Updated at the end of this run.
 	newEPS->entryPointLength	= 0x1f;							// sizeof(* newEPS)
-	newEPS->majorVersion		= 2;							// SMBIOS version 2.4
-	newEPS->minorVersion		= 4;
+	newEPS->majorVersion		= 2;							// SMBIOS version 2.7
+	newEPS->minorVersion		= 7;
 	newEPS->maxStructureSize	= factoryEPS->maxStructureSize;	// Optionally checked and updated later on.
 	newEPS->entryPointRevision	= 0;
 
@@ -242,7 +242,7 @@ void setupSMBIOS(void)
 	newEPS->dmi.tableLength		= 0;							// Updated at the end of this run.
 	newEPS->dmi.tableAddress	= (uint32_t) (kernelMemory + sizeof(struct SMBEntryPoint));
 	newEPS->dmi.structureCount	= 0;							// Updated during this run.
-	newEPS->dmi.bcdRevision		= 0x24;							// SMBIOS version 2.4
+	newEPS->dmi.bcdRevision		= 0x27;							// SMBIOS version 2.7
 
 	char * stringsPtr			= NULL;
 	char * newtablesPtr			= (char *)newEPS->dmi.tableAddress;

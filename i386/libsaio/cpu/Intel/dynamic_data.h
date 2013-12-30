@@ -384,7 +384,7 @@ void initCPUStruct(void)
 				}
 				else if (strstr(gPlatform.CPU.BrandString, "Core(TM) i5"))
 				{
-					gPlatform.CPU.Type = (0x600 + CoreBridgeType);		// Core i5
+					gPlatform.CPU.Type = (0x600 + 5); // CoreBridgeType);		// Core i5
 				}
 				else if (strstr(gPlatform.CPU.BrandString, "Core(TM) i3"))
 				{
@@ -412,11 +412,11 @@ void initCPUStruct(void)
 					qpiSpeed = 0; // No QPI but DMI for Sandy Bridge processors.
 					
 					// Disable C1/C3 state auto demotion i.e. it won't change C3/C6/C7 requests to C1/C3.
-					wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x1E000003ULL);
+					// wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x1E000003ULL);
 
 					// Disable EIST Hardware coordination (letting AICPUPM.kext handle it).
-					msr = rdmsr64(MSR_MISC_PWR_MGMT);
-					wrmsr64(MSR_MISC_PWR_MGMT, (msr | 1));
+					// msr = rdmsr64(MSR_MISC_PWR_MGMT);
+					// wrmsr64(MSR_MISC_PWR_MGMT, (msr | 1));
 
 					// Disable I/O MWAIT Redirection.
 					// msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);

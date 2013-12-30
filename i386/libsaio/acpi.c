@@ -78,7 +78,7 @@ void updateACPITableData(struct acpi_2_rsdp * rsdp, struct acpi_2_xsdt * xsdt, i
 	//------------------------- Used in acpi/patcher.h -------------------------
 	#define _ACPI_SET(target, str, len) strncpy(target, str, len)
 	#define _ACPI_SET_APPLE_OEMID(target) _ACPI_SET((target)->OEMID, "Apple ", 6)
-	#define _ACPI_SET_APPLE_OEMTargetID(target) _ACPI_SET((target)->OEMTableID, "Apple00", 8)
+	#define _ACPI_SET_APPLE_OEMTargetID(target) _ACPI_SET((target)->OEMTableID, gPlatform.CommaLessModelID, 8)
 	//--------------------------------------------------------------------------
 #else
 	//--------------------------- Void replacements ----------------------------

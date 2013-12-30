@@ -24,6 +24,7 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(void)
 	IOLog("IA32_MPERF.................(0xE7)  : 0x%llX\n", (unsigned long long)rdmsr64(IA32_MPERF));
 	IOLog("IA32_APERF.................(0xE8)  : 0x%llX\n", (unsigned long long)rdmsr64(IA32_APERF));
 
+	IOLog("MSR_FLEX_RATIO.............(0x194) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_FLEX_RATIO));
 	IOLog("MSR_IA32_PERF_STATUS.......(0x198) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_IA32_PERF_STATUS));
 	IOLog("MSR_IA32_PERF_CONTROL......(0x199) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_IA32_PERF_CONTROL));
 	IOLog("IA32_CLOCK_MODULATION......(0x19A) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_CLOCK_MODULATION));
@@ -41,39 +42,40 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(void)
 	IOLog("MSR_PKG_POWER_LIMIT........(0x610) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_POWER_LIMIT));
 	IOLog("MSR_PKG_ENERGY_STATUS......(0x611) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_ENERGY_STATUS));
 
+	IOLog("MSR_PKGC3_IRTL.............(0x60a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC3_IRTL));
+	IOLog("MSR_PKGC6_IRTL.............(0x60b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC6_IRTL));
+	IOLog("MSR_PKGC7_IRTL.............(0x60c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC7_IRTL));
+
 	IOLog("MSR_PP0_CURRENT_CONFIG.....(0x601) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_CURRENT_CONFIG));
 	IOLog("MSR_PP0_POWER_LIMIT........(0x638) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POWER_LIMIT));
 	IOLog("MSR_PP0_ENERGY_STATUS......(0x639) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_ENERGY_STATUS));
 	IOLog("MSR_PP0_POLICY.............(0x63a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POLICY));
 
-	if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_IB_CORE))
-	{
-		IOLog("MSR_PP1_CURRENT_CONFIG.....(0x602) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_CURRENT_CONFIG));
-		IOLog("MSR_PP1_POWER_LIMIT........(0x640) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POWER_LIMIT));
-		IOLog("MSR_PP1_ENERGY_STATUS......(0x641) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_ENERGY_STATUS));
-		IOLog("MSR_PP1_POLICY.............(0x642) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POLICY));
-	}
+	/* IOLog("MSR_PP1_CURRENT_CONFIG.....(0x602) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_CURRENT_CONFIG));
+	IOLog("MSR_PP1_POWER_LIMIT........(0x640) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POWER_LIMIT));
+	IOLog("MSR_PP1_ENERGY_STATUS......(0x641) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_ENERGY_STATUS));
+	IOLog("MSR_PP1_POLICY.............(0x642) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POLICY)); */
 
-	if ((gCPUModel != CPU_MODEL_SB_CORE) && (gCPUModel != CPU_MODEL_SB_JAKETOWN))
-	{
-		IOLog("MSR_CONFIG_TDP_NOMINAL.....(0x648) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_NOMINAL));
-		IOLog("MSR_CONFIG_TDP_LEVEL1......(0x649) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL1));
-		IOLog("MSR_CONFIG_TDP_LEVEL2......(0x64a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL2));
-		IOLog("MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
-		IOLog("MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
-	}
+	IOLog("MSR_CONFIG_TDP_NOMINAL.....(0x648) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_NOMINAL));
+	IOLog("MSR_CONFIG_TDP_LEVEL1......(0x649) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL1));
+	IOLog("MSR_CONFIG_TDP_LEVEL2......(0x64a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL2));
+	IOLog("MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
+	IOLog("MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
 
-	if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN))
-	{
-		IOLog("MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
-	}
-
+	IOLog("MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
 	IOLog("MSR_PKG_C3_RESIDENCY.......(0x3f8) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C3_RESIDENCY));
 	IOLog("MSR_PKG_C6_RESIDENCY.......(0x3f9) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C6_RESIDENCY));
-
-	if ((gCPUModel != CPU_MODEL_IB_CORE) && (gCPUModel != CPU_MODEL_IB_CORE_EX))
+	IOLog("MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+	
+	if (gCPUModel == CPU_MODEL_HASWELL_ULT)
 	{
-		IOLog("MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("MSR_PKG_C8_RESIDENCY.......(0x630) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("MSR_PKG_C9_RESIDENCY.......(0x631) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("MSR_PKG_C10_RESIDENCY......(0x632) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		
+		IOLog("MSR_PKG_C8_LATENCY.........(0x633) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("MSR_PKG_C9_LATENCY.........(0x634) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+		IOLog("MSR_PKG_C10_LATENCY........(0x635) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
 	}
 }
 
@@ -164,9 +166,9 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		if (igpuEnabled)
 		{
 			gTriggeredIGPUPStates = gIGPUMultipliers;
-			IOLog("] GPU P-States [ ");
+			IOLog("] iGPU P-States [ ");
 			
-			for (currentBit = 17; currentBit <= 27; currentBit++)
+			for (currentBit = 1; currentBit <= 32; currentBit++)
 			{
 				value = (1ULL << currentBit);
 				
@@ -226,10 +228,18 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				UInt64  msr = rdmsr64(MSR_IA32_PERF_STS);
 				gCoreMultipliers |= (1ULL << (msr >> 8));
 
+				wrmsr64(IA32_ENERGY_PERF_BIAS, 15);
+				
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
 
 				gCPUModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
+
+				// MWAIT information
+				do_cpuid(0x00000005, cpuid_reg);
+				uint32_t supportedMwaitCStates = bitfield32(cpuid_reg[edx], 31,  0);
+
+				IOLog("AICPUPMI: MWAIT C-States     : %d\n", supportedMwaitCStates);
 
 #if REPORT_MSRS
 				reportMSRs();
@@ -269,10 +279,17 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 							{
 								igpuEnabled = true; // IGPU Enabled and Visible
 								gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
-
-								IOLog("AICPUPMI: IGPU Current Freq..: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x01]));
-								IOLog("AICPUPMI: IGPU Max Frequency.: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x51]));
-								IOLog("AICPUPMI: IGPU Max Turbo Freq: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x50]));
+								
+								// Current RP-state, when the graphics engine is in RC6, this reflects the last used ratio.
+								IOLog("AICPUPMI: IGPU Current Freq..: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x01])); // RP_STATE_RAT IO
+								// Maximum RPN base frequency capability for the Integrated GFX Engine (GT).
+								IOLog("AICPUPMI: IGPU Max Frequency.: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x52])); // RPN_CAP
+								// Maximum RP1 base frequency capability for the Integrated GFX Engine (GT).
+								IOLog("AICPUPMI: IGPU Max Frequency.: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x51])); // RP1_CAP
+								// Maximum RP0 base frequency capability for the Integrated GFX Engine (GT).
+								IOLog("AICPUPMI: IGPU Max Turbo Freq: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x50])); // RP0_CAP
+								// Maximum base frequency limit for the Integrated GFX Engine (GT) allowed during run-time.
+								IOLog("AICPUPMI: IGPU Maximum limit.: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x4C])); // RPSTT_LIM
 								//
 								// Example-1: 17 (multiplier) * 50 (frequency in MHz) =  850 MHz
 								// Example-2: 22 (multiplier) * 50 (frequency in MHz) = 1100 MHz

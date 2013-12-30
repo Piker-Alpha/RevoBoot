@@ -59,6 +59,8 @@
 #include "sl.h"
 #include "libsa.h"
 
+#include "cpu/proc_reg.h"
+
 // DHP: Dump all global junk a.s.a.p.
 
 long gBootMode = kBootModeQuiet; // no longer defaults to 0 aka kBootModeNormal
@@ -314,6 +316,12 @@ void boot(int biosdev)
 					strlcpy(rootUUID, val, 37);
 				}
 #if INSTALL_ESD_SUPPORT
+				/*
+				 * boot-arg scheme:
+				 *
+				 * container-dmg: optional DMG that contains the root-dmg.
+				 * root-dmg: the DMG that will be the root filesystem.
+				 */
 				if (getValueForBootKey(kernelFlags, "container-dmg", &val, &length) &&
 					getValueForBootKey(kernelFlags, "root-dmg", &val, &length))
 				{
@@ -661,7 +669,7 @@ void boot(int biosdev)
 			finalizeKernelBootConfig();
 			
 			_BOOT_DEBUG_DUMP("execKernel-7 / gVerboseMode is %s\n", gVerboseMode ? "true" : "false");
-			
+
 			// Did we switch to graphics mode yet (think verbose mode)?
 			if (gVerboseMode || bootArgs->Video.v_display == VGA_TEXT_MODE)
 			{

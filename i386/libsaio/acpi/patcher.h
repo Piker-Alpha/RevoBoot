@@ -87,6 +87,7 @@ void loadACPITables(void)
 #endif // LOAD_DSDT_TABLE_FROM_EXTRA_ACPI
 
 #if LOAD_SSDT_TABLE_FROM_EXTRA_ACPI
+	// loadACPITable(APIC); Table load example!
 	loadACPITable(SSDT);
 	loadACPITable(SSDT_PR);	// Overrides STATIC_SSDT_PR_TABLE_DATA / AUTOMATIC_SSDT_PR_CREATION when found!
 	loadACPITable(SSDT_USB);

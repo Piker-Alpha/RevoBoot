@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl <RevoGirl@rocketmail.com>
-# Version 6.6 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.0 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -74,6 +74,12 @@
 #			- Output of Clover ACPI directory detection fixed (Pike, June 2013)
 #			- Haswell CPUs added (Jeroen, June 2013)
 #			- board-id's for new MacBookAir6,[1/2] added (Pike, June 2013)
+#			- board-id's for new iMac14,[1/2/3] added (Pike, October 2013)
+#			- board-id's for new MacBookPro11,[1/2/3] added (Pike, October 2013)
+#			- Cleanups and board-id for new MacPro6,1 added (Pike, October 2013)
+#			– Frequency error in i7-4700MQ data fixed, thanks to RehabMan (Pike, November 2013)
+#			- Intel i5-4200M added (Pike, December 2013)
+#			- LFM fixed in the Intel i7-3930K data (Pike, December 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -83,6 +89,7 @@
 #			- Thanks to 'RehabMan' for his help with Snow Leopard/egrep incompatibility.
 #			- Thanks to 'BigDonkey' for his help with LFM (800 MHz) for Sandy Bridge mobility models.
 #			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
+#			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -179,7 +186,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=6.6
+gScriptVersion=7.0
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -256,7 +263,7 @@ i7-35355,120,1600,2666,2666,4,4
 # i7 Desktop Extreme Series
 i7-3970X,150,0,3500,4000,6,12
 i7-3960X,130,0,3300,3900,6,12
-i7-3930K,130,0,3200,3800,6,12
+i7-3930K,130,1200,3200,3800,6,12
 i7-3820,130,0,3600,3800,4,8
 # i7 Desktop series
 i7-2600S,65,1600,2800,3800,4,8
@@ -531,6 +538,7 @@ i7-4700MQ,47,800,2400,3600,4,8
 i7-4700HQ,47,800,2400,3600,4,8
 i7-4702HQ,37,800,2200,3200,4,8
 # Socket FCBGA1168
+i7-4558U,28,800,2800,3300,2,4
 i5-4350U,15,800,1400,2900,2,4
 i5-4288U,28,800,2600,3100,2,4
 i5-4258U,28,800,2400,2900,2,4
@@ -632,7 +640,7 @@ function _printScopeStart()
     # Do we need to create additional (Low Frequency) P-States?
     #
 
-    if [ $gBridgeType -eq $IVY_BRIDGE ];
+    if [ $gBridgeType -ne $SANDY_BRIDGE ];
         then
             let lowFrequencyPStates=($gBaseFrequency/100)-8
             let packageLength=($2+$lowFrequencyPStates)
@@ -641,7 +649,7 @@ function _printScopeStart()
             echo ')'                                                                    >> $gSsdtPR
 
             # TODO: Remove this when CPUPM for IB works properly!
-            if ((gIvyWorkAround)); then
+            if [[ gIvyWorkAround && $gBridgeType -eq $IVY_BRIDGE ]]; then
                 let useWorkArounds=1
             fi
     fi
@@ -822,6 +830,7 @@ function _printScopeACST()
     #
     if [ $1 -eq 1 ];
         then
+            echo "1: $1"
             # Yes (also used by CPU2, CPU3 and greater).
             let targetCStates=$gACST_CPU1
             latency_C1=0x03E8
@@ -838,10 +847,10 @@ function _printScopeACST()
             #
             if (($gTypeCPU == $gMobileCPU)); then
                 echo 'Adjusting C-States for detected (mobile) processor'
-                gACST_CPU0=29
+                let gACST_CPU0=29
             fi
-
-            let targetCStates=$gACST_CPU0
+            echo "gACST_CPU0: $gACST_CPU0"
+            let targetCStates=253 # $gACST_CPU0
             latency_C1=Zero
             latency_C3=0xCD
             latency_C6=0xF5
@@ -853,34 +862,41 @@ function _printScopeACST()
             fi
     fi
 
+    echo "targetCStates: $targetCStates"
+
     #
     # Checks to determine which C-State(s) we should inject.
     #
     if (($targetCStates & 1)); then
+        echo "Adding C1"
         let C1=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if (($targetCStates & 2)); then
+        echo "Adding C2"
         let C2=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if (($targetCStates & 4)); then
+        echo "Adding C3"
         let C3=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if (($targetCStates & 8)); then
+        echo "Adding C6"
         let C6=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
-    if (($targetCStates & 16)); then
+    if ((($targetCStates & 16) == 16)); then
+        echo "Adding C7"
         let C7=1
         let numberOfCStates+=1
         let pkgLength+=1
@@ -1134,6 +1150,7 @@ function _getProcessorScope()
         printf 'Processor Declaration(s) Found in DSDT'
     fi
 
+    # Search for "_PR_"
     if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5f50525f') ]];
         then
             gScope="\_PR_"
@@ -1754,6 +1771,7 @@ function _initHaswellSetup()
 		;;
 
 		Mac-7DF21CB3ED6977E5)
+            echo "YES"
 			gSystemType=2
 			gMacModelIdentifier="MacBookAir6,2"
 			gACST_CPU0=253  # C1, C3, C6, C7, C8, C9 and C10
@@ -1864,7 +1882,7 @@ function main()
         fi
 
         # Haswell ULT
-        if (($model==0x40)); then
+        if (($model==0x45)); then
             let assumedTDP=1
             let gTdp=15
             let gBridgeType=8
@@ -2065,23 +2083,28 @@ function main()
     _printScopeStart $turboStates $packageLength
     _printPackages $gTdp $frequency $maxTurboFrequency
 
-    if [ $gBridgeType -eq $SANDY_BRIDGE ];
-        then
+    case "$gBridgeType" in
+        $SANDY_BRIDGE)
             local cpuTypeString="06"
-
             _initSandyBridgeSetup
-
             _printScopeACST 0
             _printScopeCPUn
-        else
+            ;;
+        $IVY_BRIDGE)
             local cpuTypeString="07"
-
             _initIvyBridgeSetup
-
             _printScopeACST 0
             _printMethodDSM
             _printScopeCPUn
-    fi
+            ;;
+        $HASWELL)
+            local cpuTypeString="08"
+            _initHaswellSetup
+            _printScopeACST 0
+            _printMethodDSM
+            _printScopeCPUn
+           ;;
+    esac
 
     _showLowPowerStates
     _checkPlatformSupport $modelID $boardID
@@ -2132,7 +2155,7 @@ if (($gCallIasl)); then
     #
     # Compile ssdt.dsl
     #
-    "$iasl" $gSsdtPR
+    sudo "$iasl" $gSsdtPR
 
     #
     # Copy ssdt_pr.aml to /Extra/ssdt.aml (example)
