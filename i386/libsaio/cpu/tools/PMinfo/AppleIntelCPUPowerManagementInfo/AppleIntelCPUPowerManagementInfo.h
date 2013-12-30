@@ -23,6 +23,7 @@
 
 #define REPORT_MSRS			1
 #define REPORT_GPU_STATS	1
+#define REPORT_C_STATES		1
 
 #define NB_BUS	0x00
 #define NB_DEV	0x00
@@ -69,7 +70,8 @@ UInt8 ReadPci8(UInt8 Bus, UInt8 Dev, UInt8 Fun, UInt16 Reg)
 {
 	if (Reg >= 0x100)
 	{
-		return MMIO_READ8(NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
+		// return MMIO_READ8(NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
+		return MMIO_READ8((UInt64)NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
 	}
 	else
 	{
@@ -102,8 +104,8 @@ private:
 	void reportMSRs(void);
 
 	bool loopLock = false;
-	bool dumpCStates = false;
-	bool igpuEnabled = false;
+	bool dumpCStates = true;
+	bool igpuEnabled = true;
 
 	UInt16 Interval	= 50;
 
@@ -128,6 +130,22 @@ OSDefineMetaClassAndStructors(AppleIntelCPUPowerManagementInfo, IOService)
 
 UInt8	gCPUModel	= 0x2A;
 UInt8	gCoreStates	= 0ULL;
+
+#if REPORT_C_STATES
+bool	gCheckC3	= true;
+bool	gCheckC6	= true;
+bool	gCheckC7	= false;
+
+UInt32	gC3Cores	= 0;
+UInt32	gC6Cores	= 0;
+UInt32	gC7Cores	= 0;
+
+UInt32	gTriggeredC3Cores	= 0;
+UInt32	gTriggeredC6Cores	= 0;
+UInt32	gTriggeredC7Cores	= 0;
+#endif
+
+UInt64	gCoreMultipliers = 0ULL;
 
 #if REPORT_GPU_STATS
 	UInt8	* gMchbar	= NULL;
