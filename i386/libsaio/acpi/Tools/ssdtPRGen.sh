@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -81,6 +81,7 @@
 #			- Intel i5-4200M added (Pike, December 2013)
 #			- LFM fixed in the Intel i7-3930K data (Pike, December 2013)
 #			- Intel E5-2695 V2 added (Pike, December 2013)
+#			- Intel i3-3250 added (Pike, December 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -188,7 +189,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=7.4
+gScriptVersion=7.5
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -407,6 +408,7 @@ i5-3333S,65,1600,2700,3200,4,4
 i5-3330S,65,1600,3700,3200,4,4
 i5-3330,77,1600,3000,3200,4,4
 # i3-3200 Desktop Processor Series
+i3-3250,55,1600,3500,0,2,4
 i3-3240,55,1600,3400,0,2,4
 i3-3240T,35,1600,2900,0,2,4
 i3-3225,55,1600,3300,0,2,4
