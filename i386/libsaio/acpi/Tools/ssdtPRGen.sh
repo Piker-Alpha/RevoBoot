@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.3 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.4 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -80,6 +80,7 @@
 #			– Frequency error in i7-4700MQ data fixed, thanks to RehabMan (Pike, November 2013)
 #			- Intel i5-4200M added (Pike, December 2013)
 #			- LFM fixed in the Intel i7-3930K data (Pike, December 2013)
+#			- Intel E5-2695 V2 added (Pike, December 2013)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -187,7 +188,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=7.3
+gScriptVersion=7.4
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -376,6 +377,7 @@ gServerIvyBridgeCPUList=(
 'E3-1225 V2',77,0,3200,3600,4,4
 'E3-1220 V2',69,0,3100,3500,4,4
 'E3-1220L V2',17,0,2300,3500,2,4
+'E5-2695 V2',115,1200,2400,3200,12,24
 )
 
 gDesktopIvyBridgeCPUList=(
