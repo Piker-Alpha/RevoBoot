@@ -70,7 +70,6 @@ UInt8 ReadPci8(UInt8 Bus, UInt8 Dev, UInt8 Fun, UInt16 Reg)
 {
 	if (Reg >= 0x100)
 	{
-		// return MMIO_READ8(NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
 		return MMIO_READ8((UInt64)NB_PCIE_CFG_ADDRESS(Bus, Dev, Fun, Reg));
 	}
 	else
@@ -103,10 +102,11 @@ private:
 	
 	void reportMSRs(UInt8 aCPUModel);
 	
-	bool loopLock = false;		// TODO: Use Info.plist
-	bool dumpCStates = true;	// TODO: Use Info.plist
-	bool igpuEnabled = true;	// TODO: Use Info.plist
-	
+	bool loopLock		= false;
+	bool igpuEnabled	= true;
+
+	bool dumpCStates	= true;	// TODO: Use Info.plist
+
 	UInt16 Interval	= 50;
 	
 	UInt64	gCoreMultipliers		= 0ULL;
@@ -128,7 +128,6 @@ public:
 
 OSDefineMetaClassAndStructors(AppleIntelCPUPowerManagementInfo, IOService)
 
-UInt8	gCPUModel	= 0x2A;
 UInt8	gCoreStates	= 0ULL;
 
 #if REPORT_C_STATES
