@@ -610,7 +610,7 @@ function _injectDebugInfo()
     #
     # 'machdep.xcpm' is introduced in 10.8.5
     #
-    if [[ $productVersion > "10.8.4" ]]; then
+    if [[ $gProductVersion > "10.8.4" ]]; then
       xcpm=$(/usr/sbin/sysctl -n machdep.xcpm.mode)
     fi
 
@@ -670,8 +670,13 @@ function _printScopeStart()
             let lowFrequencyPStates=($gBaseFrequency/100)-8
             let packageLength=($2+$lowFrequencyPStates)
 
-            printf "        Name (APLF, 0x%02x" $lowFrequencyPStates                    >> $gSsdtPR
-            echo ')'                                                                    >> $gSsdtPR
+            if [[ lowFrequencyPStates -gt 0 ]];
+                then
+                    printf "        Name (APLF, 0x%02x)\n" $lowFrequencyPStates         >> $gSsdtPR
+                else
+                    # Prevent optimization warning.
+                    echo "        Name (APLF, Zero)"                                    >> $gSsdtPR
+            fi
 
             # TODO: Remove this when CPUPM for IB works properly!
             if [[ gIvyWorkAround && $gBridgeType -eq $IVY_BRIDGE ]]; then
@@ -902,6 +907,7 @@ function _printScopeACST()
 
             let targetCStates=$gACST_CPU0
             latency_C1=Zero
+            latency_C2=0x43
             latency_C3=0xCD
             latency_C6=0xF5
             latency_C7=0xF5
@@ -1766,7 +1772,14 @@ function _initIvyBridgeSetup()
 			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
 		;;
-	esac
+
+		Mac-F60DEB81FF30ACF6)
+			gSystemType=3
+			gMacModelIdentifier="MacPro6,1"
+			gACST_CPU0=13   # C1, C3, C6
+			gACST_CPU1=13   # C1, C3, C6
+		;;
+esac
 }
 
 #--------------------------------------------------------------------------------
@@ -1777,21 +1790,21 @@ function _initHaswellSetup()
 		Mac-031B6874CF7F642A)
 			gSystemType=1
 			gMacModelIdentifier="iMac14,1"
-			gACST_CPU0=13   # C1, C2, C3, C6
+			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
 		;;
 
 		Mac-27ADBB7B4CEE8E61)
 			gSystemType=1
 			gMacModelIdentifier="iMac14,2"
-			gACST_CPU0=15   # C1, C2, C3, C6
+			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
 		;;
 
 		Mac-77EB7D7DAF985301)
 			gSystemType=1
 			gMacModelIdentifier="iMac14,3"
-			gACST_CPU0=15   # C1, C2, C3, C6
+			gACST_CPU0=29   # C1, C3, C6 and C7
 			gACST_CPU1=7    # C1, C2 and C3
 		;;
 
@@ -1835,6 +1848,7 @@ function _initHaswellSetup()
 			gMacModelIdentifier="MacPro6,1"
 			gACST_CPU0=13   # C1, C3, C6
 			gACST_CPU1=13   # C1, C3, C6
+		;;
     esac
 }
 
