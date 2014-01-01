@@ -101,11 +101,11 @@ private:
 	
 	virtual IOReturn loopTimerEvent(void);
 	
-	void reportMSRs(void);
+	void reportMSRs(UInt8 aCPUModel);
 	
-	bool loopLock = false;
-	bool dumpCStates = true;
-	bool igpuEnabled = true;
+	bool loopLock = false;		// TODO: Use Info.plist
+	bool dumpCStates = true;	// TODO: Use Info.plist
+	bool igpuEnabled = true;	// TODO: Use Info.plist
 	
 	UInt16 Interval	= 50;
 	

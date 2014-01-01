@@ -13,7 +13,7 @@
 
 //==============================================================================
 
-void AppleIntelCPUPowerManagementInfo::reportMSRs(void)
+void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 {
 	IOLog("AICPUPMI: MSR_CORE_THREAD_COUNT......(0x35)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_THREAD_COUNT));
 	
@@ -50,24 +50,44 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(void)
 	IOLog("AICPUPMI: MSR_PP0_POWER_LIMIT........(0x638) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POWER_LIMIT));
 	IOLog("AICPUPMI: MSR_PP0_ENERGY_STATUS......(0x639) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_ENERGY_STATUS));
 	IOLog("AICPUPMI: MSR_PP0_POLICY.............(0x63a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POLICY));
-	
-	/* IOLog("AICPUPMI: MSR_PP1_CURRENT_CONFIG.....(0x602) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_CURRENT_CONFIG));
-	 IOLog("AICPUPMI: MSR_PP1_POWER_LIMIT........(0x640) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POWER_LIMIT));
-	 IOLog("AICPUPMI: MSR_PP1_ENERGY_STATUS......(0x641) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_ENERGY_STATUS));
-	 IOLog("AICPUPMI: MSR_PP1_POLICY.............(0x642) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POLICY)); */
-	
-	IOLog("AICPUPMI: MSR_CONFIG_TDP_NOMINAL.....(0x648) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_NOMINAL));
-	IOLog("AICPUPMI: MSR_CONFIG_TDP_LEVEL1......(0x649) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL1));
-	IOLog("AICPUPMI: MSR_CONFIG_TDP_LEVEL2......(0x64a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL2));
-	IOLog("AICPUPMI: MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
-	IOLog("AICPUPMI: MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
+
+	switch (aCPUModel)
+	{
+		case CPU_MODEL_SB_CORE:				// 0x2A - Intel 325462.pdf Vol.3C 35-120
+		case CPU_MODEL_HASWELL:				// 0x3C - Intel 325462.pdf Vol.3C 35-140
+		case CPU_MODEL_HASWELL_ULT:			// 0x45 - Intel 325462.pdf Vol.3C 35-140
+		case CPU_MODEL_CRYSTALWELL:			// 0x46 - Intel 325462.pdf Vol.3C 35-140
+
+			IOLog("AICPUPMI: MSR_PP1_CURRENT_CONFIG.....(0x602) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_CURRENT_CONFIG));
+			IOLog("AICPUPMI: MSR_PP1_POWER_LIMIT........(0x640) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POWER_LIMIT));
+			IOLog("AICPUPMI: MSR_PP1_ENERGY_STATUS......(0x641) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_ENERGY_STATUS));
+			IOLog("AICPUPMI: MSR_PP1_POLICY.............(0x642) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP1_POLICY));
+			break;
+	}
+
+	switch (aCPUModel)
+	{
+		case CPU_MODEL_IB_CORE:				// 0x3A - Intel 325462.pdf Vol.3C 35-126
+		case CPU_MODEL_IB_CORE_EX:			// 0x3B - Intel 325462.pdf Vol.3C 35-126
+		case CPU_MODEL_IB_CORE_XEON:		// 0x3E - Intel 325462.pdf Vol.3C 35-126
+		case CPU_MODEL_HASWELL:				// 0x3C - Intel 325462.pdf Vol.3C 35-133
+		case CPU_MODEL_HASWELL_ULT:			// 0x45 - Intel 325462.pdf Vol.3C 35-133
+		case CPU_MODEL_CRYSTALWELL:			// 0x46 - Intel 325462.pdf Vol.3C 35-133
+
+			IOLog("AICPUPMI: MSR_CONFIG_TDP_NOMINAL.....(0x648) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_NOMINAL));
+			IOLog("AICPUPMI: MSR_CONFIG_TDP_LEVEL1......(0x649) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL1));
+			IOLog("AICPUPMI: MSR_CONFIG_TDP_LEVEL2......(0x64a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_LEVEL2));
+			IOLog("AICPUPMI: MSR_CONFIG_TDP_CONTROL.....(0x64b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CONFIG_TDP_CONTROL));
+			IOLog("AICPUPMI: MSR_TURBO_ACTIVATION_RATIO.(0x64c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_ACTIVATION_RATIO));
+			break;
+	}
 	
 	IOLog("AICPUPMI: MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
 	IOLog("AICPUPMI: MSR_PKG_C3_RESIDENCY.......(0x3f8) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C3_RESIDENCY));
 	IOLog("AICPUPMI: MSR_PKG_C6_RESIDENCY.......(0x3f9) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C6_RESIDENCY));
 	IOLog("AICPUPMI: MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
 	
-	if (gCPUModel == CPU_MODEL_HASWELL_ULT)
+	if (aCPUModel == CPU_MODEL_HASWELL_ULT) // 0x45 - Intel 325462.pdf Vol.3C 35-136
 	{
 		IOLog("AICPUPMI: MSR_PKG_C8_RESIDENCY.......(0x630) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
 		IOLog("AICPUPMI: MSR_PKG_C9_RESIDENCY.......(0x631) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
@@ -298,7 +318,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
 				
-				gCPUModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
+				UInt8 cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
 				
 				// MWAIT information
 				do_cpuid(0x00000005, cpuid_reg);
@@ -307,7 +327,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				IOLog("AICPUPMI: MWAIT C-States     : %d\n", supportedMwaitCStates);
 				
 #if REPORT_MSRS
-				reportMSRs();
+				reportMSRs(cpuModel);
 #endif
 				msr = rdmsr64(MSR_PLATFORM_INFO);
 				gMinRatio = (UInt8)((msr >> 40) & 0xff);
@@ -395,9 +415,16 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 #endif
 				
 #if REPORT_C_STATES
-				if ((gCPUModel == CPU_MODEL_SB_CORE) || (gCPUModel == CPU_MODEL_SB_JAKETOWN) || (gCPUModel == CPU_MODEL_HASWELL))
+				switch (cpuModel) // TODO: Verify me!
 				{
-					gCheckC7 = true;
+					case CPU_MODEL_SB_CORE:			// 0x2A
+					case CPU_MODEL_SB_JAKETOWN:		// 0x2D
+					case CPU_MODEL_HASWELL:			// 0x3C
+					case CPU_MODEL_HASWELL_ULT:		// 0x45
+					case CPU_MODEL_CRYSTALWELL:		// 0x46
+
+						gCheckC7 = true;
+						break;
 				}
 #endif
 				timerEventSource->setTimeoutMS(1000);
