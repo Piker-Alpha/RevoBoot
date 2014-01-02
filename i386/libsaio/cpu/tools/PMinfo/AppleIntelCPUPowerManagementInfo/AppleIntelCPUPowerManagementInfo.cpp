@@ -163,10 +163,8 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	if (dumpCStates)
 	{
 		UInt32 magic = 0;
-		// IOSimpleLockLock(simpleLock);
 		mp_rendezvous_no_intrs(getCStates, &magic);
 		IOSleep(1);
-		// IOSimpleLockUnlock(simpleLock);
 	}
 #endif
 	
@@ -227,7 +225,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		}
 	
 #if REPORT_C_STATES
-	if (gTriggeredC3Cores != gC3Cores)
+	if (gCheckC3 && (gTriggeredC3Cores != gC3Cores))
 	{
 		gTriggeredC3Cores = gC3Cores;
 		IOLog("AICPUPMI: CPU C3-Cores [ ");
@@ -245,7 +243,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		IOLog("]\n");
 	}
 	
-	if (gTriggeredC6Cores != gC6Cores)
+	if (gCheckC6 && (gTriggeredC6Cores != gC6Cores))
 	{
 		gTriggeredC6Cores = gC6Cores;
 		IOLog("AICPUPMI: CPU C6-Cores [ ");
@@ -263,7 +261,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		IOLog("]\n");
 	}
 	
-	if (gTriggeredC7Cores != gC7Cores)
+	if (gCheckC7 && (gTriggeredC7Cores != gC7Cores))
 	{
 		gTriggeredC7Cores = gC7Cores;
 		IOLog("AICPUPMI: CPU C7-Cores [ ");
@@ -326,13 +324,21 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				
 				UInt8 cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
 				
+#if REPORT_GPU_STATS
+				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
+				
+				if (!isIGPUEnabled && igpuEnabled)
+				{
+					igpuEnabled = false;
+				}
+#endif
+
 				// MWAIT information
 				do_cpuid(0x00000005, cpuid_reg);
 				uint32_t supportedMwaitCStates = bitfield32(cpuid_reg[edx], 31,  0);
 				
 				IOLog("AICPUPMI: MWAIT C-States     : %d\n", supportedMwaitCStates);
 
-				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
 #if REPORT_MSRS
 				reportMSRs(cpuModel);
 #endif

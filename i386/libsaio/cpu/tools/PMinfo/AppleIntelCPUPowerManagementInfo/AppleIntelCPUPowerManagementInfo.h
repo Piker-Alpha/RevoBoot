@@ -94,6 +94,8 @@ private:
 #if REPORT_GPU_STATS
 	IOMemoryDescriptor	*memDescriptor;
 	IOMemoryMap			*memoryMap;
+
+	bool igpuEnabled	= true;
 #endif
 	
 	IOReturn result		= kIOReturnSuccess;
@@ -103,8 +105,6 @@ private:
 	void reportMSRs(UInt8 aCPUModel);
 	
 	bool loopLock		= false;
-	bool igpuEnabled	= true;
-
 	bool dumpCStates	= true;	// TODO: Use Info.plist
 
 	UInt16 Interval	= 50;
