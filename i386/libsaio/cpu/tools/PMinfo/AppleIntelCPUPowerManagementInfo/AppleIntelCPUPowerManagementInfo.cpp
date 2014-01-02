@@ -44,7 +44,14 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 	
 	IOLog("AICPUPMI: MSR_PKGC3_IRTL.............(0x60a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC3_IRTL));
 	IOLog("AICPUPMI: MSR_PKGC6_IRTL.............(0x60b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC6_IRTL));
-	IOLog("AICPUPMI: MSR_PKGC7_IRTL.............(0x60c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC7_IRTL));
+	
+	/*
+	 * No C7 support for Intel® Xeon® Processor E5-1600 v2/E5-2600 v2 (Product Families Datasheet Volume One of Two page 19)
+	 */
+	if (aCPUModel != CPU_MODEL_IB_CORE_XEON)
+	{
+		IOLog("AICPUPMI: MSR_PKGC7_IRTL.............(0x60c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC7_IRTL));
+	}
 	
 	IOLog("AICPUPMI: MSR_PP0_CURRENT_CONFIG.....(0x601) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_CURRENT_CONFIG));
 	IOLog("AICPUPMI: MSR_PP0_POWER_LIMIT........(0x638) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POWER_LIMIT));
@@ -418,7 +425,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					case CPU_MODEL_SB_JAKETOWN:		// 0x2D - Intel 325462.pdf Vol.3C 35-111
 					case CPU_MODEL_IB_CORE:			// 0x3A - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
 					case CPU_MODEL_IB_CORE_EX:		// 0x3B - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
-					case CPU_MODEL_IB_CORE_XEON:	// 0x3E - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
+					// case CPU_MODEL_IB_CORE_XEON:	// 0x3E - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
 					case CPU_MODEL_HASWELL:			// 0x3C - Intel 325462.pdf Vol.3C 35-136
 					case CPU_MODEL_HASWELL_ULT:		// 0x45 - Intel 325462.pdf Vol.3C 35-136
 					case CPU_MODEL_CRYSTALWELL:		// 0x46
