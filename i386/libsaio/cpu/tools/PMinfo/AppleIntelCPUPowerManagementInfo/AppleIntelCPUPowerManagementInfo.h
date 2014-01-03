@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 Pike R. Alpha. All rights reserved.
+ * Copyright (c) 2012-2014 Pike R. Alpha. All rights reserved.
  *
  * Original idea and initial development of MSRDumper.kext (c) 2011 by RevoGirl.
  *
@@ -22,7 +22,7 @@
 #define super IOService
 
 #define REPORT_MSRS			1
-#define REPORT_GPU_STATS	1
+#define REPORT_IGPU_P_STATES	1
 #define REPORT_C_STATES		1
 
 #define NB_BUS	0x00
@@ -91,7 +91,7 @@ private:
 	IOWorkLoop			*workLoop;
 	IOTimerEventSource	*timerEventSource;
 	
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 	IOMemoryDescriptor	*memDescriptor;
 	IOMemoryMap			*memoryMap;
 
@@ -146,6 +146,6 @@ UInt32	gTriggeredC7Cores	= 0;
 
 UInt64	gCoreMultipliers = 0ULL;
 
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 UInt8	* gMchbar	= NULL;
 #endif

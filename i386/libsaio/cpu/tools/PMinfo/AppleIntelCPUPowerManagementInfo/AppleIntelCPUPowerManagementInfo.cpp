@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 Pike R. Alpha. All rights reserved.
+ * Copyright (c) 2012-2014 Pike R. Alpha. All rights reserved.
  *
  * Original idea and initial development of MSRDumper.kext (c) 2011 by RevoGirl.
  *
@@ -45,10 +45,7 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 	IOLog("AICPUPMI: MSR_PKGC3_IRTL.............(0x60a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC3_IRTL));
 	IOLog("AICPUPMI: MSR_PKGC6_IRTL.............(0x60b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC6_IRTL));
 	
-	/*
-	 * No C7 support for Intel® Xeon® Processor E5-1600 v2/E5-2600 v2 (Product Families Datasheet Volume One of Two page 19)
-	 */
-	if (aCPUModel != CPU_MODEL_IB_CORE_XEON)
+	if (gCheckC7)
 	{
 		IOLog("AICPUPMI: MSR_PKGC7_IRTL.............(0x60c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC7_IRTL));
 	}
@@ -58,6 +55,7 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 	IOLog("AICPUPMI: MSR_PP0_ENERGY_STATUS......(0x639) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_ENERGY_STATUS));
 	IOLog("AICPUPMI: MSR_PP0_POLICY.............(0x63a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POLICY));
 
+#if REPORT_IGPU_P_STATES
 	if (igpuEnabled)
 	{
 		switch (aCPUModel)
@@ -76,6 +74,7 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 				break;
 		}
 	}
+#endif
 
 	switch (aCPUModel)
 	{
@@ -97,7 +96,11 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 	IOLog("AICPUPMI: MSR_PKG_C2_RESIDENCY.......(0x60d) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C2_RESIDENCY));
 	IOLog("AICPUPMI: MSR_PKG_C3_RESIDENCY.......(0x3f8) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C3_RESIDENCY));
 	IOLog("AICPUPMI: MSR_PKG_C6_RESIDENCY.......(0x3f9) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C6_RESIDENCY));
-	IOLog("AICPUPMI: MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+
+	if (gCheckC7)
+	{
+		IOLog("AICPUPMI: MSR_PKG_C7_RESIDENCY.......(0x3fa) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_C7_RESIDENCY));
+	}
 
 	if (aCPUModel == CPU_MODEL_HASWELL_ULT) // 0x45 - Intel 325462.pdf Vol.3C 35-136
 	{
@@ -140,7 +143,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	UInt8 currentMultiplier = (rdmsr64(MSR_IA32_PERF_STS) >> 8);
 	gCoreMultipliers |= (1ULL << currentMultiplier);
 	
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 	UInt8 currentIgpuMultiplier = 0;
 	
 	if (igpuEnabled)
@@ -171,7 +174,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	int currentBit = 0;
 	UInt64 value = 0ULL;
 	
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 	if ((gCoreMultipliers != gTriggeredPStates) || (gIGPUMultipliers != gTriggeredIGPUPStates))
 #else
 		if (gCoreMultipliers != gTriggeredPStates)
@@ -197,7 +200,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 				}
 			}
 			
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 			if (igpuEnabled)
 			{
 				gTriggeredIGPUPStates = gIGPUMultipliers;
@@ -323,8 +326,26 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				do_cpuid(0x00000001, cpuid_reg);
 				
 				UInt8 cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
-				
-#if REPORT_GPU_STATS
+
+#if REPORT_C_STATES
+				switch (cpuModel) // TODO: Verify me!
+				{
+					case CPU_MODEL_SB_CORE:			// 0x2A - Intel 325462.pdf Vol.3C 35-111
+					case CPU_MODEL_SB_JAKETOWN:		// 0x2D - Intel 325462.pdf Vol.3C 35-111
+					case CPU_MODEL_IB_CORE:			// 0x3A - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
+					case CPU_MODEL_IB_CORE_EX:		// 0x3B - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
+						// No C7 support for Intel® Xeon® Processor E5-1600 v2/E5-2600 v2 (Product Families Datasheet Volume One of Two page 19)
+						// case CPU_MODEL_IB_CORE_XEON:	// 0x3E - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
+					case CPU_MODEL_HASWELL:			// 0x3C - Intel 325462.pdf Vol.3C 35-136
+					case CPU_MODEL_HASWELL_ULT:		// 0x45 - Intel 325462.pdf Vol.3C 35-136
+					case CPU_MODEL_CRYSTALWELL:		// 0x46
+						
+						gCheckC7 = true;
+						break;
+				}
+#endif
+
+#if REPORT_IGPU_P_STATES
 				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
 				
 				if (!isIGPUEnabled && igpuEnabled)
@@ -332,12 +353,11 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					igpuEnabled = false;
 				}
 #endif
-
 				// MWAIT information
 				do_cpuid(0x00000005, cpuid_reg);
 				uint32_t supportedMwaitCStates = bitfield32(cpuid_reg[edx], 31,  0);
 				
-				IOLog("AICPUPMI: MWAIT C-States     : %d\n", supportedMwaitCStates);
+				IOLog("AICPUPMI: MWAIT C-States.....................: %d\n", supportedMwaitCStates);
 
 #if REPORT_MSRS
 				reportMSRs(cpuModel);
@@ -361,7 +381,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					IOLog("AICPUPMI: Maximum Frequency..................: %d00 MHz\n", gMaxRatio);
 				}
 				
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 				if (isIGPUEnabled)
 				{
 					IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
@@ -423,23 +443,6 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					}
 				}
 #endif
-				
-#if REPORT_C_STATES
-				switch (cpuModel) // TODO: Verify me!
-				{
-					case CPU_MODEL_SB_CORE:			// 0x2A - Intel 325462.pdf Vol.3C 35-111
-					case CPU_MODEL_SB_JAKETOWN:		// 0x2D - Intel 325462.pdf Vol.3C 35-111
-					case CPU_MODEL_IB_CORE:			// 0x3A - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
-					case CPU_MODEL_IB_CORE_EX:		// 0x3B - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
-					// case CPU_MODEL_IB_CORE_XEON:	// 0x3E - Intel 325462.pdf Vol.3C 35-125 (Refering to Table 35-12)
-					case CPU_MODEL_HASWELL:			// 0x3C - Intel 325462.pdf Vol.3C 35-136
-					case CPU_MODEL_HASWELL_ULT:		// 0x45 - Intel 325462.pdf Vol.3C 35-136
-					case CPU_MODEL_CRYSTALWELL:		// 0x46
-
-						gCheckC7 = true;
-						break;
-				}
-#endif
 				timerEventSource->setTimeoutMS(1000);
 				
 				return true;
@@ -478,7 +481,7 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 
 void AppleIntelCPUPowerManagementInfo::free()
 {
-#if REPORT_GPU_STATS
+#if REPORT_IGPU_P_STATES
 	if (igpuEnabled)
 	{
 		if (memoryMap)
