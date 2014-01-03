@@ -52,6 +52,13 @@ People with working RevoBoot configurations can simply copy their settings.h to 
 This will allow the RevoBoot build process to compile without errors, but make sure to use the latest 
 preprocessor options.
 
+Important: Open settings-template.h and search for:
+
+#define STATIC_NVRAM_ROM	{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN } // Example only!
+				// sudo nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM=%01%02%03%04%05%06%07%08%09%0A%0B%NN%NN%NN%NN%NN%NN
+				// Note: Use your MAC address for the last six bytes!
+
+You must change this, or RevoBoot won't compile!
 
 ACPI/EFI/SMBIOS/data.h
 ----------------------
