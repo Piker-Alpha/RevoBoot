@@ -190,7 +190,29 @@ void boot(int biosdev)
 	long flags, cachetime;
 #endif
 
-	initPlatform(biosdev);	// Passing on the boot drive.
+#if RECOVERY_HD_SUPPORT
+	/* extern void setVideoMode(int mode);
+	setVideoMode(0); // Switch to VGA_TEXT_MODE
+	printf("RecoveryHD boot support enabled\n");
+
+	bool bootRecoveryHD = false;
+
+	while (readKeyboardStatus())
+	{
+		int key = (bgetc() & 0xff);
+		printf("key: %d\n", key);
+		if ((key |= 0x20) == 'r')
+		{
+			bootRecoveryHD = true;
+			printf("RecoveryHD boot support is active\n");
+		}
+	}
+
+	printf("bootRecoveryHD: %s\n", bootRecoveryHD ? "True" : "False"); */
+	initPlatform(biosdev, true);
+#else
+	initPlatform(biosdev, false);
+#endif
 
 #if DEBUG_STATE_ENABLED
 	// Don't switch graphics mode / show boot logo when DEBUG is set to 1.
@@ -198,19 +220,6 @@ void boot(int biosdev)
 	sleep(3); // Silent sleep.
 #else
 	showBootLogo();
-#endif
-
-#if LION_RECOVERY_SUPPORT
-	// A bit ugly maybe, but this will be changed sometime soon.
-	while (readKeyboardStatus())
-	{
-		int key = (bgetc() & 0xff);
-
-		if ((key |= 0x20) == 'r')
-		{
-			gPlatform.BootRecoveryHD = true;
-		}
-	}
 #endif
 
 #if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0)
@@ -413,8 +422,19 @@ void boot(int biosdev)
 	if (haveCABootPlist) // Check boolean before doing more time consuming tasks.
 	{
 #if PRE_LINKED_KERNEL_SUPPORT
+		_BOOT_DEBUG_DUMP("Checking Kernel Cache key in com.apple.Boot.plist\n");
+
 		if (getValueForKey(kKernelCacheKey, &val, &length, &bootInfo->bootConfig))
 		{
+#if RECOVERY_HD_SUPPORT
+			_BOOT_DEBUG_DUMP("Kernel Cache key located in com.apple.Boot.plist\n");
+			_BOOT_DEBUG_DUMP("length: %d, val: %s\n", length, val);
+			// XXX: Required for booting from the Recovery HD.
+			if (strncmp(val, "\\com.apple.recovery.boot\\kernelcache", length) == 0)
+			{
+				val = "/com.apple.recovery.boot/kernelcache";
+			}
+#endif
 			if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
 			{
 				_BOOT_DEBUG_DUMP("Kernel Cache set to: %s\n", val);
@@ -450,7 +470,6 @@ void boot(int biosdev)
 		strcpy(bootFile, bootInfo->bootFile);
 
 #if PRE_LINKED_KERNEL_SUPPORT
-
 		_BOOT_DEBUG_DUMP("gBootMode = %d\n", gBootMode);
 
 		// Preliminary checks to prevent us from doing useless things.
