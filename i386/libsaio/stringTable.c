@@ -371,7 +371,7 @@ long loadCABootPlist(void)
 
 	static char * dirspec[] =
 	{
-#if LION_RECOVERY_SUPPORT
+#if RECOVERY_HD_SUPPORT
 		"com.apple.recovery.boot",
 #endif
 
@@ -403,7 +403,7 @@ long loadCABootPlist(void)
 #if INSTALL_ESD_SUPPORT
 		int start = 0;
 		int end = 3;
-	#if LION_RECOVERY_SUPPORT
+	#if RECOVERY_HD_SUPPORT
 		start++;
 		end++;
 	#endif
