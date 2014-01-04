@@ -60,8 +60,9 @@
 #define IMAC_122				(IMAC | (3 << 15))
 #define IMAC_131				(IMAC | (4 << 15))
 #define IMAC_132				(IMAC | (5 << 15))
-#define IMAC_142				(IMAC | (6 << 15))
-#define IMAC_141				 IMAC						// Defaults to iMac14,1
+#define IMAC_141				(IMAC | (6 << 15))
+#define IMAC_141				(IMAC | (7 << 15))
+#define IMAC_143				 IMAC						// Defaults to iMac14,3
 
 #define MACBOOK_41				 MACBOOK					// Defaults to MacBook4,1
 
@@ -72,16 +73,17 @@
 #define MACBOOK_AIR_61			(MACBOOK_AIR | (5 << 15))
 #define MACBOOK_AIR_62			 MACBOOK_AIR				// Defaults to MacBookAir6,2
 
-#define MACBOOK_PRO_61			(MACBOOK_PRO | (1 << 15))
-#define MACBOOK_PRO_81			(MACBOOK_PRO | (2 << 15))
-#define MACBOOK_PRO_82			(MACBOOK_PRO | (3 << 15))
-#define MACBOOK_PRO_83			(MACBOOK_PRO | (4 << 15))
-#define MACBOOK_PRO_91			(MACBOOK_PRO | (5 << 15))
-#define MACBOOK_PRO_92			(MACBOOK_PRO | (6 << 15))
-#define MACBOOK_PRO_101			(MACBOOK_PRO | (7 << 15))
-#define MACBOOK_PRO_102			(MACBOOK_PRO | (8 << 15))
-#define MACBOOK_PRO_111			(MACBOOK_PRO | (9 << 15))
-#define MACBOOK_PRO_112			 MACBOOK_PRO				// Defaults to MacBookPro11,2
+#define MACBOOK_PRO_61			(MACBOOK_PRO | ( 1 << 15))
+#define MACBOOK_PRO_81			(MACBOOK_PRO | ( 2 << 15))
+#define MACBOOK_PRO_82			(MACBOOK_PRO | ( 3 << 15))
+#define MACBOOK_PRO_83			(MACBOOK_PRO | ( 4 << 15))
+#define MACBOOK_PRO_91			(MACBOOK_PRO | ( 5 << 15))
+#define MACBOOK_PRO_92			(MACBOOK_PRO | ( 6 << 15))
+#define MACBOOK_PRO_101			(MACBOOK_PRO | ( 7 << 15))
+#define MACBOOK_PRO_102			(MACBOOK_PRO | ( 8 << 15))
+#define MACBOOK_PRO_111			(MACBOOK_PRO | ( 9 << 15))
+#define MACBOOK_PRO_112			(MACBOOK_PRO | (10 << 15))
+#define MACBOOK_PRO_113			 MACBOOK_PRO				// Defaults to MacBookPro11,3
 
 #define MACMINI_41				(MACMINI | (1 << 15))
 #define MACMINI_51				(MACMINI | (2 << 15))
@@ -96,6 +98,12 @@
 #define MACPRO_41				(MACPRO | (2 << 15))
 #define MACPRO_51				(MACPRO | (3 << 15))
 #define MACPRO_61				 MACPRO						// Defaults to MacPro6,1
+
+#if ((TARGET_MODEL & MACPRO) == MACPRO)
+	#define PM_PROFILE_OVERRIDE	3
+#else
+	#define PM_PROFILE_OVERRIDE	1
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -165,10 +173,7 @@ typedef struct _PlatformInfo_t
 												// later updated in boot.c with the actual version info.
 	
 	char *				ModelID;				// Initialized in platform.c and used in boot.c
-#if LOAD_MODEL_SPECIFIC_STATIC_DATA
 	char *				CommaLessModelID;		// Initialized in platform.c and used in i386/libsaio/ACPI/patcher.h,
-#endif												// i386/libsaio/efi.c and i386/libsaio/SMBIOS/static_data.h
-
 	char *				KextFileName;			// Initialized and used in drivers.c
 	char *				KextFileSpec;			// Initialized and used in drivers.c
 	char *				KextPlistSpec;			// Initialized and used in drivers.c
@@ -334,7 +339,7 @@ extern cpu_type_t gArchCPUType;	// DHP: Fix / remove me!
 
 extern PlatformInfo_t	gPlatform;
 
-extern void initPlatform(int biosDevice);
+extern void initPlatform(int biosDevice, bool bootRecoveryHD);
 
 extern cpu_type_t getArchCPUType(void);
 
