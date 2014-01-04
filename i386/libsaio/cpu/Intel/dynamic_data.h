@@ -345,6 +345,7 @@ void initCPUStruct(void)
 
 				case CPU_MODEL_IB_CORE:
 				case CPU_MODEL_IB_CORE_EX:
+				case CPU_MODEL_IB_CORE_XEON:
 					CoreBridgeType = IVY_BRIDGE;
 					hiBit = 31;
 					break;
@@ -389,6 +390,10 @@ void initCPUStruct(void)
 				else if (strstr(gPlatform.CPU.BrandString, "Core(TM) i3"))
 				{
 					gPlatform.CPU.Type = (0x900 + CoreBridgeType);		// Core i3
+				}
+				else if (strstr(gPlatform.CPU.BrandString, "Xeon(R)"))
+				{
+					gPlatform.CPU.Type = (0xA00 + CoreBridgeType);
 				}
 
 				msr = rdmsr64(MSR_PLATFORM_INFO);
@@ -544,7 +549,7 @@ void initCPUStruct(void)
 
 	_CPU_DEBUG_DUMP("CPU: NumCores/NumThreads   : %d/%d\n",				gPlatform.CPU.NumCores, gPlatform.CPU.NumThreads);
 
-	if (CoreBridgeType) // SandyBridge)
+	if (CoreBridgeType)
 	{
 		_CPU_DEBUG_DUMP("CPU: Min/Max busratio      : %d/%d\n",			gPlatform.CPU.MinBusRatio, gPlatform.CPU.MaxBusRatio);
 	}
