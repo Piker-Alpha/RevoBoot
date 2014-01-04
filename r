@@ -20,9 +20,14 @@ if [[ "$1" =~ [iMac|Mac] ]];
       make MODEL=`cat MODEL` > out.log
     else
       #
-      # No default model found. Use the default (matches settings-template.h)
-      #
+      # No default model found. Create MODEL file for future use.
+	  #
+	  echo "Macmini" > MODEL
+	  #
+	  # Use Macmini as our default (matches settings-template.h)
+	  #
       make MODEL=Macmini > out.log
+
     fi;
 fi
 
