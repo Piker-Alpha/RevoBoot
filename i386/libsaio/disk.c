@@ -46,11 +46,11 @@
  *
  * Updates:
  *			- Cleanups and refactoring by DHP in 2010 and 2011.
- *			- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
- *			- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT (PikerAlpha, November 2012).
- *			- Renamed encryptedBootPartition to coreStoragePartition (PikerAlpha, November 2012).
- *			- OSBigEndian removed and some minor style nits (PikerAlpha, November 2012).
- *			- Unused #include <limits.h> removed (PikerAlpha, November 2012).
+ *			- Renamed LION_RECOVERY_SUPPORT to CORE_STORAGE_SUPPORT (Pike R. Alpha, November 2012).
+ *			- Renamed LION_FILEVAULT_SUPPORT to CORE_STORAGE_SUPPORT (Pike R. Alpha, November 2012).
+ *			- Renamed encryptedBootPartition to coreStoragePartition (Pike R. Alpha, November 2012).
+ *			- OSBigEndian removed and some minor style nits (Pike R. Alpha, November 2012).
+ *			- Unused #include <limits.h> removed (Pike R. Alpha, November 2012).
  *
  */
 
@@ -149,7 +149,7 @@ EFI_GUID const GPT_HFS_GUID					= { 0x48465300, 0x0000, 0x11AA, { 0xAA, 0x11, 0x
 // Apple TV
 EFI_GUID const GPT_HFSX_GUID				= { 0x5265636F, 0x7665, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 
-#if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT
+#if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT || RECOVERY_HD_SUPPORT
 	// Apple_Boot (RAID helper partition and the 650 MB 'Recovery HD' partition).
 	EFI_GUID const GPT_BOOT_GUID			= { 0x426F6F74, 0x0000, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 #endif
@@ -675,7 +675,7 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 										}
 #endif
 
-#if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT
+#if CORE_STORAGE_SUPPORT || APPLE_RAID_SUPPORT || RECOVERY_HD_SUPPORT
 										else if (compareEFIGUID(&GPT_BOOT_GUID, (EFI_GUID const *)gptMap->ent_type) == 0)
 										{
 											_DISK_DEBUG_DUMP("Matched: GPT_BOOT_GUID\n");
@@ -758,7 +758,16 @@ bool hasBootEFI(BVRef bvr)
 
 	sprintf(dirSpec, "hd(%d,%d)/System/Library/CoreServices/", BIOS_DEV_UNIT(bvr), bvr->part_no);
 
+#if RECOVERY_HD_SUPPORT
+	if (gPlatform.BootRecoveryHD)
+	{
+		sprintf(dirSpec, "hd(%d,%d)/com.apple.recovery.boot/", BIOS_DEV_UNIT(bvr), bvr->part_no);
+
+		_DISK_DEBUG_DUMP("Checking for boot.efi on Recovery HD\n");
+	}
+#else
 	_DISK_DEBUG_DUMP("In hasBootEFI(%d,%d)\n", BIOS_DEV_UNIT(bvr), bvr->part_no);
+#endif
 
 	if (GetFileInfo(dirSpec, "boot.efi", &flags, &time) == 0)
 	{
