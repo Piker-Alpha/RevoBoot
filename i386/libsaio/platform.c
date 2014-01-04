@@ -123,12 +123,14 @@ void enableHPET(void)
 //==============================================================================
 // Public function. Called from boot/common_boot only.
 
-void initPlatform(int biosDevice)
+void initPlatform(int biosDevice, bool bootRecoveryHD)
 {
 	memset(&gPlatform, 0, sizeof(gPlatform));
 
+	gPlatform.BootRecoveryHD = bootRecoveryHD;
+
 	// Copied from cpu/dynamic_data.h to make printf work this early on.
-#if DEBUG_CPU || DEBUG_PLATFORM
+#if DEBUG_STATE_ENABLED
 	extern void setVideoMode(int mode);
 	setVideoMode(0); // Switch to VGA_TEXT_MODE
 #endif
@@ -188,7 +190,7 @@ void initPlatform(int biosDevice)
 
 	// Determine system type based on product name. Used in
 	// acpi/patcher.h to update FADT->Preferred_PM_Profile
-	gPlatform.Type					= (strncmp(gPlatform.ModelID, "MacBook", 7) == 0) ? 2 : 1;
+	gPlatform.Type					= (strncmp(gPlatform.ModelID, "MacBook", 7) == 0) ? 2 : PM_PROFILE_OVERRIDE;
 
 	// Are we supposted to have a Mobile CPU?
 	if (gPlatform.Type == 2 && gPlatform.CPU.Mobile == false)
@@ -281,9 +283,13 @@ void initPlatform(int biosDevice)
 
 	_PLATFORM_DEBUG_DUMP("Static data for %d RAM BANKS used.\n", gPlatform.RAM.SlotCount);
 	_PLATFORM_DEBUG_SLEEP(10);
+#else
+	_PLATFORM_DEBUG_SLEEP(5);
 #endif
 
-	_PLATFORM_DEBUG_SLEEP(5);
+#if RECOVERY_HD_SUPPORT
+	_PLATFORM_DEBUG_DUMP("gPlatform.BootRecoveryHD: %s\n", gPlatform.BootRecoveryHD ? "True" : "False");
+#endif
 
 	initKernelBootConfig();
 
