@@ -9,32 +9,32 @@
  *			- Static CPU data simplified by DHP in Juni 2011 (thanks to MC and flAked for the idea).
  *			- Automatic creation / injection of SSDT_PR.aml added by DHP in June 2011.
  *			- New compiler directive (BOOT_TURBO_BOOST_RATIO) added by Jeroen (June 2011).
- *			- SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
- *			- STATIC_MODEL_NAME moved to libsaio/i386/SMBIOS/model_data.h (PikerAlpha, October 2012).
- *			- STATIC_MAC_PRODUCT_NAME moved to libsaio/i386/SMBIOS/model_data.h (PikerAlpha, October 2012).
- *			- STATIC_SMBIOS_MODEL_ID renamed to TARGET_MODEL (PikerAlpha, October 2012).
- *			- OVERRIDE_DYNAMIC_PRODUCT_DETECTION removed/no longer supported (PikerAlpha, October 2012).
- *			- INTEL_CORE_TECHNOLOGY per default set to 1 (PikerAlpha, October 2012).
- *			- INJECT_EFI_DEVICE_PROPERTIES per default set to 1 (PikerAlpha, October 2012).
+ *			- SMBIOS data logic moved to preprocessor code (Pike R. Alpha, October 2012).
+ *			- STATIC_MODEL_NAME moved to libsaio/i386/SMBIOS/model_data.h (Pike R. Alpha, October 2012).
+ *			- STATIC_MAC_PRODUCT_NAME moved to libsaio/i386/SMBIOS/model_data.h (Pike R. Alpha, October 2012).
+ *			- STATIC_SMBIOS_MODEL_ID renamed to TARGET_MODEL (Pike R. Alpha, October 2012).
+ *			- OVERRIDE_DYNAMIC_PRODUCT_DETECTION removed/no longer supported (Pike R. Alpha, October 2012).
+ *			- INTEL_CORE_TECHNOLOGY per default set to 1 (Pike R. Alpha, October 2012).
+ *			- INJECT_EFI_DEVICE_PROPERTIES per default set to 1 (Pike R. Alpha, October 2012).
  *			- SMBIOS base board serial# (SMB_BOARD_SERIAL_NUMBER) feature added (dgsga, October 2012).
- *			- LOAD_STATIC_EFI_DATA_FROM_EXTRA feature added (PikerAlpha, October 2012).
- *			- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA feature added (PikerAlpha, October 2012).
- *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
- *			- Restored lost STATIC_SMSERIALNUMBER (PikerAlpha, October 2012).
- *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
- *			- LOAD_STATIC_ACPI_DATA_FROM_EXTRA added (PikerAlpha, October 2012).
- *			- LOAD_STATIC_EFI_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (PikerAlpha, October 2012).
- *			- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (PikerAlpha, October 2012).
- *			- LOAD_MODEL_SPECIFIC_STATIC_DATA added (PikerAlpha, October 2012).
- *			- Option SET_MAX_STRUCTURE_LENGTH added (PikerAlpha, November 2012).
- *			- Option DISK_TARGET_SUPPORT added (PikerAlpha, November 2012).
- *			- DISK_TARGET_SUPPORT renamed to STARTUP_DISK_SUPPORT (PikerAlpha, November 2012).
- *			- New compiler directive USE_DEVICE_PATH in boot section (PikerAlpha, November 2012).
- *			- Always inject SMB_BOARD_SERIAL_NUMBER, required for iMessage (PikerAlpha, January 2013).
- *			- New compiler directives in EFI section added (PikerAlpha, January 2013).
- *			- STATIC_SYSTEM_ID renamed to SMB_STATIC_SYSTEM_UUID and moved to SMBIOS section (PikerAlpha, January 2013).
- *			- Renamed LION_INSTALL_SUPPORT to INSTALL_ESD_SUPPORT (PikerAlpha, April 2013).
- *
+ *			- LOAD_STATIC_EFI_DATA_FROM_EXTRA feature added (Pike R. Alpha, October 2012).
+ *			- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA feature added (Pike R. Alpha, October 2012).
+ *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (Pike R. Alpha, October 2012).
+ *			- Restored lost STATIC_SMSERIALNUMBER (Pike R. Alpha, October 2012).
+ *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (Pike R. Alpha, October 2012).
+ *			- LOAD_STATIC_ACPI_DATA_FROM_EXTRA added (Pike R. Alpha, October 2012).
+ *			- LOAD_STATIC_EFI_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (Pike R. Alpha, October 2012).
+ *			- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (Pike R. Alpha, October 2012).
+ *			- LOAD_MODEL_SPECIFIC_STATIC_DATA added (Pike R. Alpha, October 2012).
+ *			- Option SET_MAX_STRUCTURE_LENGTH added (Pike R. Alpha, November 2012).
+ *			- Option DISK_TARGET_SUPPORT added (Pike R. Alpha, November 2012).
+ *			- DISK_TARGET_SUPPORT renamed to STARTUP_DISK_SUPPORT (Pike R. Alpha, November 2012).
+ *			- New compiler directive USE_DEVICE_PATH in boot section (Pike R. Alpha, November 2012).
+ *			- Always inject SMB_BOARD_SERIAL_NUMBER, required for iMessage (Pike R. Alpha, January 2013).
+ *			- New compiler directives in EFI section added (Pike R. Alpha, January 2013).
+ *			- STATIC_SYSTEM_ID renamed to SMB_STATIC_SYSTEM_UUID and moved to SMBIOS section (Pike R. Alpha, January 2013).
+ *			- Renamed LION_INSTALL_SUPPORT to INSTALL_ESD_SUPPORT (Pike R. Alpha, April 2013).
+ *			- Renamed LION_RECOVERY_SUPPORT to RECOVERY_HD_SUPPORT (Pike R. Alpha, October 2013).
  */
 
 
@@ -145,7 +145,7 @@
 												// falls back to: /Extra/ACPI/[XXXX].aml when model specific data is not available.
 #endif
 
-#define AUTOMATIC_SSDT_PR_CREATION			1	// Set to 1 by default (support for Sandy Bridge only).
+#define AUTOMATIC_SSDT_PR_CREATION			0	// Set to 0 by default (support for Sandy Bridge only).
 												//
 												// This injects a custom SSDT (in configure mode) with:
 												//
@@ -161,7 +161,7 @@
 												//			and use it as STATIC_SSDT_PR_TABLE_DATA in RevoBoot/i386/config/ACPI/data.h
 
 
-#if AUTOMATIC_SSDT_PR_CREATION && STATIC_SSDT_PR_TABLE_INJECTION == 0
+#if (AUTOMATIC_SSDT_PR_CREATION == 1 && STATIC_SSDT_PR_TABLE_INJECTION == 0)
 	#define MAX_NUMBER_OF_P_STATES			22	// The i5-2500K need 18 for the base-range (1600-3300) plus 4 for the Turbo modes.
 												// The i7-2600K need 19 for the base-range (1600-3400) plus 4 for the Turbo modes.
 												// The i7-2700K need 20 for the base-range (1600-3500) plus 4 for the Turbo modes.
@@ -170,11 +170,11 @@
 												//
 												// Note: AICPUPM wants a P-State for each 100 MHz bank or it will fail (see note below).
 
-	#define DROP_FACTORY_SSDT_TABLES		1	// Set to 1 by default (this setting is required).
+	#define DROP_FACTORY_SSDT_TABLES		1	// Set to 1 by default (this setting may be required on some boards).
 												//
 												// Note: Do not change this setting (must drop SSDT tables).
 
-	#define NUMBER_OF_TURBO_STATES			4	// Set to 4 by default.
+	#define NUMBER_OF_TURBO_STATES			4	// Set to 4 by default. Use any number to override the number of Turbo States.
 												//
 												// Note:	Make sure to add a full range, one P-State for each 100 MHz when OC'ing
 												//			or AICPIPM will fail with: "P-State Stepper Error 18 at step N on CPU N"
@@ -189,10 +189,10 @@
 #else
 	#define OVERRIDE_ACPI_METHODS			0	// Set to 0 by default (do nothing).
 
-	#define DROP_FACTORY_SSDT_TABLES		0	// Set to 0 by default. Use 1 with caution (might disable SpeedStep).
+	#define DROP_FACTORY_SSDT_TABLES		0	// Set to 0 by default. Use 1 with caution (might disable CPU Power Management).
 #endif
 
-#define REPLACE_EXISTING_SSDT_TABLES		0	// Set to 0 by default. Use 1 with caution (might disable SpeedStep).
+#define REPLACE_EXISTING_SSDT_TABLES		0	// Set to 0 by default. Use 1 with caution (might disable CPU Power Management).
 												//
 												// Note: Don't forget to set PATCH_ACPI_TABLE_DATA to 1.
 
@@ -208,14 +208,17 @@
 //--------------------------------------------------------------- BOOT.C -------------------------------------------------------------------
 
 
-#define PRE_LINKED_KERNEL_SUPPORT			0	// Set to 1 by default. Change this to 0 to disable the use of pre-linked kernels.
+#define PRE_LINKED_KERNEL_SUPPORT			1	// Set to 1 by default. Change this to 0 to disable the use of pre-linked kernels.
 
 #define MUST_ENABLE_A20						0	// Set to 0 by default. Change this to 1 when your hardware requires it.
 
 #define SAFE_MALLOC							0	// Set to 0 by default. Change this to 1 when booting halts with a memory allocation error.
 
-#define LION_RECOVERY_SUPPORT				0	// Set to 0 by default. Change this to 1 to make RevoBoot search for the 'Recovery HD'
+#define RECOVERY_HD_SUPPORT					0	// Set to 0 by default. Change this to 1 to make RevoBoot search for the 'Recovery HD'
 												// partition and, when available, boot from it.
+#if (RECOVERY_HD_SUPPORT == 1 && PRE_LINKED_KERNEL_SUPPORT == 0)
+	#define PRE_LINKED_KERNEL_SUPPORT		1
+#endif
 
 #define STARTUP_DISK_SUPPORT				0	// Set to 0 by default. Change this to 1 for System Preference/Startup Disk support.
 
@@ -248,6 +251,7 @@
 												// Example:  0x2800 for 4.0 GHz on a i7-2600.
 
 #define DEBUG_CPU							0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
+												//
 												// Note: CPU info data will not be displayed when USE_STATIC_CPU_DATA is set to 1
 
 #if DEBUG_CPU
@@ -285,7 +289,7 @@
 
 #define LEGACY_BIOS_READ_SUPPORT			0	// Set to 0 by default. Change this to 1 for crappy old BIOSes.
 
-#if LION_RECOVERY_SUPPORT
+#if RECOVERY_HD_SUPPORT
 	#define CORE_STORAGE_SUPPORT			1	// Set to 1 by default since booting from a 'Recovery HD' partition may requires us to skip
 												// (encrypted) CoreStorage partitions.
 #else
@@ -328,6 +332,9 @@
 
 #define EFI_SYSTEM_SERIAL_NUMBER			{ 'S', 'O', 'M', 'E', 'S', 'R', 'L', 'N', 'U', 'M', 'B', 'R' }
 
+												// Note: You can check your serial number by visiting the following link:
+												// https://selfsolve.apple.com/agreementWarrantyDynamic.do
+
 #define STATIC_NVRAM_ROM					{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN, 0xNN } // Example only!
 												// sudo nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM=%01%02%03%04%05%06%07%08%09%0A%0B%NN%NN%NN%NN%NN%NN
 												// Note: Use your MAC address for the last six bytes!
@@ -358,7 +365,10 @@
 
 #define INSTALL_ESD_SUPPORT					0	// Set to 0 by default. Setting this to 1 will make RevoBoot search in specific directories
 												// for com.apple.Boot.plist – required for Mac like Lion OS X installations.
-												
+
+#if (RECOVERY_HD_SUPPORT == 1 && INSTALL_ESD_SUPPORT == 0)
+	#define INSTALL_ESD_SUPPORT				1	// This setting is mandatory for RECOVERY_HD_SUPPORT
+#endif
 //-------------------------------------------------------------- SMBIOS.C ------------------------------------------------------------------
 
 
