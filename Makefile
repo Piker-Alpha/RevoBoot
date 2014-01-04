@@ -50,10 +50,10 @@ VPATH = $(OBJROOT):$(SYMROOT)
 
 ifeq ($(MAKECMDGOALS),)
 	#
-	# No OS build target given. Build for Mountain Lion (default).
+	# No OS build target given. Build for Mavericks (default).
 	#
-	MAKE_TARGET_OS = 6;
-	MAKEGOAL = mountain-lion
+	MAKE_TARGET_OS = 10;
+	MAKEGOAL = mavericks
 else
 	#
 	# Setting MAKE_TARGET_OS and MAKEGOAL based on OS build target.
