@@ -61,7 +61,7 @@
 #define IMAC_131				(IMAC | (4 << 15))
 #define IMAC_132				(IMAC | (5 << 15))
 #define IMAC_141				(IMAC | (6 << 15))
-#define IMAC_141				(IMAC | (7 << 15))
+#define IMAC_142				(IMAC | (7 << 15))
 #define IMAC_143				 IMAC						// Defaults to iMac14,3
 
 #define MACBOOK_41				 MACBOOK					// Defaults to MacBook4,1
