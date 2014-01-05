@@ -36,6 +36,12 @@
 			<string>IOResources</string>
 			<key>IOResourceMatch</key>
 			<string>IOKit</string>
+			<key>logMSRs</key>
+			<true/>
+			<key>logIGPU</key>
+			<false/>
+			<key>logCStates</key>
+			<true/>
 		</dict>
 	</dict>
 	<key>OSBundleLibraries</key>

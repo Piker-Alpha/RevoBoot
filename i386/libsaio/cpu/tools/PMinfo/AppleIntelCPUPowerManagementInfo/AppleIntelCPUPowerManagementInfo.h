@@ -95,17 +95,24 @@ private:
 	IOMemoryDescriptor	*memDescriptor;
 	IOMemoryMap			*memoryMap;
 
-	bool igpuEnabled	= true;
+	bool igpuEnabled	= false;	// Set <key>logIGPU</key> to <true/> in Info.plist to enable this feature.
 #endif
 	
 	IOReturn result		= kIOReturnSuccess;
 	
 	virtual IOReturn loopTimerEvent(void);
-	
+
+#if REPORT_MSRS
 	void reportMSRs(UInt8 aCPUModel);
-	
+
+	bool logMSRs		= true;		// Set <key>logIGPU</key> to <false/> in Info.plist to disable this feature.
+#endif
+
 	bool loopLock		= false;
-	bool dumpCStates	= true;	// TODO: Use Info.plist
+
+#if REPORT_C_STATES
+	bool logCStates		= true;		//  Set <key>logCStates</key> to <false/> in Info.plist to disable this feature.
+#endif
 
 	UInt16 Interval	= 50;
 	

@@ -163,7 +163,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 	loopLock = true;
 	
 #if REPORT_C_STATES
-	if (dumpCStates)
+	if (logCStates)
 	{
 		UInt32 magic = 0;
 		mp_rendezvous_no_intrs(getCStates, &magic);
@@ -312,6 +312,33 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 		
 		if (simpleLock)
 		{
+#if REPORT_MSRS
+			OSBoolean * key_logMSRs = OSDynamicCast(OSBoolean, getProperty("logMSRs"));
+			
+			if (key_logMSRs)
+			{
+				logMSRs = (bool)key_logMSRs->getValue();
+			}
+#endif
+			
+#if REPORT_IGPU_P_STATES
+			OSBoolean * key_logIGPU = OSDynamicCast(OSBoolean, getProperty("logIGPU"));
+			
+			if (key_logIGPU)
+			{
+				igpuEnabled = (bool)key_logIGPU->getValue();
+			}
+#endif
+			
+#if REPORT_C_STATES
+			OSBoolean * key_logCStates = OSDynamicCast(OSBoolean, getProperty("logCStates"));
+			
+			if (key_logCStates)
+			{
+				logCStates = (bool)key_logCStates->getValue();
+			}
+#endif
+
 			timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::loopTimerEvent));
 			workLoop = getWorkLoop();
 			
@@ -321,13 +348,28 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				
 				UInt64  msr = rdmsr64(MSR_IA32_PERF_STS);
 				gCoreMultipliers |= (1ULL << (msr >> 8));
+
+#if REPORT_IGPU_P_STATES
+				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
 				
+				if (!isIGPUEnabled && igpuEnabled)
+				{
+					igpuEnabled = false;
+				}
+#endif
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
 				
 				UInt8 cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
 
 #if REPORT_C_STATES
+				OSBoolean * key_logCStates = OSDynamicCast(OSBoolean, getProperty("logCStates"));
+				
+				if (key_logCStates)
+				{
+					logCStates = (bool)key_logCStates->getValue();
+				}
+
 				switch (cpuModel) // TODO: Verify me!
 				{
 					case CPU_MODEL_SB_CORE:			// 0x2A - Intel 325462.pdf Vol.3C 35-111
@@ -345,22 +387,17 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				}
 #endif
 
-#if REPORT_IGPU_P_STATES
-				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
-				
-				if (!isIGPUEnabled && igpuEnabled)
-				{
-					igpuEnabled = false;
-				}
-#endif
+#if REPORT_MSRS
 				// MWAIT information
 				do_cpuid(0x00000005, cpuid_reg);
 				uint32_t supportedMwaitCStates = bitfield32(cpuid_reg[edx], 31,  0);
 				
 				IOLog("AICPUPMI: MWAIT C-States.....................: %d\n", supportedMwaitCStates);
 
-#if REPORT_MSRS
-				reportMSRs(cpuModel);
+				if (logMSRs)
+				{
+					reportMSRs(cpuModel);
+				}
 #endif
 				msr = rdmsr64(MSR_PLATFORM_INFO);
 				gMinRatio = (UInt8)((msr >> 40) & 0xff);
@@ -382,7 +419,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				}
 				
 #if REPORT_IGPU_P_STATES
-				if (isIGPUEnabled)
+				if (igpuEnabled)
 				{
 					IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
 					memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionInOut);
