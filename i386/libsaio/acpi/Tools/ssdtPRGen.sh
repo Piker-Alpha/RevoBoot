@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.5 - Copyright (c) 2013 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.6 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -82,6 +82,7 @@
 #			- LFM fixed in the Intel i7-3930K data (Pike, December 2013)
 #			- Intel E5-2695 V2 added (Pike, December 2013)
 #			- Intel i3-3250 added (Pike, December 2013)
+#			- Sed RegEx error fixed in _getCPUtype (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -92,6 +93,7 @@
 #			- Thanks to 'BigDonkey' for his help with LFM (800 MHz) for Sandy Bridge mobility models.
 #			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
 #			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
+#			- Thanks to 'Klonkrieger2' aka Mark for the tip about the sed RegEx error in _getCPUtype.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -189,7 +191,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=7.5
+gScriptVersion=7.6
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1243,7 +1245,7 @@ function _getCPUtype()
     #
     # Grab 'cpu-type' property from ioreg (stripped with sed / RegEX magic).
     #
-    local grepStr=$(ioreg -p IODeviceTree -n "${gProcessorNames[0]}"@0 -k cpu-type | grep cpu-type | sed -e 's/ *[-|="<a-z>]//g')
+    local grepStr=$(ioreg -p IODeviceTree -n "${gProcessorNames[0]}"@0 -k cpu-type | grep cpu-type | sed -e 's/["cputype" ,<>|=-]//g')
 
     # Swap bytes with help of ${str:pos:num}
     #
