@@ -83,6 +83,7 @@
 #			- Intel E5-2695 V2 added (Pike, December 2013)
 #			- Intel i3-3250 added (Pike, December 2013)
 #			- Sed RegEx error fixed in _getCPUtype (Pike, January 2014)
+#			- Fixed a typo 's/i7-26740M/i7-2674M' (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -94,6 +95,7 @@
 #			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
 #			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
 #			- Thanks to 'Klonkrieger2' aka Mark for the tip about the sed RegEx error in _getCPUtype.
+#			- Thanks to 'dhnguyen92' on Github issues for the tip about a typo in the i7-2674M data.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -323,7 +325,7 @@ i7-2670QM,45,800,2200,3100,4,8
 i7-2675M,17,800,1600,2700,2,4
 i7-2655LE,25,800,2200,2900,2,4
 i7-2649M,25,800,2300,3200,2,4
-i7-26740M,32,800,2800,3500,2,4
+i7-2674M,32,800,2800,3500,2,4
 i7-2637M,17,800,1700,2800,2,4
 i7-2635QM,45,800,2000,2900,4,8
 i7-2630QM,45,800,2000,2900,4,8
