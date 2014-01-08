@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.6 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.7 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -83,7 +83,8 @@
 #			- Intel E5-2695 V2 added (Pike, December 2013)
 #			- Intel i3-3250 added (Pike, December 2013)
 #			- Sed RegEx error fixed in _getCPUtype (Pike, January 2014)
-#			- Fixed a typo 's/i7-26740M/i7-2674M' (Pike, January 2014)
+#			- Fixed a typo 's/i7-26740M/i7-2674M/' (Pike, January 2014)
+#			- Fixed a typo 's/gHaswellCPUList/gServerHaswellCPUList/' (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -193,7 +194,7 @@ gScope="\_PR_"
 # Other global variables.
 #
 
-gScriptVersion=7.6
+gScriptVersion=7.7
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -1472,7 +1473,7 @@ function _getCPUDataByProcessorNumber
                ;;
             4) local cpuSpecLists=("gDesktopIvyBridgeCPUList[@]" "gMobileIvyBridgeCPUList[@]" "gServerIvyBridgeCPUList[@]")
                ;;
-            8) local cpuSpecLists=("gDesktopHaswellCPUList[@]" "gMobileHaswellCPUList[@]" "gHaswellCPUList[@]")
+            8) local cpuSpecLists=("gDesktopHaswellCPUList[@]" "gMobileHaswellCPUList[@]" "gServerHaswellCPUList[@]")
                ;;
         esac
 
