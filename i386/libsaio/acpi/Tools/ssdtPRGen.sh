@@ -3,10 +3,10 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.8 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.9 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
-#			- Added support for Ivybridge (Pike, January 2013)
+#			- Added support for Ivy Bridge (Pike, January 2013)
 #			- Filename error fixed (Pike, January 2013)
 #			- Namespace error fixed in _printScopeStart (Pike, January 2013)
 #			- Model and board-id checks added (Pike, January 2013)
@@ -114,10 +114,10 @@
 #
 #           - ./ssdtPRGen.sh E5-1650
 #
-#           - ./ssdtPRGen.sh 'E3-1220 V2'
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1
+#           - ./ssdtPRGen.sh 'E3-1220 v2'
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600 70
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600 70 1
 #
 # Usage (v5.5 and greater):
 #
@@ -125,11 +125,11 @@
 #
 #           - ./ssdtPRGen.sh E5-1650
 #
-#           - ./ssdtPRGen.sh 'E3-1220 V2'
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1
-#           - ./ssdtPRGen.sh 'E3-1220 V2' 3600 70 1 CPU
+#           - ./ssdtPRGen.sh 'E3-1220 v2'
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600 70
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600 70 1
+#           - ./ssdtPRGen.sh 'E3-1220 v2' 3600 70 1 CPU
 #
 
 # set -x # Used for tracing errors (can be used anywhere in the script).
@@ -139,7 +139,7 @@
 #
 # Script version info.
 #
-gScriptVersion=7.8
+gScriptVersion=7.9
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -374,19 +374,19 @@ i3-2310E,35,800,2100,0,2,4
 
 gServerIvyBridgeCPUList=(
 # E3-1200 Xeon Processor Series
-'E3-1290 V2',87,0,3700,4100,4,8
-'E3-1285 V2',65,0,3600,4000,
-'E3-1285L V2',0,0,3200,3900,
-'E3-1280 V2',69,0,3600,4000,4,8
-'E3-1275 V2',77,0,3500,3900,4,8
-'E3-1270 V2',69,0,3500,3900,4,8
-'E3-1265L V2',45,0,2500,3500,4,8
-'E3-1245 V2',77,0,3400,3800,4,8
-'E3-1240 V2',69,0,3400,3800,4,8
-'E3-1230 V2',69,0,3300,3700,4,8
-'E3-1225 V2',77,0,3200,3600,4,4
-'E3-1220 V2',69,0,3100,3500,4,4
-'E3-1220L V2',17,0,2300,3500,2,4
+'E3-1290 v2',87,0,3700,4100,4,8
+'E3-1285 v2',65,0,3600,4000,
+'E3-1285L v2',0,0,3200,3900,
+'E3-1280 v2',69,0,3600,4000,4,8
+'E3-1275 v2',77,0,3500,3900,4,8
+'E3-1270 v2',69,0,3500,3900,4,8
+'E3-1265L v2',45,0,2500,3500,4,8
+'E3-1245 v2',77,0,3400,3800,4,8
+'E3-1240 v2',69,0,3400,3800,4,8
+'E3-1230 v2',69,0,3300,3700,4,8
+'E3-1225 v2',77,0,3200,3600,4,4
+'E3-1220 v2',69,0,3100,3500,4,4
+'E3-1220L v2',17,0,2300,3500,2,4
 # E5-2600 Xeon Processor Series
 'E5-2687W v2',150,1200,3400,4000,8,16
 'E5-2658 v2 ',95,1200,2400,3000,10,20
@@ -509,21 +509,21 @@ i3-3110M,35,0,2400,0,2,4
 # New Haswell processors (with HD-4600 graphics)
 #
 gServerHaswellCPUList=(
-# E3-1200 V3 Xeon Processor Series
-'E3-1285L V3',65,800,3100,3900,4,8
-'E3-1285 V3',84,800,3600,4000,4,8
-'E3-1280 V3',82,800,3600,4000,4,8
-'E3-1275 V3',84,800,3500,3900,4,8
-'E3-1270 V3',80,800,3500,3900,4,8
-'E3-1268L V3',45,800,2300,3300,4,8
-'E3-1265L V3',45,800,2500,3700,4,8
-'E3-1245 V3',84,800,3400,3800,4,8
-'E3-1240 V3',80,800,3400,3800,4,8
-'E3-1230L V3',25,800,1800,2800,4,8
-'E3-1230 V3',80,800,3300,3700,4,8
-'E3-1225 V3',80,800,3200,3600,4,4
-'E3-1220 V3',80,800,3100,3500,4,4
-'E3-1220L V3',13,800,1100,1500,2,4
+# E3-1200 v3 Xeon Processor Series
+'E3-1285L v3',65,800,3100,3900,4,8
+'E3-1285 v3',84,800,3600,4000,4,8
+'E3-1280 v3',82,800,3600,4000,4,8
+'E3-1275 v3',84,800,3500,3900,4,8
+'E3-1270 v3',80,800,3500,3900,4,8
+'E3-1268L v3',45,800,2300,3300,4,8
+'E3-1265L v3',45,800,2500,3700,4,8
+'E3-1245 v3',84,800,3400,3800,4,8
+'E3-1240 v3',80,800,3400,3800,4,8
+'E3-1230L v3',25,800,1800,2800,4,8
+'E3-1230 v3',80,800,3300,3700,4,8
+'E3-1225 v3',80,800,3200,3600,4,4
+'E3-1220 v3',80,800,3100,3500,4,4
+'E3-1220L v3',13,800,1100,1500,2,4
 )
 
 gDesktopHaswellCPUList=(
@@ -1440,8 +1440,11 @@ function _getCPUNumberFromBrandString
     # Split brandstring into array (data)
     #
     local data=($brandString)
-#   local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "V2" "@" "2.5GHz")
-#   local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "@" "2.5GHz")
+    # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "@" "2.5GHz")
+    # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "v2" "@" "2.5GHz")
+    # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "v3" "@" "2.5GHz")
+    # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "0" "@" "2.5GHz")
+
     #
     # Example from a MacBookPro10,2
     #
@@ -1469,15 +1472,24 @@ function _getCPUNumberFromBrandString
 
     let length=${#data[@]}
 
-    if ((length > 6)); then
+    if ((length > 7)); then
         echo 'Warning: Unexpected brandstring > "'${data[@]}'"'
     fi
 
-    if [[ ${data[1]} == "Xeon(R)" && ${data[4]} == "V2" ]];
-        then
-            gProcessorNumber="${data[3]} ${data[4]}"
-        else
-            gProcessorNumber="${data[2]}"
+    #
+    # Is this a Xeon processor model?
+    #
+    if [[ "${data[1]}" == "Xeon(R)" ]];
+      then
+        #
+        # Yes. Check for lower/upper case 'v' or '0' for OEM processors. 
+        #
+        if [[ "${data[4]}" =~ "v" || "${data[4]}" =~ "V" || "${data[4]}" == "0" ]];
+          then
+              gProcessorNumber="${data[3]} ${data[4]}"
+          else
+              gProcessorNumber="${data[2]}"
+        fi
     fi
 
 #   echo $gProcessorNumber
@@ -2073,7 +2085,7 @@ function main()
             let frequency=($frequency / 1000000)
 
             if [[ $assumedTDP -eq 1 ]]; then
-                echo 'With a maximum TDP of '$gTdp' Watt - assumed, may require override value!'
+              echo "With a maximum TDP of ${gTdp} Watt - assumed/undetected CPU may require override value!"
             fi
     fi
 
