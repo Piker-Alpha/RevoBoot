@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.7 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 7.8 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivybridge (Pike, January 2013)
@@ -85,6 +85,7 @@
 #			- Sed RegEx error fixed in _getCPUtype (Pike, January 2014)
 #			- Fixed a typo 's/i7-26740M/i7-2674M/' (Pike, January 2014)
 #			- Fixed a typo 's/gHaswellCPUList/gServerHaswellCPUList/' (Pike, January 2014)
+#			- Intel E5-26nn v2 Xeon Processors added (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -134,6 +135,11 @@
 # set -x # Used for tracing errors (can be used anywhere in the script).
 
 #================================= GLOBAL VARS ==================================
+
+#
+# Script version info.
+#
+gScriptVersion=7.8
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -193,8 +199,6 @@ gScope="\_PR_"
 #
 # Other global variables.
 #
-
-gScriptVersion=7.7
 
 gRevision='0x0000'${gScriptVersion:0:1}${gScriptVersion:2:1}'00'
 
@@ -383,7 +387,29 @@ gServerIvyBridgeCPUList=(
 'E3-1225 V2',77,0,3200,3600,4,4
 'E3-1220 V2',69,0,3100,3500,4,4
 'E3-1220L V2',17,0,2300,3500,2,4
-'E5-2695 V2',115,1200,2400,3200,12,24
+# E5-2600 Xeon Processor Series
+'E5-2687W v2',150,1200,3400,4000,8,16
+'E5-2658 v2 ',95,1200,2400,3000,10,20
+'E5-2648L v2',70,1200,1900,2500,10,20
+'E5-2628L v2',70,1200,1900,2400,8,16
+'E5-2603 v2',80,1200,1800,1800,4,4
+'E5-2637 v2',130,1200,3500,3800,4,8
+'E5-2630L v2',60,1200,2400,2800,6,12
+'E5-2630 v2',80,1200,2600,3100,6,12
+'E5-2620 v2',80,1200,2100,2600,6,12
+'E5-2618L v2',50,1200,2000,2000,6,12
+'E5-2609 v2',80,1200,2500,2500,4,4
+'E5-2697 v2',130,1200,2700,3500,12,24
+'E5-2695 v2',115,1200,2400,3200,12,24
+'E5-2690 v2',130,1200,3000,3600,10,20
+'E5-2680 v2',115,1200,2800,3600,10,20
+'E5-2670 v2',115,1200,2500,3300,10,20
+'E5-2667 v2',130,1200,3300,4000,6,16
+'E5-2660 v2',95,1200,2200,3000,10,20
+'E5-2650L v2',70,1200,1700,2100,10,20
+'E5-2650 v2',95,1200,2600,3400,8,16
+'E5-2643 v2',130,1200,3500,3800,6,12
+'E5-2640 v2',95,1200,2000,2500,8,16
 )
 
 gDesktopIvyBridgeCPUList=(
@@ -497,6 +523,7 @@ gServerHaswellCPUList=(
 'E3-1230 V3',80,800,3300,3700,4,8
 'E3-1225 V3',80,800,3200,3600,4,4
 'E3-1220 V3',80,800,3100,3500,4,4
+'E3-1220L V3',13,800,1100,1500,2,4
 )
 
 gDesktopHaswellCPUList=(
