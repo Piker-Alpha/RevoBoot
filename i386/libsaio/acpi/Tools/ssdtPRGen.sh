@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.0 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.1 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -87,6 +87,7 @@
 #			- Fixed a typo 's/gHaswellCPUList/gServerHaswellCPUList/' (Pike, January 2014)
 #			- Intel E5-26nn v2 Xeon Processors added (Pike, January 2014)
 #			- Show the CPU brandstring at all times (Pike, January 2014)
+#			- Fixed cpu-type suggestion for MacPro6,1 (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -140,7 +141,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.0
+gScriptVersion=8.1
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -1432,7 +1433,7 @@ function _getCPUNumberFromBrandString
     #
     # Show brandstring (this helps me to debug stuff).
     #
-    echo "Brandstring '${brandString}'"
+    printf "Brandstring '${brandString}'"
     #
     # Save default (0) delimiter
     #
@@ -1499,11 +1500,12 @@ function _getCPUNumberFromBrandString
               #
               gProcessorNumber="${data[3]} v${data[4]:1:1}"
           elif [[ "${data[4]}" == "0" ]];
-              #
-              # OEM CPU's have been reported to use a "0" instead of "v2"
-              # and thus let's use that to make our data match the CPU.
-              #
-              gProcessorNumber="${data[3]} v2"
+              then
+                #
+                # OEM CPU's have been reported to use a "0" instead of "v2"
+                # and thus let's use that to make our data match the CPU.
+                #
+                gProcessorNumber="${data[3]} v2"
           else
               #
               # All other non-Xeon processor models.
@@ -2252,6 +2254,16 @@ function main()
             _printScopeCPUn
            ;;
     esac
+    #
+    # Is this a MacPro6,1 model?
+    #
+    if [[ $modelID == 'MacPro6,1' ]];
+      then
+        #
+        # Yes. Use the correct string/value for the cpu-type suggestion.
+        #
+        local cpuTypeString="0A"
+    fi
 
     _showLowPowerStates
     _checkPlatformSupport $modelID $boardID
@@ -2259,12 +2271,12 @@ function main()
     #
     # Some Sandy Bridge/Ivy Bridge CPUPM specific configuration checks
     #
-    if [ $gBridgeType -ne $HASWELL ]; then
-        if [ ${cpu_type:0:2} -ne $cpuTypeString ]; then
+    if [ $gBridgeType -ne $HASWELL ];
+      then
+        if [ ${cpu_type:0:2} -ne $cpuTypeString ];
+          then
             echo -e "\nWarning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
-        fi
-
-        if [ $gSystemType -eq 0 ];
+          elif [[ $gSystemType -eq 0 ]];
             then
                 echo -e "\nWarning: 'board-id' [$boardID] is not supported by $bridgeTypeString PM"
             else
