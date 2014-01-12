@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 7.9 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.0 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -86,6 +86,7 @@
 #			- Fixed a typo 's/i7-26740M/i7-2674M/' (Pike, January 2014)
 #			- Fixed a typo 's/gHaswellCPUList/gServerHaswellCPUList/' (Pike, January 2014)
 #			- Intel E5-26nn v2 Xeon Processors added (Pike, January 2014)
+#			- Show the CPU brandstring at all times (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -139,7 +140,7 @@
 #
 # Script version info.
 #
-gScriptVersion=7.9
+gScriptVersion=8.0
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -1429,6 +1430,10 @@ function _getCPUNumberFromBrandString
     #
     local brandString=$(echo `sysctl machdep.cpu.brand_string` | sed -e 's/machdep.cpu.brand_string: //')
     #
+    # Show brandstring (this helps me to debug stuff).
+    #
+    echo "Brandstring '${brandString}'"
+    #
     # Save default (0) delimiter
     #
     local ifs=$IFS
@@ -1440,6 +1445,9 @@ function _getCPUNumberFromBrandString
     # Split brandstring into array (data)
     #
     local data=($brandString)
+    #
+    # Teststrings
+    #
     # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "@" "2.5GHz")
     # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "v2" "@" "2.5GHz")
     # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "v3" "@" "2.5GHz")
@@ -1473,7 +1481,7 @@ function _getCPUNumberFromBrandString
     let length=${#data[@]}
 
     if ((length > 7)); then
-        echo 'Warning: Unexpected brandstring > "'${data[@]}'"'
+        echo 'Warning: The brandstring has an unexpected length!'
     fi
 
     #
@@ -1484,15 +1492,25 @@ function _getCPUNumberFromBrandString
         #
         # Yes. Check for lower/upper case 'v' or '0' for OEM processors. 
         #
-        if [[ "${data[4]}" =~ "v" || "${data[4]}" =~ "V" || "${data[4]}" == "0" ]];
+        if [[ "${data[4]}" =~ "v" || "${data[4]}" =~ "V" ]];
           then
-              gProcessorNumber="${data[3]} ${data[4]}"
+              #
+              # Use a lowercase 'v' because that is what we use in our data.
+              #
+              gProcessorNumber="${data[3]} v${data[4]:1:1}"
+          elif [[ "${data[4]}" == "0" ]];
+              #
+              # OEM CPU's have been reported to use a "0" instead of "v2"
+              # and thus let's use that to make our data match the CPU.
+              #
+              gProcessorNumber="${data[3]} v2"
           else
+              #
+              # All other non-Xeon processor models.
+              #
               gProcessorNumber="${data[2]}"
         fi
     fi
-
-#   echo $gProcessorNumber
 }
 
 #--------------------------------------------------------------------------------
@@ -1942,6 +1960,10 @@ function main()
     let maxTurboFrequency=0
 
     _getCPUNumberFromBrandString
+
+    if ((gDebug)); then
+      echo $gProcessorNumber
+    fi
 
     if [[ "$1" != "" ]]; then
         # Sandy Bridge checks
