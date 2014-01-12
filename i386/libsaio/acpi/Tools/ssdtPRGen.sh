@@ -875,7 +875,7 @@ function _printMethodDSM()
 function _debugPrint()
 {
     if (( gDebug & 2 )); then
-        echo "$1"
+        printf "$1"
     fi
 }
 
@@ -954,41 +954,41 @@ function _printScopeACST()
     fi
 
 
-    _debugPrint "targetCStates: $targetCStates"
+    _debugPrint "targetCStates: $targetCStates\n"
 
     #
     # Checks to determine which C-State(s) we should inject.
     #
     if (($targetCStates & 1)); then
-        _debugPrint "Adding C1"
+        _debugPrint "Adding C1\n"
         let C1=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if (($targetCStates & 2)); then
-        _debugPrint "Adding C2"
+        _debugPrint "Adding C2\n"
         let C2=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if (($targetCStates & 4)); then
-        _debugPrint "Adding C3"
+        _debugPrint "Adding C3\n"
         let C3=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if (($targetCStates & 8)); then
-        _debugPrint "Adding C6"
+        _debugPrint "Adding C6\n"
         let C6=1
         let numberOfCStates+=1
         let pkgLength+=1
     fi
 
     if ((($targetCStates & 16) == 16)); then
-        _debugPrint "Adding C7"
+        _debugPrint "Adding C7\n"
         let C7=1
         let numberOfCStates+=1
         let pkgLength+=1
@@ -1434,7 +1434,7 @@ function _getCPUNumberFromBrandString
     #
     # Show brandstring (this helps me to debug stuff).
     #
-    printf "Brandstring '${brandString}'"
+    printf "Brandstring '${brandString}'\n"
     #
     # Save default (0) delimiter
     #
@@ -1454,6 +1454,7 @@ function _getCPUNumberFromBrandString
     # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "v2" "@" "2.5GHz")
     # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "v3" "@" "2.5GHz")
     # local data=("Intel(R)" "Xeon(R)" "CPU" "E3-1220" "0" "@" "2.5GHz")
+    # local data=("Intel(R)" "Core(TM)" "i5-4670K" "CPU" "@" "3.40GHz")
 
     #
     # Example from a MacBookPro10,2
@@ -1963,10 +1964,7 @@ function main()
     let maxTurboFrequency=0
 
     _getCPUNumberFromBrandString
-
-    if ((gDebug)); then
-      echo $gProcessorNumber
-    fi
+    _debugPrint "\ngProcessorNumber: $gProcessorNumber\n"
 
     if [[ "$1" != "" ]]; then
         # Sandy Bridge checks
