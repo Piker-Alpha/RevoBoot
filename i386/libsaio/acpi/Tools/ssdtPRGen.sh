@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.2 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.3 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -142,7 +142,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.2
+gScriptVersion=8.3
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -1507,12 +1507,12 @@ function _getCPUNumberFromBrandString
                 # and thus let's use that to make our data match the CPU.
                 #
                 gProcessorNumber="${data[3]} v2"
-          else
-              #
-              # All other non-Xeon processor models.
-              #
-              gProcessorNumber="${data[2]}"
         fi
+      else
+        #
+        # All other non-Xeon processor models.
+        #
+        gProcessorNumber="${data[2]}"
     fi
 }
 
