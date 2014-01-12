@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.1 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.2 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -100,6 +100,7 @@
 #			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
 #			- Thanks to 'Klonkrieger2' aka Mark for the tip about the sed RegEx error in _getCPUtype.
 #			- Thanks to 'dhnguyen92' on Github issues for the tip about a typo in the i7-2674M data.
+#			- Thanks to 'fabiosun' on Github issues for the tip about a typo in the cpu-type check.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -141,7 +142,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.1
+gScriptVersion=8.2
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -2262,7 +2263,7 @@ function main()
         #
         # Yes. Use the correct string/value for the cpu-type suggestion.
         #
-        local cpuTypeString="0A"
+        local cpuTypeString="0a"
     fi
 
     _showLowPowerStates
@@ -2273,7 +2274,7 @@ function main()
     #
     if [ $gBridgeType -ne $HASWELL ];
       then
-        if [ ${cpu_type:0:2} -ne $cpuTypeString ];
+        if [ ${cpu_type:0:2} != $cpuTypeString ];
           then
             echo -e "\nWarning: 'cpu-type' may be set improperly (0x$cpu_type instead of 0x$cpuTypeString${cpu_type:2:2})"
           elif [[ $gSystemType -eq 0 ]];
