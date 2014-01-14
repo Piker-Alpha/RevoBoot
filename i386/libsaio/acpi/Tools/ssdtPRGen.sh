@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.3 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.4 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -88,6 +88,7 @@
 #			- Intel E5-26nn v2 Xeon Processors added (Pike, January 2014)
 #			- Show the CPU brandstring at all times (Pike, January 2014)
 #			- Fixed cpu-type suggestion for MacPro6,1 (Pike, January 2014)
+#			- Intel i7-4771 added (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -142,7 +143,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.3
+gScriptVersion=8.4
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -536,6 +537,7 @@ i7-4930K,130,800,3400,3900,6,12
 i5-4820K,130,800,3700,3900,4,8
 # Socket 1150 (Standard Power)
 i7-4770K,84,800,3500,3900,4,8
+i7-4771,84,800,3500,3900,4,8
 i7-4770,84,800,3400,3900,4,8
 i5-4670K,84,800,3400,3800,4,4
 i5-4670,84,800,3400,3800,4,4
