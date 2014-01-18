@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.4 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.5 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -89,6 +89,7 @@
 #			- Show the CPU brandstring at all times (Pike, January 2014)
 #			- Fixed cpu-type suggestion for MacPro6,1 (Pike, January 2014)
 #			- Intel i7-4771 added (Pike, January 2014)
+#			- A couple Intel Haswell/Crystal Well processor models added (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -143,7 +144,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.4
+gScriptVersion=8.5
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -570,9 +571,13 @@ i3-4340,54,800,3600,3600,2,4
 )
 
 gMobileHaswellCPUList=(
+# Socket FCBGA1364
+i7-4960HQ,47,800,2600,3800,4,8
 i7-4950HQ,47,800,2400,3600,4,8
 i7-4850HQ,47,800,2300,3500,4,8
 i7-4750HQ,47,800,2000,3200,4,8
+i7-4702HQ,37,800,2200,3200,4,8
+i7-4700HQ,47,800,2400,3600,4,8
 # Extreme Edition Series - socket FCPGA946
 i7-4930MX,57,800,3000,3900,4,8
 # Socket FCPGA946
@@ -581,11 +586,13 @@ i7-4800MQ,47,800,2700,3700,4,8
 i7-4702MQ,37,800,2200,3200,4,8
 i7-4700MQ,47,800,2400,3400,4,8
 i5-4200M,37,800,2500,3100,2,4
-# Socket FCBGA1364
-i7-4700HQ,47,800,2400,3600,4,8
-i7-4702HQ,37,800,2200,3200,4,8
 # Socket FCBGA1168
+i7-4650U,15,800,1700,3300,2,4
+i7-4650U,15,800,1700,3300,2,4
+i7-4600U,15,800,2100,3300,2,4
 i7-4558U,28,800,2800,3300,2,4
+i7-4550U,15,800,1500,3000,2,4
+i7-4500U,15,800,1800,3000,2,4
 i5-4350U,15,800,1400,2900,2,4
 i5-4288U,28,800,2600,3100,2,4
 i5-4258U,28,800,2400,2900,2,4
