@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.5 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.6 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -83,7 +83,7 @@
 #			- Intel E5-2695 V2 added (Pike, December 2013)
 #			- Intel i3-3250 added (Pike, December 2013)
 #			- Sed RegEx error fixed in _getCPUtype (Pike, January 2014)
-#			- Fixed a typo 's/i7-26740M/i7-2674M/' (Pike, January 2014)
+#			- Fixed a typo 's/i7-2640M/i7-2674M/' (Pike, January 2014)
 #			- Fixed a typo 's/gHaswellCPUList/gServerHaswellCPUList/' (Pike, January 2014)
 #			- Intel E5-26nn v2 Xeon Processors added (Pike, January 2014)
 #			- Show the CPU brandstring at all times (Pike, January 2014)
@@ -101,7 +101,7 @@
 #			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
 #			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
 #			- Thanks to 'Klonkrieger2' aka Mark for the tip about the sed RegEx error in _getCPUtype.
-#			- Thanks to 'dhnguyen92' on Github issues for the tip about a typo in the i7-2674M data.
+#			- Thanks to 'dhnguyen92' on Github issues for the tip about a typo in the i7-2640M model data.
 #			- Thanks to 'fabiosun' on Github issues for the tip about a typo in the cpu-type check.
 #
 # Usage (v1.0 - v4.9):
@@ -144,7 +144,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.5
+gScriptVersion=8.6
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -335,7 +335,7 @@ i7-2670QM,45,800,2200,3100,4,8
 i7-2675M,17,800,1600,2700,2,4
 i7-2655LE,25,800,2200,2900,2,4
 i7-2649M,25,800,2300,3200,2,4
-i7-2674M,32,800,2800,3500,2,4
+i7-2640M,35,800,2800,3500,2,4
 i7-2637M,17,800,1700,2800,2,4
 i7-2635QM,45,800,2000,2900,4,8
 i7-2630QM,45,800,2000,2900,4,8
@@ -543,6 +543,7 @@ i7-4770,84,800,3400,3900,4,8
 i5-4670K,84,800,3400,3800,4,4
 i5-4670,84,800,3400,3800,4,4
 i5-4570,84,800,3200,3600,4,4
+i5-4440,84,800,3100,3300,4,4
 i5-4430,84,800,3000,3200,4,4
 # Socket 1150 (Low Power)
 i7-4770S,65,800,3100,3900,4,8
