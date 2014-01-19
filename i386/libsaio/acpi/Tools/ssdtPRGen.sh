@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.6 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.7 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -90,6 +90,8 @@
 #			- Fixed cpu-type suggestion for MacPro6,1 (Pike, January 2014)
 #			- Intel i7-4771 added (Pike, January 2014)
 #			- A couple Intel Haswell/Crystal Well processor models added (Pike, January 2014)
+#			- Moved a couple of Ivy Bridge desktop model processors to the right spot (Pike, January 2014)
+#			- Experimental code added for Gringo Vermelho (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -98,6 +100,7 @@
 #			- Thanks to 'philip_petev' for his help with Snow Leopard/egrep incompatibility.
 #			- Thanks to 'RehabMan' for his help with Snow Leopard/egrep incompatibility.
 #			- Thanks to 'BigDonkey' for his help with LFM (800 MHz) for Sandy Bridge mobility models.
+#			- Thanks to 'rtcl777' on Github issues for the tip about a typo in the iMac12 board-id's.
 #			- Thanks to 'xpamamadeus' for the Clover boot.log tip.
 #			- Thanks to 'rileyfreeman' for the Intel i7-3930K LFM value.
 #			- Thanks to 'Klonkrieger2' aka Mark for the tip about the sed RegEx error in _getCPUtype.
@@ -144,7 +147,7 @@
 #
 # Script version info.
 #
-gScriptVersion=8.6
+gScriptVersion=8.7
 
 #
 # Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
@@ -285,7 +288,7 @@ i7-35355,120,1600,2666,2666,4,4
 i7-3970X,150,1200,3500,4000,6,12
 i7-3960X,130,1200,3300,3900,6,12
 i7-3930K,130,1200,3200,3800,6,12
-i7-3820,130,0,3600,3800,4,8
+i7-3820,130,1200,3600,3800,4,8
 # i7 Desktop series
 i7-2600S,65,1600,2800,3800,4,8
 i7-2600,95,1600,3400,3800,4,8
@@ -379,19 +382,17 @@ i3-2310E,35,800,2100,0,2,4
 
 gServerIvyBridgeCPUList=(
 # E3-1200 Xeon Processor Series
-'E3-1290 v2',87,0,3700,4100,4,8
-'E3-1285 v2',65,0,3600,4000,
-'E3-1285L v2',0,0,3200,3900,
-'E3-1280 v2',69,0,3600,4000,4,8
-'E3-1275 v2',77,0,3500,3900,4,8
-'E3-1270 v2',69,0,3500,3900,4,8
-'E3-1265L v2',45,0,2500,3500,4,8
-'E3-1245 v2',77,0,3400,3800,4,8
-'E3-1240 v2',69,0,3400,3800,4,8
-'E3-1230 v2',69,0,3300,3700,4,8
-'E3-1225 v2',77,0,3200,3600,4,4
-'E3-1220 v2',69,0,3100,3500,4,4
-'E3-1220L v2',17,0,2300,3500,2,4
+'E3-1290 v2',87,1200,3700,4100,4,8
+'E3-1280 v2',69,1200,3600,4000,4,8
+'E3-1275 v2',77,1200,3500,3900,4,8
+'E3-1270 v2',69,1200,3500,3900,4,8
+'E3-1265L v2',45,1200,2500,3500,4,8
+'E3-1245 v2',77,1200,3400,3800,4,8
+'E3-1240 v2',69,1200,3400,3800,4,8
+'E3-1230 v2',69,1200,3300,3700,4,8
+'E3-1225 v2',77,1200,3200,3600,4,4
+'E3-1220 v2',69,1200,3100,3500,4,4
+'E3-1220L v2',17,1200,2300,3500,2,4
 # E5-2600 Xeon Processor Series
 'E5-2687W v2',150,1200,3400,4000,8,16
 'E5-2658 v2 ',95,1200,2400,3000,10,20
@@ -418,6 +419,10 @@ gServerIvyBridgeCPUList=(
 )
 
 gDesktopIvyBridgeCPUList=(
+# Socket 2011 (Premium Power)
+i7-4960K,130,1200,3600,4000,6,12
+i7-4930K,130,1200,3400,3900,6,12
+i7-4820K,130,1200,3700,3900,4,8
 # i7-3700 Desktop Processor Series
 i7-3770T,45,1600,2500,3700,4,8
 i7-3770S,65,1600,3100,3900,4,8
@@ -532,10 +537,6 @@ gServerHaswellCPUList=(
 )
 
 gDesktopHaswellCPUList=(
-# Socket 2011 (Premium Power)
-i7-4960K,130,800,3600,4000,6,12
-i7-4930K,130,800,3400,3900,6,12
-i5-4820K,130,800,3700,3900,4,8
 # Socket 1150 (Standard Power)
 i7-4770K,84,800,3500,3900,4,8
 i7-4771,84,800,3500,3900,4,8
@@ -786,8 +787,14 @@ function _printPackages()
     #
     # Do we need to create additional (Low Frequency) P-States for Ivy bridge?
     #
-    if [ $gBridgeType -eq $IVY_BRIDGE ]; then
-        let minRatio=8
+    if [ $gBridgeType -eq $IVY_BRIDGE ];
+      then
+#       if [[ $gBaseFrequency -eq 1200 ]];
+#         then
+#           let minRatio=12
+#         else
+            let minRatio=8
+#       fi
     fi
 
     if (($turboStates)); then
