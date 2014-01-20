@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.7 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.8 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -92,6 +92,8 @@
 #			- A couple Intel Haswell/Crystal Well processor models added (Pike, January 2014)
 #			- Moved a couple of Ivy Bridge desktop model processors to the right spot (Pike, January 2014)
 #			- Experimental code added for Gringo Vermelho (Pike, January 2014)
+#			- Fixed a typo so that checking gIvyWorkAround really works (Pike, January 2014)
+#			- Added extra OS checks (as a test) to filter out possibly unwanted LFM P-States (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -106,6 +108,7 @@
 #			- Thanks to 'Klonkrieger2' aka Mark for the tip about the sed RegEx error in _getCPUtype.
 #			- Thanks to 'dhnguyen92' on Github issues for the tip about a typo in the i7-2640M model data.
 #			- Thanks to 'fabiosun' on Github issues for the tip about a typo in the cpu-type check.
+#			- Thanks to 'Hackmodford ' on Github issues for testing/confirming that PM in Mavericks was changed.
 #
 # Usage (v1.0 - v4.9):
 #
@@ -147,12 +150,14 @@
 #
 # Script version info.
 #
-gScriptVersion=8.7
+gScriptVersion=8.8
 
 #
-# Change this to 0 when your CPU isn't stuck in Low Frequency Mode!
+# Change this to 1 when your CPU is stuck in Low Frequency Mode!
 #
-let gIvyWorkAround=1
+# Note: Injects extra Turbo P-State at he top with max-Turbo frequency + 1 MHz.
+#
+let gIvyWorkAround=0
 
 #
 # Asks for your confirmation to copy ssdt_pr.aml to /Extra/ssdt.aml (example)
@@ -181,13 +186,13 @@ let gCallIasl=1
 #
 # A value of 1 will make this script open ssdt_pr.dsl in the editor of your choice.
 #
-let gCallOpen=0
+let gCallOpen=1
 
 # 0 = no debug injection/debug statements executed.
 # 1 = inject debug data.
 # 3 = inject debug data and execute _debugPrint statements.
 #
-let gDebug=1
+let gDebug=0
 
 #
 # Lowest possible idle frequency (user configurable). Also known as Low Frequency Mode.
@@ -242,6 +247,7 @@ let gUnmountEFIPartition=0
 gProductName=$(sw_vers -productName)
 gProductVersion="$(sw_vers -productVersion)"
 gBuildVersion=$(sw_vers -buildVersion)
+let gOSVersion=$(echo $gProductVersion | tr -d '.')
 
 #
 # Maximum Turbo Clock Speed (user configurable)
@@ -255,6 +261,12 @@ let PROCESSOR_NUMBER_ERROR=5
 let PROCESSOR_LABEL_LENGTH_ERROR=6
 let PROCESSOR_NAMES_ERROR=7
 let PROCESSOR_DECLARATION_ERROR=8
+
+#
+# First OS version number (?) that no longer requires
+# us to inject zeroed out Low Frequency Mode P-States.
+#
+let LFM_REQUIRED_OS=1091
 
 #
 # Processor Number, Max TDP, Low Frequency Mode, Clock Speed, Max Turbo Frequency, Cores, Threads
@@ -654,15 +666,17 @@ function _injectDebugInfo()
     xcpm=0
 
     #
-    # 'machdep.xcpm' is introduced in 10.8.5
+    # Check OS version ('machdep.xcpm' is introduced in 10.8.5)
     #
-    if [[ $gProductVersion > "10.8.4" ]]; then
-      xcpm=$(/usr/sbin/sysctl -n machdep.xcpm.mode)
+    if [[ $gOSVersion > 1084 ]]; then
+        xcpm=$(/usr/sbin/sysctl -n machdep.xcpm.mode)
     fi
 
     echo '        Method (_INI, 0, NotSerialized)'                                      >> $gSsdtPR
     echo '        {'                                                                    >> $gSsdtPR
     echo '            Store ("ssdtPRGen version: '$gScriptVersion' / '$gProductName' '$gProductVersion' ('$gBuildVersion')", Debug)'  >> $gSsdtPR
+    echo '            Store ("target processor : '$gProcessorNumber'", Debug)'          >> $gSsdtPR
+    echo '            Store ("running processor: '$gBrandString'", Debug)'              >> $gSsdtPR
     echo '            Store ("baseFrequency    : '$gBaseFrequency'", Debug)'            >> $gSsdtPR
     echo '            Store ("frequency        : '$frequency'", Debug)'                 >> $gSsdtPR
     echo '            Store ("busFrequency     : '$gBusFrequency'", Debug)'             >> $gSsdtPR
@@ -710,10 +724,17 @@ function _printScopeStart()
     #
     # Do we need to create additional (Low Frequency) P-States?
     #
-
     if [ $gBridgeType -ne $SANDY_BRIDGE ];
         then
-            let lowFrequencyPStates=($gBaseFrequency/100)-8
+            let lowFrequencyPStates=0
+
+            #
+            # Do we need to add additional (Low Frequency) P-States for Ivy Bridge?
+            #
+            if [[ $gBridgeType -eq $IVY_BRIDGE && $gOSVersion < $LFM_REQUIRED_OS ]]; then
+                let lowFrequencyPStates=($gBaseFrequency/100)-8
+            fi
+
             let packageLength=($2+$lowFrequencyPStates)
 
             if [[ lowFrequencyPStates -gt 0 ]];
@@ -725,7 +746,7 @@ function _printScopeStart()
             fi
 
             # TODO: Remove this when CPUPM for IB works properly!
-            if [[ gIvyWorkAround && $gBridgeType -eq $IVY_BRIDGE ]]; then
+            if [[ $gBridgeType -eq $IVY_BRIDGE && $gIvyWorkAround -eq 1 ]]; then
                 let useWorkArounds=1
             fi
     fi
@@ -733,7 +754,6 @@ function _printScopeStart()
     #
     # Check number of Turbo states (for IASL optimization).
     #
-
     if [ $turboStates -eq 0 ];
         then
             # TODO: Remove this when CPUPM for IB works properly!
@@ -785,16 +805,11 @@ function _printPackages()
     let powerRatio=($p1Ratio-1)
 
     #
-    # Do we need to create additional (Low Frequency) P-States for Ivy bridge?
+    # Do we need to add additional (Low Frequency) P-States for Ivy Bridge?
     #
-    if [ $gBridgeType -eq $IVY_BRIDGE ];
+    if [[ $gBridgeType -eq $IVY_BRIDGE && $gOSVersion < $LFM_REQUIRED_OS ]];
       then
-#       if [[ $gBaseFrequency -eq 1200 ]];
-#         then
-#           let minRatio=12
-#         else
-            let minRatio=8
-#       fi
+        let minRatio=8
     fi
 
     if (($turboStates)); then
@@ -1447,11 +1462,11 @@ function _getCPUNumberFromBrandString
     #
     # Get CPU brandstring
     #
-    local brandString=$(echo `sysctl machdep.cpu.brand_string` | sed -e 's/machdep.cpu.brand_string: //')
+    gBrandString=$(echo `sysctl machdep.cpu.brand_string` | sed -e 's/machdep.cpu.brand_string: //')
     #
     # Show brandstring (this helps me to debug stuff).
     #
-    printf "Brandstring '${brandString}'\n"
+    printf "Brandstring '${gBrandString}'\n"
     #
     # Save default (0) delimiter
     #
@@ -1463,7 +1478,7 @@ function _getCPUNumberFromBrandString
     #
     # Split brandstring into array (data)
     #
-    local data=($brandString)
+    local data=($gBrandString)
     #
     # Teststrings
     #
@@ -1981,6 +1996,7 @@ function main()
     let maxTurboFrequency=0
 
     _getCPUNumberFromBrandString
+
     _debugPrint "\ngProcessorNumber: $gProcessorNumber\n"
 
     if [[ "$1" != "" ]]; then
