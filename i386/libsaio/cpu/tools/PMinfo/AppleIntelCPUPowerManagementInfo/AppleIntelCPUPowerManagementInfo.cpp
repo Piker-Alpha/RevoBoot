@@ -16,40 +16,40 @@
 void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 {
 	IOLog("AICPUPMI: MSR_CORE_THREAD_COUNT......(0x35)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_CORE_THREAD_COUNT));
-	
+
 	IOLog("AICPUPMI: MSR_PLATFORM_INFO..........(0xCE)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PLATFORM_INFO));
-	
+
 	IOLog("AICPUPMI: MSR_PMG_CST_CONFIG_CONTROL.(0xE2)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_CST_CONFIG_CONTROL));
 	IOLog("AICPUPMI: MSR_PMG_IO_CAPTURE_BASE....(0xE4)  : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PMG_IO_CAPTURE_BASE));
 	IOLog("AICPUPMI: IA32_MPERF.................(0xE7)  : 0x%llX\n", (unsigned long long)rdmsr64(IA32_MPERF));
 	IOLog("AICPUPMI: IA32_APERF.................(0xE8)  : 0x%llX\n", (unsigned long long)rdmsr64(IA32_APERF));
-	
+
 	IOLog("AICPUPMI: MSR_FLEX_RATIO.............(0x194) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_FLEX_RATIO));
 	IOLog("AICPUPMI: MSR_IA32_PERF_STATUS.......(0x198) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_IA32_PERF_STATUS));
 	IOLog("AICPUPMI: MSR_IA32_PERF_CONTROL......(0x199) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_IA32_PERF_CONTROL));
 	IOLog("AICPUPMI: IA32_CLOCK_MODULATION......(0x19A) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_CLOCK_MODULATION));
 	IOLog("AICPUPMI: IA32_THERM_STATUS..........(0x19C) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_THERM_STATUS));
-	
+
 	IOLog("AICPUPMI: IA32_MISC_ENABLES..........(0x1A0) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_MISC_ENABLES));
 	IOLog("AICPUPMI: MSR_MISC_PWR_MGMT..........(0x1AA) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_MISC_PWR_MGMT));
 	IOLog("AICPUPMI: MSR_TURBO_RATIO_LIMIT......(0x1AD) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_TURBO_RATIO_LIMIT));
-	
+
 	IOLog("AICPUPMI: IA32_ENERGY_PERF_BIAS......(0x1B0) : 0x%llX\n", (unsigned long long)rdmsr64(IA32_ENERGY_PERF_BIAS));
-	
+
 	IOLog("AICPUPMI: MSR_POWER_CTL..............(0x1FC) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_POWER_CTL));
-	
+
 	IOLog("AICPUPMI: MSR_RAPL_POWER_UNIT........(0x606) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_RAPL_POWER_UNIT));
 	IOLog("AICPUPMI: MSR_PKG_POWER_LIMIT........(0x610) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_POWER_LIMIT));
 	IOLog("AICPUPMI: MSR_PKG_ENERGY_STATUS......(0x611) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKG_ENERGY_STATUS));
-	
+
 	IOLog("AICPUPMI: MSR_PKGC3_IRTL.............(0x60a) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC3_IRTL));
 	IOLog("AICPUPMI: MSR_PKGC6_IRTL.............(0x60b) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC6_IRTL));
-	
+
 	if (gCheckC7)
 	{
 		IOLog("AICPUPMI: MSR_PKGC7_IRTL.............(0x60c) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PKGC7_IRTL));
 	}
-	
+
 	IOLog("AICPUPMI: MSR_PP0_CURRENT_CONFIG.....(0x601) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_CURRENT_CONFIG));
 	IOLog("AICPUPMI: MSR_PP0_POWER_LIMIT........(0x638) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_POWER_LIMIT));
 	IOLog("AICPUPMI: MSR_PP0_ENERGY_STATUS......(0x639) : 0x%llX\n", (unsigned long long)rdmsr64(MSR_PP0_ENERGY_STATUS));
@@ -119,17 +119,17 @@ void AppleIntelCPUPowerManagementInfo::reportMSRs(UInt8 aCPUModel)
 inline void getCStates(void *magic)
 {
 	UInt32 logicalCoreNumber = cpu_number();
-	
+
 	if (gCheckC3 && rdmsr64(MSR_CORE_C3_RESIDENCY) > 0)
 	{
 		gC3Cores |= (1 << logicalCoreNumber);
 	}
-	
+
 	if (gCheckC6 && rdmsr64(MSR_CORE_C6_RESIDENCY) > 0)
 	{
 		gC6Cores |= (1 << logicalCoreNumber);
 	}
-	
+
 	if (gCheckC7 && rdmsr64(MSR_CORE_C7_RESIDENCY) > 0)
 	{
 		gC7Cores |= (1 << logicalCoreNumber);
@@ -142,26 +142,26 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 {
 	UInt8 currentMultiplier = (rdmsr64(MSR_IA32_PERF_STS) >> 8);
 	gCoreMultipliers |= (1ULL << currentMultiplier);
-	
+
 #if REPORT_IGPU_P_STATES
 	UInt8 currentIgpuMultiplier = 0;
-	
+
 	if (igpuEnabled)
 	{
 		currentIgpuMultiplier = (UInt8)gMchbar[1];
 		gIGPUMultipliers |= (1ULL << currentIgpuMultiplier);
 	}
 #endif
-	
+
 	timerEventSource->setTimeoutTicks(Interval);
-	
+
 	if (loopLock)
 	{
 		return kIOReturnTimeout;
 	}
-	
+
 	loopLock = true;
-	
+
 #if REPORT_C_STATES
 	if (logCStates)
 	{
@@ -170,10 +170,10 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		IOSleep(1);
 	}
 #endif
-	
+
 	int currentBit = 0;
 	UInt64 value = 0ULL;
-	
+
 #if REPORT_IGPU_P_STATES
 	if ((gCoreMultipliers != gTriggeredPStates) || (gIGPUMultipliers != gTriggeredIGPUPStates))
 #else
@@ -182,11 +182,11 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		{
 			gTriggeredPStates = gCoreMultipliers;
 			IOLog("AICPUPMI: CPU P-States [ ");
-			
+
 			for (currentBit = gMinRatio; currentBit <= gMaxRatio; currentBit++)
 			{
 				value = (1ULL << currentBit);
-				
+
 				if ((gTriggeredPStates & value) == value)
 				{
 					if (currentBit == currentMultiplier)
@@ -199,17 +199,17 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 					}
 				}
 			}
-			
+
 #if REPORT_IGPU_P_STATES
 			if (igpuEnabled)
 			{
 				gTriggeredIGPUPStates = gIGPUMultipliers;
 				IOLog("] iGPU P-States [ ");
-				
+
 				for (currentBit = 1; currentBit <= 32; currentBit++)
 				{
 					value = (1ULL << currentBit);
-					
+
 					if ((gTriggeredIGPUPStates & value) == value)
 					{
 						if (currentBit == currentIgpuMultiplier)
@@ -226,65 +226,65 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 #endif
 			IOLog("]\n");
 		}
-	
+
 #if REPORT_C_STATES
 	if (gCheckC3 && (gTriggeredC3Cores != gC3Cores))
 	{
 		gTriggeredC3Cores = gC3Cores;
 		IOLog("AICPUPMI: CPU C3-Cores [ ");
-		
+
 		for (currentBit = 0; currentBit <= 16; currentBit++)
 		{
 			value = (1ULL << currentBit);
-			
+
 			if ((gTriggeredC3Cores & value) == value)
 			{
 				IOLog("%d ", currentBit);
 			}
 		}
-		
+
 		IOLog("]\n");
 	}
-	
+
 	if (gCheckC6 && (gTriggeredC6Cores != gC6Cores))
 	{
 		gTriggeredC6Cores = gC6Cores;
 		IOLog("AICPUPMI: CPU C6-Cores [ ");
-		
+
 		for (currentBit = 0; currentBit <= 16; currentBit++)
 		{
 			value = (1ULL << currentBit);
-			
+
 			if ((gTriggeredC6Cores & value) == value)
 			{
 				IOLog("%d ", currentBit);
 			}
 		}
-		
+
 		IOLog("]\n");
 	}
-	
+
 	if (gCheckC7 && (gTriggeredC7Cores != gC7Cores))
 	{
 		gTriggeredC7Cores = gC7Cores;
 		IOLog("AICPUPMI: CPU C7-Cores [ ");
-		
+
 		for (currentBit = 0; currentBit <= 16; currentBit++)
 		{
 			value = (1ULL << currentBit);
-			
+
 			if ((gTriggeredC7Cores & value) == value)
 			{
 				IOLog("%d ", currentBit);
 			}
 		}
-		
+
 		IOLog("]\n");
 	}
 #endif
-	
+
 	loopLock = false;
-	
+
 	return kIOReturnSuccess;
 }
 
@@ -293,12 +293,12 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 IOService* AppleIntelCPUPowerManagementInfo::probe(IOService *provider, SInt32 *score)
 {
 	IOService *ret = super::probe(provider, score);
-	
+
 	if (ret != this)
 	{
 		return 0;
 	}
-	
+
 	return ret;
 }
 
@@ -309,49 +309,56 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 	if (IOService::start(provider))
 	{
 		simpleLock = IOSimpleLockAlloc();
-		
+
 		if (simpleLock)
 		{
+			IOLog("AICPUPMI: v%s Copyright © 2012-2014 Pike R. Alpha. All rights reserved\n", VERSION);
 #if REPORT_MSRS
 			OSBoolean * key_logMSRs = OSDynamicCast(OSBoolean, getProperty("logMSRs"));
-			
+
 			if (key_logMSRs)
 			{
 				logMSRs = (bool)key_logMSRs->getValue();
 			}
+
+			IOLog("AICPUPMI: logMSRs............................: %d\n", logMSRs);
 #endif
-			
+
 #if REPORT_IGPU_P_STATES
 			OSBoolean * key_logIGPU = OSDynamicCast(OSBoolean, getProperty("logIGPU"));
-			
+
 			if (key_logIGPU)
 			{
 				igpuEnabled = (bool)key_logIGPU->getValue();
 			}
+
+			IOLog("AICPUPMI: logIGPU............................: %d\n", igpuEnabled);
 #endif
-			
+
 #if REPORT_C_STATES
 			OSBoolean * key_logCStates = OSDynamicCast(OSBoolean, getProperty("logCStates"));
-			
+
 			if (key_logCStates)
 			{
 				logCStates = (bool)key_logCStates->getValue();
 			}
+
+			IOLog("AICPUPMI: logCStates.........................: %d\n", logCStates);
 #endif
 
 			timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::loopTimerEvent));
 			workLoop = getWorkLoop();
-			
+
 			if (timerEventSource && workLoop && (kIOReturnSuccess == workLoop->addEventSource(timerEventSource)))
 			{
 				this->registerService(0);
-				
+
 				UInt64  msr = rdmsr64(MSR_IA32_PERF_STS);
 				gCoreMultipliers |= (1ULL << (msr >> 8));
 
 #if REPORT_IGPU_P_STATES
 				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
-				
+
 				if (!isIGPUEnabled && igpuEnabled)
 				{
 					igpuEnabled = false;
@@ -359,17 +366,10 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 #endif
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
-				
+
 				UInt8 cpuModel = bitfield32(cpuid_reg[eax], 7,  4) + (bitfield32(cpuid_reg[eax], 19, 16) << 4);
 
 #if REPORT_C_STATES
-				OSBoolean * key_logCStates = OSDynamicCast(OSBoolean, getProperty("logCStates"));
-				
-				if (key_logCStates)
-				{
-					logCStates = (bool)key_logCStates->getValue();
-				}
-
 				switch (cpuModel) // TODO: Verify me!
 				{
 					case CPU_MODEL_SB_CORE:			// 0x2A - Intel 325462.pdf Vol.3C 35-111
@@ -381,7 +381,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 					case CPU_MODEL_HASWELL:			// 0x3C - Intel 325462.pdf Vol.3C 35-136
 					case CPU_MODEL_HASWELL_ULT:		// 0x45 - Intel 325462.pdf Vol.3C 35-136
 					case CPU_MODEL_CRYSTALWELL:		// 0x46
-						
+
 						gCheckC7 = true;
 						break;
 				}
@@ -391,7 +391,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				// MWAIT information
 				do_cpuid(0x00000005, cpuid_reg);
 				uint32_t supportedMwaitCStates = bitfield32(cpuid_reg[edx], 31,  0);
-				
+
 				IOLog("AICPUPMI: MWAIT C-States.....................: %d\n", supportedMwaitCStates);
 
 				if (logMSRs)
@@ -401,45 +401,45 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 #endif
 				msr = rdmsr64(MSR_PLATFORM_INFO);
 				gMinRatio = (UInt8)((msr >> 40) & 0xff);
-				IOLog("AICPUPMI: Low Frequency Mode.................: %d00 MHz\n", gMinRatio);
-				
+				IOLog("AICPUPMI: CPU Low Frequency Mode.............: %d00 MHz\n", gMinRatio);
+
 				gClockRatio = (UInt8)((msr >> 8) & 0xff);
-				IOLog("AICPUPMI: Clock Speed (Max. Non-Turbo Freq.).: %d00 MHz\n", gClockRatio);
-				
+				IOLog("AICPUPMI: CPU Maximum non-Turbo Frequency....: %d00 MHz\n", gClockRatio);
+
 				if (!((rdmsr64(IA32_MISC_ENABLES) >> 32) & 0x40))	// Turbo Mode Enabled?
 				{
 					msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
 					gMaxRatio = (UInt8)(msr & 0xff);
-					IOLog("AICPUPMI: Maximum Turbo Frequency............: %d00 MHz\n", gMaxRatio);
+					IOLog("AICPUPMI: CPU Maximum Turbo Frequency........: %d00 MHz\n", gMaxRatio);
 				}
 				else
 				{
 					gMaxRatio = gClockRatio;
-					IOLog("AICPUPMI: Maximum Frequency..................: %d00 MHz\n", gMaxRatio);
+					IOLog("AICPUPMI: CPU Maximum Frequency..............: %d00 MHz\n", gMaxRatio);
 				}
-				
+
 #if REPORT_IGPU_P_STATES
 				if (igpuEnabled)
 				{
 					IOPhysicalAddress address = (IOPhysicalAddress)(0xFED10000 + 0x5948);
 					memDescriptor = IOMemoryDescriptor::withPhysicalAddress(address, 0x53, kIODirectionInOut);
-					
+
 					if (memDescriptor != NULL)
 					{
 						if ((result = memDescriptor->prepare()) == kIOReturnSuccess)
 						{
 							memoryMap = memDescriptor->map();
-							
+
 							if (memoryMap != NULL)
 							{
 								gMchbar = (UInt8 *)memoryMap->getVirtualAddress();
-								
+
 								// Preventing a stupid (UEFI) BIOS limit.
 								if (gMchbar[0x4C] < gMchbar[0x50])
 								{
 									gMchbar[0x4C] = gMchbar[0x50];
 								}
-								
+
 								//
 								// Examples IGPU multiplier:	17 (multiplier) * 50 (frequency in MHz) =  850 MHz
 								//								22 (multiplier) * 50 (frequency in MHz) = 1100 MHz
@@ -453,7 +453,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 								IOLog("AICPUPMI: IGPU Maximum Non-Turbo Frequency...: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x51])); // RP1_CAP (MAX_NON_TURBO)
 								// Maximum RP0 base frequency capability for the Integrated GFX Engine (GT).
 								IOLog("AICPUPMI: IGPU Maximum Turbo Frequency.......: %4d MHz\n", IGPU_RATIO_TO_FREQUENCY((UInt8)gMchbar[0x50])); // RP0_CAP (MAX_TURBO))
-								
+
 								// Maximum base frequency limit for the Integrated GFX Engine (GT) allowed during run-time.
 								if (gMchbar[0x4C] == 255)
 								{
@@ -481,12 +481,12 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				}
 #endif
 				timerEventSource->setTimeoutMS(1000);
-				
+
 				return true;
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -498,7 +498,7 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 	{
 		IOSimpleLockFree(simpleLock);
 	}
-	
+
 	if (timerEventSource)
 	{
 		if (workLoop)
@@ -506,11 +506,11 @@ void AppleIntelCPUPowerManagementInfo::stop(IOService *provider)
 			timerEventSource->cancelTimeout();
 			workLoop->removeEventSource(timerEventSource);
 		}
-		
+
 		timerEventSource->release();
 		timerEventSource = NULL;
 	}
-	
+
 	super::stop(provider);
 }
 
@@ -526,7 +526,7 @@ void AppleIntelCPUPowerManagementInfo::free()
 			memoryMap->release();
 			memoryMap = NULL;
 		}
-		
+
 		if (memDescriptor)
 		{
 			memDescriptor->release();
@@ -534,6 +534,6 @@ void AppleIntelCPUPowerManagementInfo::free()
 		}
 	}
 #endif
-	
+
 	super::free();
 }
