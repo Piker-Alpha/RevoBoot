@@ -25,7 +25,7 @@
 
 #define REPORT_MSRS				1
 #define REPORT_IGPU_P_STATES	1
-#define REPORT_C_STATES
+#define REPORT_C_STATES			1
 
 #define NB_BUS	0x00
 #define NB_DEV	0x00
