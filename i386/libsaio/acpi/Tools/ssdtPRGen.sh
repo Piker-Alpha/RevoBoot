@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.9 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 9.0 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -151,16 +151,16 @@
 #
 # Script version info.
 #
-gScriptVersion=8.9
+gScriptVersion=9.0
 
 #
 # Change this to 1 when your CPU is stuck in Low Frequency Mode!
 #
 # 1 - Injects one extra Turbo P-State at he top with max-Turbo frequency + 1 MHz.
-# 2 - Injects N extra Turbo P-State at the bottom.
+# 2 - Injects N extra Turbo P-States at the bottom.
 # 3 - Injects both of them.
 #
-let gIvyWorkAround=2
+let gIvyWorkAround=3
 
 #
 # Asks for your confirmation to copy ssdt_pr.aml to /Extra/ssdt.aml (example)
