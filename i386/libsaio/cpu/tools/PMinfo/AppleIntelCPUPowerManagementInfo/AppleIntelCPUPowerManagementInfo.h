@@ -21,9 +21,11 @@
 
 #define super IOService
 
-#define REPORT_MSRS			1
+#define VERSION					"3.1"
+
+#define REPORT_MSRS				1
 #define REPORT_IGPU_P_STATES	1
-#define REPORT_C_STATES		1
+#define REPORT_C_STATES
 
 #define NB_BUS	0x00
 #define NB_DEV	0x00
