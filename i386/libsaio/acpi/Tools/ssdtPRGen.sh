@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 8.8 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 8.9 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -94,6 +94,7 @@
 #			- Experimental code added for Gringo Vermelho (Pike, January 2014)
 #			- Fixed a typo so that checking gIvyWorkAround really works (Pike, January 2014)
 #			- Added extra OS checks (as a test) to filter out possibly unwanted LFM P-States (Pike, January 2014)
+#			- Let gIvyWorkAround control the additional LFM P-States (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -150,14 +151,16 @@
 #
 # Script version info.
 #
-gScriptVersion=8.8
+gScriptVersion=8.9
 
 #
 # Change this to 1 when your CPU is stuck in Low Frequency Mode!
 #
-# Note: Injects extra Turbo P-State at he top with max-Turbo frequency + 1 MHz.
+# 1 - Injects one extra Turbo P-State at he top with max-Turbo frequency + 1 MHz.
+# 2 - Injects N extra Turbo P-State at the bottom.
+# 3 - Injects both of them.
 #
-let gIvyWorkAround=0
+let gIvyWorkAround=2
 
 #
 # Asks for your confirmation to copy ssdt_pr.aml to /Extra/ssdt.aml (example)
@@ -192,7 +195,7 @@ let gCallOpen=1
 # 1 = inject debug data.
 # 3 = inject debug data and execute _debugPrint statements.
 #
-let gDebug=0
+let gDebug=1
 
 #
 # Lowest possible idle frequency (user configurable). Also known as Low Frequency Mode.
@@ -263,8 +266,9 @@ let PROCESSOR_NAMES_ERROR=7
 let PROCESSOR_DECLARATION_ERROR=8
 
 #
-# First OS version number (?) that no longer requires
-# us to inject zeroed out Low Frequency Mode P-States.
+# First OS version number that no longer requires extra Low Frequency Mode P-States.
+#
+# Note: For future use (when we figured out what we need).
 #
 let LFM_REQUIRED_OS=1091
 
@@ -685,6 +689,7 @@ function _injectDebugInfo()
     echo '            Store ("packageLength    : '$packageLength'", Debug)'             >> $gSsdtPR
     echo '            Store ("turboStates      : '$turboStates'", Debug)'               >> $gSsdtPR
     echo '            Store ("maxTurboFrequency: '$maxTurboFrequency'", Debug)'         >> $gSsdtPR
+    echo '            Store ("gIvyWorkAround   : '$gIvyWorkAround'", Debug)'            >> $gSsdtPR
     echo '            Store ("machdep.xcpm.mode: '$xcpm'", Debug)'                      >> $gSsdtPR
     echo '        }'                                                                    >> $gSsdtPR
     echo ''                                                                             >> $gSsdtPR
@@ -731,7 +736,7 @@ function _printScopeStart()
             #
             # Do we need to add additional (Low Frequency) P-States for Ivy Bridge?
             #
-            if [[ $gBridgeType -eq $IVY_BRIDGE && $gOSVersion < $LFM_REQUIRED_OS ]]; then
+            if (( $gBridgeType == $IVY_BRIDGE && $gIvyWorkAround & 2 )); then
                 let lowFrequencyPStates=($gBaseFrequency/100)-8
             fi
 
@@ -746,7 +751,7 @@ function _printScopeStart()
             fi
 
             # TODO: Remove this when CPUPM for IB works properly!
-            if [[ $gBridgeType -eq $IVY_BRIDGE && $gIvyWorkAround -eq 1 ]]; then
+            if (( $gBridgeType == $IVY_BRIDGE && $gIvyWorkAround & 1 )); then
                 let useWorkArounds=1
             fi
     fi
@@ -807,8 +812,7 @@ function _printPackages()
     #
     # Do we need to add additional (Low Frequency) P-States for Ivy Bridge?
     #
-    if [[ $gBridgeType -eq $IVY_BRIDGE && $gOSVersion < $LFM_REQUIRED_OS ]];
-      then
+    if (( $gBridgeType == $IVY_BRIDGE && $gIvyWorkAround & 2 )); then
         let minRatio=8
     fi
 
@@ -1282,6 +1286,7 @@ function _getProcessorScope()
     #
     if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5b830b') ]]; then
         printf 'Processor Declaration(s) Found in DSDT'
+        return
     fi
 
     if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5f50525f') ]];

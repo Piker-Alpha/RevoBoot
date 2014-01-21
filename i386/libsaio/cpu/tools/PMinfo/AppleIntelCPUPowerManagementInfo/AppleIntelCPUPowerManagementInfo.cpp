@@ -169,11 +169,12 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 		UInt64 aPerf = (rdmsr64(IA32_APERF));
 		wrmsr64(IA32_MPERF, 0ULL);
 		wrmsr64(IA32_APERF, 0ULL);
-		UInt16 busy = ((aPerf * 100) / mPerf);
-		UInt8 pState = (UInt8)(((34 + 0.5) * busy) / 100);
+//	UInt16 busy = ((aPerf * 100) / mPerf);
+		float busy = ((aPerf * 100) / mPerf);
+		UInt8 pState = (UInt8)(((gClockRatio + 0.5) * busy) / 100);
 
-		if (pState != currentMultiplier)
-		{
+/*		if (pState != currentMultiplier)
+		{ */
 			gCoreMultipliers |= (1ULL << pState);
 
 			if ((pState < currentMultiplier) && (pState < 8))
@@ -182,7 +183,7 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 			}
 
 			wrmsr64(199, (pState << 8));
-		}
+		// }
 	}
 #endif
 
@@ -384,6 +385,8 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 
 			IOLog("AICPUPMI: logIPGStyle........................: %d\n", logIPGStyle);
 #endif
+			UInt64 msr = rdmsr64(MSR_PLATFORM_INFO);
+			gClockRatio = (UInt8)((msr >> 8) & 0xff);
 
 			timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::loopTimerEvent));
 			workLoop = getWorkLoop();
@@ -392,7 +395,7 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 			{
 				this->registerService(0);
 
-				UInt64  msr = rdmsr64(MSR_IA32_PERF_STS);
+				msr = rdmsr64(MSR_IA32_PERF_STS);
 				gCoreMultipliers |= (1ULL << (msr >> 8));
 
 #if REPORT_IGPU_P_STATES
