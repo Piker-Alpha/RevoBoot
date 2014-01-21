@@ -357,11 +357,12 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				gCoreMultipliers |= (1ULL << (msr >> 8));
 
 #if REPORT_IGPU_P_STATES
-				bool isIGPUEnabled = ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK)); // IGPU Enabled and Visible?
-
-				if (!isIGPUEnabled && igpuEnabled)
+				if (igpuEnabled)
 				{
-					igpuEnabled = false;
+					if ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK) == 0) // Is the IGPU enabled and visible?
+					{
+						igpuEnabled = false;
+					}
 				}
 #endif
 				uint32_t cpuid_reg[4];
