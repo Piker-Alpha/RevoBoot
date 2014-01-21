@@ -162,6 +162,30 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 
 	loopLock = true;
 
+#if REPORT_IPG_STYLE
+	if (logIPGStyle)
+	{
+		UInt64 mPerf = (rdmsr64(IA32_MPERF));
+		UInt64 aPerf = (rdmsr64(IA32_APERF));
+		wrmsr64(IA32_MPERF, 0ULL);
+		wrmsr64(IA32_APERF, 0ULL);
+		UInt16 busy = ((aPerf * 100) / mPerf);
+		UInt8 pState = (UInt8)(((34 + 0.5) * busy) / 100);
+
+		if (pState != currentMultiplier)
+		{
+			gCoreMultipliers |= (1ULL << pState);
+
+			if ((pState < currentMultiplier) && (pState < 8))
+			{
+				pState = 8;
+			}
+
+			wrmsr64(199, (pState << 8));
+		}
+	}
+#endif
+
 #if REPORT_C_STATES
 	if (logCStates)
 	{
@@ -177,7 +201,11 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 #if REPORT_IGPU_P_STATES
 	if ((gCoreMultipliers != gTriggeredPStates) || (gIGPUMultipliers != gTriggeredIGPUPStates))
 #else
+	#if REPORT_IPG_STYLE
+		if ((gCoreMultipliers != gTriggeredPStates) || (currentMultiplier != pState))
+	#else
 		if (gCoreMultipliers != gTriggeredPStates)
+	#endif
 #endif
 		{
 			gTriggeredPStates = gCoreMultipliers;
@@ -344,6 +372,17 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 			}
 
 			IOLog("AICPUPMI: logCStates.........................: %d\n", logCStates);
+#endif
+
+#if REPORT_IPG_STYLE
+			OSBoolean * key_logIPGStyle = OSDynamicCast(OSBoolean, getProperty("logIPGStyle"));
+			
+			if (key_logIPGStyle)
+			{
+				logIPGStyle = (bool)key_logIPGStyle->getValue();
+			}
+
+			IOLog("AICPUPMI: logIPGStyle........................: %d\n", logIPGStyle);
 #endif
 
 			timerEventSource = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &AppleIntelCPUPowerManagementInfo::loopTimerEvent));

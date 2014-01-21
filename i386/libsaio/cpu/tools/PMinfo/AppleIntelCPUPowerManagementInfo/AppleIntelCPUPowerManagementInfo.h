@@ -26,6 +26,7 @@
 #define REPORT_MSRS				1
 #define REPORT_IGPU_P_STATES	1
 #define REPORT_C_STATES			1
+#define REPORT_IPG_STYLE		1
 
 #define NB_BUS	0x00
 #define NB_DEV	0x00
@@ -114,6 +115,10 @@ private:
 
 #if REPORT_C_STATES
 	bool logCStates		= true;		//  Set <key>logCStates</key> to <false/> in Info.plist to disable this feature.
+#endif
+
+#if REPORT_IPG_STYLE
+	bool logIPGStyle	= true;		//  Set <key>logIPGStyle</key> to <false/> in Info.plist to disable this feature.
 #endif
 
 	UInt16 Interval	= 50;

@@ -42,6 +42,8 @@
 			<false/>
 			<key>logCStates</key>
 			<true/>
+			<key>logIPGStyle</key>
+			<true/>
 		</dict>
 	</dict>
 	<key>OSBundleLibraries</key>
