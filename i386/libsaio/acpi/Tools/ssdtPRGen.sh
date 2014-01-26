@@ -1285,7 +1285,7 @@ function _getProcessorScope()
     # We run egrep twice here for Snow Leopard compatibility, otherwise it fails.
     #
     if [[ $(ioreg -c AppleACPIPlatformExpert -rd1 -w0 | egrep -o 'DSDT"=<[0-9a-f]+' | egrep -o '5b830b') ]]; then
-        printf 'Processor Declaration(s) Found in DSDT'
+        echo 'Processor Declaration(s) Found in DSDT'
         return
     fi
 
