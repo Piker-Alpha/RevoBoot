@@ -361,6 +361,14 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				igpuEnabled = (bool)key_logIGPU->getValue();
 			}
 
+			if (igpuEnabled)
+			{
+				if ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK) == 0) // Is the IGPU enabled and visible?
+				{
+					igpuEnabled = false;
+				}
+			}
+
 			IOLog("AICPUPMI: logIGPU............................: %d\n", igpuEnabled);
 #endif
 
@@ -398,15 +406,6 @@ bool AppleIntelCPUPowerManagementInfo::start(IOService *provider)
 				msr = rdmsr64(MSR_IA32_PERF_STS);
 				gCoreMultipliers |= (1ULL << (msr >> 8));
 
-#if REPORT_IGPU_P_STATES
-				if (igpuEnabled)
-				{
-					if ((READ_PCI8_NB(DEVEN) & DEVEN_D2EN_MASK) == 0) // Is the IGPU enabled and visible?
-					{
-						igpuEnabled = false;
-					}
-				}
-#endif
 				uint32_t cpuid_reg[4];
 				do_cpuid(0x00000001, cpuid_reg);
 
