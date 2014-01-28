@@ -3,7 +3,7 @@
 # Script (ssdtPRGen.sh) to create ssdt-pr.dsl for Apple Power Management Support.
 #
 # Version 0.9 - Copyright (c) 2012 by RevoGirl
-# Version 9.0 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
+# Version 9.1 - Copyright (c) 2014 by Pike <PikeRAlpha@yahoo.com>
 #
 # Updates:
 #			- Added support for Ivy Bridge (Pike, January 2013)
@@ -95,6 +95,7 @@
 #			- Fixed a typo so that checking gIvyWorkAround really works (Pike, January 2014)
 #			- Added extra OS checks (as a test) to filter out possibly unwanted LFM P-States (Pike, January 2014)
 #			- Let gIvyWorkAround control the additional LFM P-States (Pike, January 2014)
+#			- Fixed a typo in processor data (i7-4960K should be i7-4960X) (Pike, January 2014)
 #
 # Contributors:
 #			- Thanks to Dave, toleda and Francis for their help (bug fixes and other improvements).
@@ -151,7 +152,7 @@
 #
 # Script version info.
 #
-gScriptVersion=9.0
+gScriptVersion=9.1
 
 #
 # Change this to 1 when your CPU is stuck in Low Frequency Mode!
@@ -436,7 +437,7 @@ gServerIvyBridgeCPUList=(
 
 gDesktopIvyBridgeCPUList=(
 # Socket 2011 (Premium Power)
-i7-4960K,130,1200,3600,4000,6,12
+i7-4960X,130,1200,3600,4000,6,12
 i7-4930K,130,1200,3400,3900,6,12
 i7-4820K,130,1200,3700,3900,4,8
 # i7-3700 Desktop Processor Series
