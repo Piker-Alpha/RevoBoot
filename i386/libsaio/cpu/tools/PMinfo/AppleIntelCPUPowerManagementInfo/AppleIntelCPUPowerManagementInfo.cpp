@@ -181,8 +181,11 @@ IOReturn AppleIntelCPUPowerManagementInfo::loopTimerEvent(void)
 			{
 				pState = 8;
 			}
-
-			wrmsr64(199, (pState << 8));
+			/*
+			 * Commented out after fabio67 (fabiosun) confirmed that
+			 * the wrmsr() below triggered a KP on his configuration
+			 * wrmsr64(199, (pState << 8));
+			 */
 		// }
 	}
 #endif

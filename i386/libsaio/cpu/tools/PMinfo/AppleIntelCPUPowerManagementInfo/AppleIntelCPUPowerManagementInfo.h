@@ -21,7 +21,7 @@
 
 #define super IOService
 
-#define VERSION					"3.2"
+#define VERSION					"3.3"
 
 #define REPORT_MSRS				1
 #define REPORT_IGPU_P_STATES	1
