@@ -112,6 +112,11 @@
 #			- Thanks to 'fabiosun' on Github issues for the tip about a typo in the cpu-type check.
 #			- Thanks to 'Hackmodford ' on Github issues for testing/confirming that PM in Mavericks was changed.
 #
+# Bugs:
+#			- Bug reports can be filed at https://github.com/Piker-Alpha/RevoBoot/issues
+#			  Please provide clear steps to reproduce the bug, the output of the
+#			  script and the resulting SSDT.dsl Thank you!
+#
 # Usage (v1.0 - v4.9):
 #
 #           - ./ssdtPRGen.sh [max turbo frequency] [TDP] [CPU type]
