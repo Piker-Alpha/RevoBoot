@@ -28,19 +28,29 @@
  *
  * Updates:
  *
- *			- STATIC_MODEL_NAME moved over from settings.h (PikerAlpha, October 2012).
- *			- STATIC_MODEL_NAME renamed to EFI_MODEL_NAME (PikerAlpha, October 2012).
- *			- Now no longer includes platform.h (PikerAlpha, October 2012).
- *			- Data selector moved over from RevoBoot/i386/config/data.h (PikerAlpha, October 2012).
- *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (PikerAlpha, October 2012).
- *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
- *			- Check return of malloc call (PikerAlpha, November 2012).
- *			- Sam's workaround for iMessage breakage added (PikerAlpha, January 2013).
+ *			- STATIC_MODEL_NAME moved over from settings.h (Pike R. Alpha, October 2012).
+ *			- STATIC_MODEL_NAME renamed to EFI_MODEL_NAME (Pike R. Alpha, October 2012).
+ *			- Now no longer includes platform.h (Pike R. Alpha, October 2012).
+ *			- Data selector moved over from RevoBoot/i386/config/data.h (Pike R. Alpha, October 2012).
+ *			- Get static EFI data (optional) from /Extra/EFI/[MacModelNN].bin (Pike R. Alpha, October 2012).
+ *			- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (Pike R. Alpha, October 2012).
+ *			- Check return of malloc call (Pike R. Alpha, November 2012).
+ *			- Sam's workaround for iMessage breakage added (Pike R. Alpha, January 2013).
  *
  */
 
 #include "efi/fake_efi.h"
 
+//==============================================================================
+
+EFI_UINT32 getCPUTick(void)
+{
+	uint32_t value = 0;
+
+	__asm__ volatile("rdtsc" : "=A" (value));
+
+	return value;
+}
 
 //==============================================================================
 // Called from RevoBoot/i386/libsaio/platform.c
@@ -94,8 +104,27 @@ void initEFITree(void)
 
 	// Satisfying X86PlatformPlugin.kext
 	static EFI_UINT8 const STARTUP_POWER_EVENTS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	DT__AddProperty(platformNode, "StartupPowerEvents", sizeof(STARTUP_POWER_EVENTS), (EFI_UINT8*) &STARTUP_POWER_EVENTS);
+	
+	/*
+	 *        IOPPF - IODeviceTree:/efi/platform/StartupPowerEvents: [value below]
+	 *  0x01		= Shutdown cause was a PWROK event (Same as GEN_PMCON_2 bit 0)
+	 *  0x02		= Shutdown cause was a SYS_PWROK event (Same as GEN_PMCON_2 bit 1)
+	 *  0x04		= Shutdown cause was a THRMTRIP# event (Same as GEN_PMCON_2 bit 3)
+	 *  0x08		= Rebooted due to a SYS_RESET# event (Same as GEN_PMCON_2 bit 4)
+	 *  0x10		= Power Failure (Same as GEN_PMCON_3 bit 1 PWR_FLR)
+	 *  0x20		= Loss of RTC Well Power (Same as GEN_PMCON_3 bit 2 RTC_PWR_STS)
+	 *  0x40		= General Reset Status (Same as GEN_PMCON_3 bit 9 GEN_RST_STS)
+	 *  0xffffff80	= SUS Well Power Loss (Same as GEN_PMCON_3 bit 14)
+	 *  0x10000		= Wake cause was a ME Wake event (Same as PRSTS bit 0, ME_WAKE_STS)
+	 *  0x20000		= Cold Reboot was ME Induced event (Same as PRSTS bit 1 ME_HRST_COLD_STS) = { 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	 *  0x40000		= Warm Reboot was ME Induced event (Same as PRSTS bit 2 ME_HRST_WARM_STS)
+	 *  0x80000		= Shutdown was ME Induced event (Same as PRSTS bit 3 ME_HOST_PWRDN)
+	 *  0x100000	= Global reset ME Wachdog Timer event (Same as PRSTS bit 6)
+	 *  0x200000	= Global reset PowerManagment Wachdog Timer event (Same as PRSTS bit 15)
+	 */
 
+	DT__AddProperty(platformNode, "StartupPowerEvents", sizeof(STARTUP_POWER_EVENTS), (EFI_UINT8*) &STARTUP_POWER_EVENTS);
+	DT__AddProperty(platformNode, "InitialTSC", sizeof(uint64_t), &gPlatform.CPU.TSCFrequency);
 	DT__AddProperty(platformNode, "SystemSerialNumber", sizeof(SYSTEM_SERIAL_NUMBER), (EFI_CHAR16*) SYSTEM_SERIAL_NUMBER);
 
 	if (gPlatform.CPU.FSBFrequency)
@@ -105,7 +134,7 @@ void initEFITree(void)
 	}
 
 	Node * chosenNode = DT__AddChild(gPlatform.DT.RootNode, "chosen");
-
+	
 	if (chosenNode == 0)
 	{
 		stop("Couldn't create /chosen node"); // Mimics boot.efi
@@ -143,16 +172,13 @@ void initEFITree(void)
 	};
 
 	DT__AddProperty(chosenNode, "boot-file-path", sizeof(BOOT_FILE_PATH), (EFI_UINT8*) &BOOT_FILE_PATH);
-
-	static EFI_UINT8 const BOOT_ARGS[] = { 0x00 };
-
-	DT__AddProperty(chosenNode, "boot-args", sizeof(BOOT_ARGS), (EFI_UINT8*) &BOOT_ARGS);
-
+	DT__AddProperty(chosenNode, "boot-args", sizeof(bootArgs->CommandLine), (EFI_UINT8*)bootArgs->CommandLine);
+	
 	/* Adding kIOHibernateMachineSignatureKey (IOHibernatePrivate.h).
 	 *
 	 * This 'Hardware Signature' (offset 8 in the FACS table) is calculated by the BIOS on a best effort 
 	 * basis to indicate the base hardware configuration of the system such that different base hardware 
-	 * configurations  can have different hardware signature values. OSPM uses this information in waking 
+	 * configurations can have different hardware signature values. OSPM uses this information in waking
 	 * from an S4 state, by comparing the current hardware signature to the signature values saved in the 
 	 * non-volatile sleep image. If the values are not the same, OSPM assumes that the saved non-volatile 
 	 * image is from a different hardware configuration and cannot be restored.
@@ -162,17 +188,87 @@ void initEFITree(void)
 
 	DT__AddProperty(chosenNode, "machine-signature", sizeof(MACHINE_SIGNATURE), (EFI_UINT8*) &MACHINE_SIGNATURE);
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if (MAKE_TARGET_OS == YOSEMITE)
+	UInt8 index = 0;
+	EFI_UINT16 PMTimerValue = 0;
+	uint64_t randomValue, tempValue, cpuTick;
+	EFI_UINT32 ecx, esi, edi = 0;
+	EFI_UINT32 rcx, rdx, rsi, rdi;
+
+	randomValue = tempValue = ecx = esi = edi = 0;					// xor		%ecx,	%ecx
+	rcx = rdx = rsi = rdi = cpuTick = 0;
+
+																	// LEAF_1 - Feature Information (Function 01h).
+	if (gPlatform.CPU.ID[LEAF_1][2] & 0x40000000)					// Checking ecx:bit-30
+	{
+		EFI_UINT32 seedBuffer[16] = {0};
+		//
+		// Main loop to get 16 qwords (four bytes each).
+		//
+		for (index = 0; index < 16; index++)						// 0x17e12:
+		{
+			randomValue = computeRand();							// callq	0x18e20
+			cpuTick = getCPUTick();									// callq	0x121a7
+			randomValue = (randomValue ^ cpuTick);					// xor		%rdi,	%rax
+			seedBuffer[index] = randomValue;						// mov		%rax,(%r15,%rsi,8)
+		}															// jb		0x17e12
+		
+		DT__AddProperty(chosenNode, "random-seed", sizeof(seedBuffer), (EFI_UINT32*) &seedBuffer);
+	}
+	else
+	{
+		EFI_UINT8 seedBuffer[64] = {0};
+		//
+		// Main loop to get the 64 bytes.
+		//
+		do															// 0x17e55:
+		{
+			PMTimerValue = inw(0x408);								// in		(%dx),	%ax
+			esi = PMTimerValue;										// movzwl	%ax,	%esi
+
+			if (esi < ecx)											// cmp		%ecx,	%esi
+			{
+				continue;											// jb		0x17e55		(retry)
+			}
+
+			cpuTick = getCPUTick();									// callq	0x121a7
+			rcx = (cpuTick >> 8);									// mov		%rax,	%rcx
+																	// shr		$0x8,	%rcx
+			rdx = (cpuTick >> 10);									// mov		%rax,	%rdx
+																	// shr		$0x10,	%rdx
+			rdi = rsi;												// mov		%rsi,	%rdi
+			rdi = (rdi ^ cpuTick);									// xor		%rax,	%rdi
+			rdi = (rdi ^ rcx);										// xor		%rcx,	%rdi
+			rdi = (rdi ^ rdx);										// xor		%rdx,	%rdi
+
+			seedBuffer[index] = (rdi & 0xff);						// mov		%dil,	(%r15,%r12,1)
+
+			edi = (edi & 0x2f);										// and		$0x2f,	%edi
+			edi = (edi + esi);										// add		%esi,	%edi
+			index++;												// inc		r12
+			ecx = (edi & 0xffff);									// movzwl	%di,	%ecx
+
+		} while (index < 64);										// cmp		%r14d,	%r12d
+																	// jne		0x17e55		(next)
+
+		DT__AddProperty(chosenNode, "random-seed", sizeof(seedBuffer), (EFI_UINT8*) &seedBuffer);
+	}
+#endif
+
+#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 
 	// Used by boot.efi - cosmetic only node/properties on hacks.
 	Node * kernelCompatNode = DT__AddChild(efiNode, "kernel-compatibility");
 
 	static EFI_UINT8 const COMPAT_MODE[] = { 0x01, 0x00, 0x00, 0x00 };
 
-	DT__AddProperty(kernelCompatNode, "i386", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);
-	DT__AddProperty(kernelCompatNode, "x86_64", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);
+	#if ((MAKE_TARGET_OS == MAVERICKS) || (MAKE_TARGET_OS == YOSEMITE))
+		DT__AddProperty(kernelCompatNode, "x86_64", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);
+	#else
+		DT__AddProperty(kernelCompatNode, "i386", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);
+		DT__AddProperty(kernelCompatNode, "x86_64", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);
+	#endif
 #endif
-
 	// Adding the options node breaks AppleEFINVRAM (missing hardware UUID).
 	// Node *optionsNode = DT__AddChild(gPlatform.DT.RootNode, "options");
 	// DT__AddProperty(optionsNode, "EFICapsuleResult", 4, "STAR"); // 53 54 41 52
@@ -308,15 +404,17 @@ bool initMultiProcessorTableAdress(void)
 
 void finalizeEFITree(EFI_UINT32 kernelAdler32)
 {
-	_EFI_DEBUG_DUMP("done).Calling setupEFITables(");
+	_EFI_DEBUG_DUMP("Calling setupEFITables()\n");
 
 	setupEFITables();
-	
+
+	_EFI_DEBUG_DUMP("Add property: boot-kernelcache-adler32 = %d\n", kernelAdler32);
 	DT__AddProperty(gPlatform.EFI.Nodes.Chosen, "boot-kernelcache-adler32", sizeof(EFI_UINT32), (EFI_UINT32*)kernelAdler32);
 
+	_EFI_DEBUG_DUMP("Calling setupSMBIOS()\n");
 	setupSMBIOS();
 
-	_EFI_DEBUG_DUMP("done).\nAdding EFI configuration table for SMBIOS(");
+	_EFI_DEBUG_DUMP("Adding EFI configuration table for SMBIOS(");
 
 	addConfigurationTable(&gPlatform.SMBIOS.Guid, &gPlatform.SMBIOS.BaseAddress, NULL);
 
@@ -329,13 +427,12 @@ void finalizeEFITree(EFI_UINT32 kernelAdler32)
 	// gPlatform.UUID is set in: RevoBoot/i386/libsaio/SMBIOS/[dynamic/static]_data.h
 	DT__AddProperty(gPlatform.EFI.Nodes.Platform, "system-id", 16, (EFI_CHAR8 *)gPlatform.UUID);
 #endif
-	
+
 	//
 	// Start of experimental code
 	//
-	
 	Node *revoEFINode = DT__AddChild(gPlatform.DT.RootNode, "RevoEFI");
-	
+
 #ifdef STATIC_NVRAM_ROM
 	static EFI_UINT8 const NVRAM_ROM_DATA[] = STATIC_NVRAM_ROM;
 #else

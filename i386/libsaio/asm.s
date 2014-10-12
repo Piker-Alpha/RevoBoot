@@ -334,24 +334,27 @@ LABEL(_halt)
     call    _bgetc
     jmp     _halt
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks, Mountain Lion and Lion
+#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks, Mountain Lion and Lion
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // disableIRQs()
 //
-// Port of a two liner hack in xnu/pexpert/i386/pe_init.c -> PE_init_platform()
+// Port of a two liner hack in xnu-1504.15.3/pexpert/i386/pe_init.c -> PE_init_platform()
 //
-// Note: Thanks to cparm for locating it and copying it to Chameleons' boot.c
+// Note: Thanks to 'cparm' for locating it and copying it to Chameleons' boot.c
 //
 LABEL(_disableIRQs)
 	// The ACPI specification dictates that the 8259 (PC-AT compatible) vectors 
 	// must be disabled (that is, masked) when enabling the ACPI APIC operation 
 	// but this isn't done (apparently) on all mobo's and thus we do that here.
+	//
+	// Vectors 0-7 are used in 16-bit real mode, vectors 0-31 in protected mode/
+	// long mode (vectors 32-255 are available for software defined interrupts).
 
 	push	%eax			// Saving register data
 
 	movb	$0xff, %al		// Load mask
-	outb	%al, $0x21		// Disable IRQ's 0-7 on Master PIC
-	outb	%al, $0xa1		// Disable IRQ's 8-15 on Slave PIC
+	outb	%al, $0x21		// Disable IRQ's 0-7 on Master PIC (0x21)
+	outb	%al, $0xa1		// Disable IRQ's 8-15 on Slave PIC (0xa1)
 
 	popl	%eax			// Restore register data
 
@@ -365,13 +368,13 @@ LABEL(_disableIRQs)
 // Passes boot arguments in %eax.
 //
 LABEL(_startMachKernel)
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks, Mountain Lion and Lion
-	call    _disableIRQs	// Taking care of a ACPI bug.
+#if ((MAKE_TARGET_OS & LION) == LION)	// Yosemite, Mavericks, Lion and Mountain Lion
+	call    _disableIRQs				// Taking care of an early reboot bug.
 #endif
 	push    %ebp
     mov     %esp, %ebp
 
-    mov     0xc(%ebp), %eax  // bootargs to mach_kernel
+    mov     0xc(%ebp), %eax  // bootargs to (mach_)kernel
     mov     0x8(%ebp), %ecx  // entry offset 
     mov     $0x28, %ebx      // segment
     push    %ebx
@@ -424,3 +427,29 @@ LABEL(__switch_stack)
     xorl    %edi, %edi
 
     ret
+
+#if (MAKE_TARGET_OS == YOSEMITE)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// computeRand()
+//
+
+LABEL(_computeRand)
+	pushl	%edx
+	mov		$0xa,	%edx
+
+Repeat:
+	rdrand	%eax
+	jae		Ok
+	jmp		Exit
+
+Ok:
+	dec		%edx
+	pause
+	jne		Repeat
+	mov		$0x0,	%eax
+
+Exit:
+	popl	%edx
+
+	ret
+#endif
