@@ -3,19 +3,19 @@
 #
 # Updates:
 #
-#			- Major cleanup (PikerAlpha, October 2012).
-#			- Output improvements (PikerAlpha, October 2012).
-#			- Default build target is now Mountain Lion (PikerAlpha, October 2012).
-#			- PRODUCT_MODEL_TARGET for target build model added (PikerAlpha, October 2012).
-#			- Creates RevoBoot/config/SETTINGS when missing (PikerAlpha, October 2012).
-#			- Copies settings-template.h to SETTINGS/ModelnameNN.h when missing (PikerAlpha, October 2012).
-#			- Automatic ACPI/EFI/SMBIOS data selection (PikerAlpha, October 2012).
-#			- Copies ACPI/EFI/SMBIOS/data-template.h for new conigurations (PikerAlpha, October 2012).
-#			- Output added for cp/mkdir/rm actions (PikerAlpha, November 2012).
-#			- New build target 'help' added (PikerAlpha, November 2012).
-#			- Cleanups and output changed (PikerAlpha, November 2012).
-#			- Yosemite support added (PikerAlpha, June 2014).
-#			- Changed default from Mavericks to Yosemite (PikerAlpha, June 2014).
+#			- Major cleanup (Pike R. Alpha, October 2012).
+#			- Output improvements (Pike R. Alpha, October 2012).
+#			- Default build target is now Mountain Lion (Pike R. Alpha, October 2012).
+#			- PRODUCT_MODEL_TARGET for target build model added (Pike R. Alpha, October 2012).
+#			- Creates RevoBoot/config/SETTINGS when missing (Pike R. Alpha, October 2012).
+#			- Copies settings-template.h to SETTINGS/ModelnameNN.h when missing (Pike R. Alpha, October 2012).
+#			- Automatic ACPI/EFI/SMBIOS data selection (Pike R. Alpha, October 2012).
+#			- Copies ACPI/EFI/SMBIOS/data-template.h for new conigurations (Pike R. Alpha, October 2012).
+#			- Output added for cp/mkdir/rm actions (Pike R. Alpha, November 2012).
+#			- New build target 'help' added (Pike R. Alpha, November 2012).
+#			- Cleanups and output changed (Pike R. Alpha, November 2012).
+#			- Yosemite support added (Pike R. Alpha, June 2014).
+#			- Changed default from Mavericks to Yosemite (Pike R. Alpha, June 2014).
 #
 
 #
@@ -117,7 +117,7 @@ ifdef MODEL
 		#
 		DATA_FILE = $(MODEL)
 	else
-		export MAKE_TARGET_MODEL = default
+		export MAKE_TARGET_MODEL = Macmini62
 		#
 		# Include default/empty static data file (no model identifier specified).
 		#
@@ -127,7 +127,11 @@ else
 	#
 	# Include default settings template (no model identifier specified).
 	#
-	export MAKE_TARGET_MODEL = default
+	export MAKE_TARGET_MODEL = Macmini62
+	#
+	#
+	#
+	MODEL=Macmini62
 	#
 	# Include default/empty static data file (no model identifier specified).
 	#
