@@ -603,9 +603,9 @@ struct dirstuff * vol_opendir(BVRef bvr, const char * path)
 		if (dirp->dir_path)
 		{
 			dirp->dir_bvr = bvr;
-		}
 
-		return dirp;
+			return dirp;
+		}
 	}
 
 	closedir(dirp);
@@ -633,9 +633,9 @@ struct dirstuff * opendir(const char * path)
 			if (dirp->dir_path)
 			{
 				dirp->dir_bvr = bvr;
+				
+				return dirp;
 			}
-
-			return dirp;
 		}
 	}
 

@@ -79,10 +79,6 @@ Property * DT__AddProperty(Node *node, const char *name, uint32_t length, void *
 {
 	Property *prop;
 
-#if (DEBUG_EFI & 2)
-		_EFI_DEBUG_DUMP("DT__AddProperty([Node '%s'], '%s', %d, 0x%x)\n", DT__GetName(node), name, length, value);
-#endif
-
 	if (freeProperties == NULL)
 	{
 		void *buf = malloc(kAllocSize);
@@ -112,6 +108,10 @@ Property * DT__AddProperty(Node *node, const char *name, uint32_t length, void *
 			prop++;
 		}
 	}
+
+#if (DEBUG_EFI & 2)
+	_EFI_DEBUG_DUMP("DT__AddProperty([Node '%s'], '%s', %d, 0x%x)\n", DT__GetName(node), name, length, value);
+#endif
 
 	prop = freeProperties;
 	freeProperties = prop->next;
@@ -206,6 +206,7 @@ Node * DT__AddChild(Node *parent, const char *name)
 	}
 
 	DTInfo.numNodes++;
+	
 	DT__AddProperty(node, "name", strlen(name) + 1, (void *) name);
 
 	return node;
@@ -357,9 +358,7 @@ void DT__FlattenDeviceTree(void **buffer_p, uint32_t *length)
 	}
 #endif
     
-	totalSize = DTInfo.numNodes * sizeof(DeviceTreeNode) + 
-	DTInfo.numProperties * sizeof(DeviceTreeNodeProperty) +
-	DTInfo.totalPropertySize;
+	totalSize = DTInfo.numNodes * sizeof(DeviceTreeNode) + DTInfo.numProperties * sizeof(DeviceTreeNodeProperty) + DTInfo.totalPropertySize;
 
 #if (DEBUG_EFI & 2)
 	_EFI_DEBUG_DUMP("Total size 0x%x\n", totalSize);

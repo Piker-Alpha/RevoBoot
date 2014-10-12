@@ -172,7 +172,11 @@ typedef struct acpi_2_tables
 static ACPITables essentialTables[] =
 {
 	{ APIC, APIC_TABLE_SIGNATURE,	replaceTable,		kReplaceTable | kAddTable	},
+#if DROP_FACTORY_DMAR_TABLE
+	{ DMAR, DMAR_TABLE_SIGNATURE,	NULL,				kDropTable					},
+#else
 	{ DMAR, DMAR_TABLE_SIGNATURE,	NULL,				kReplaceTable | kAddTable	},
+#endif
 	{ NONE,	FACP_TABLE_SIGNATURE,	patchFACPTable,		kPatchTable					},
 	{ HPET, HPET_TABLE_SIGNATURE,	replaceTable,		kReplaceTable				},
 	{ MCFG, MCFG_TABLE_SIGNATURE,	NULL,				kReplaceTable				},

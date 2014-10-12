@@ -41,6 +41,7 @@ extern void		real_to_prot(void);
 extern void		prot_to_real(void);
 extern void		halt(void);
 extern void		startMachKernel(unsigned int address, void *arg);
+extern uint64_t	computeRand(void);
 
 
 /* bios.s */
@@ -151,7 +152,7 @@ extern long		loadBinaryData(char *aFilePath, void **aMemoryAddress);
 
 /* memory.c */
 long			AllocateKernelMemory(long inSize);
-long			AllocateMemoryRange(char * rangeName, long start, long length, long type);
+long			AllocateMemoryRange(char * rangeName, long start, long length);
 
 
 /* platform.c */

@@ -208,7 +208,7 @@ void setupSMBIOS(void)
 	//--------------------------------------------------------------------------
 
 	// Allocate 1 page of kernel memory (sufficient for a stripped SMBIOS table).
-	void * kernelMemory = (void *)AllocateKernelMemory(4096);
+	void * kernelMemory = (void *)AllocateKernelMemory(8192); // 4096);
 
 	// Setup a new Entry Point Structure at the beginning of the newly allocated memory page.
 	struct SMBEntryPoint * newEPS = (struct SMBEntryPoint *) kernelMemory;

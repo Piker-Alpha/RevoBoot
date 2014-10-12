@@ -545,7 +545,7 @@ void setupACPI(void)
 			// Yes, fix length.
 			patchedXSDT->Length -= (ADDRESS_WIDTH * dropOffset);
 
-			_ACPI_DEBUG_DUMP("patchedXSDT->Length (changed): %d\n", patchedXSDT->Length);
+			_ACPI_DEBUG_DUMP("patchedXSDT->Length (changed): %d/%d\n", patchedXSDT->Length, (patchedXSDT->Length / ADDRESS_WIDTH));
 		}
 
 		_ACPI_DEBUG_DUMP("\nRecalculating checksums / ");

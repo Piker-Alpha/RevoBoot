@@ -16,6 +16,7 @@
 #include "cpu/cpuid.h"
 #include "cpu/proc_reg.h"
 
+
 #if INTEL_CORE_TECHNOLOGY
 
 #if AUTOMATIC_SSDT_PR_CREATION || DEBUG_CPU_TDP
@@ -55,7 +56,7 @@ void initTurboRatios()
 {
 	// Get turbo ratio(s).
 	uint64_t msr = rdmsr64(MSR_TURBO_RATIO_LIMIT);
-	
+
 #if AUTOMATIC_SSDT_PR_CREATION || DEBUG_CPU_TURBO_RATIOS
 	// All CPU's have at least two cores (think mobility CPU here).
 	gPlatform.CPU.CoreTurboRatio[0] = bitfield32(msr, 7, 0);
@@ -216,7 +217,8 @@ void checkFlexRatioMSR(void)
 		}
 	}
 }
-#endif
+#endif // INTEL_CORE_TECHNOLOGY
+
 
 #if USE_STATIC_CPU_DATA
 

@@ -21,10 +21,9 @@
 
 #define DEFAULT_FSB				100000	// Hardcoded to 100MHz
 #define BASE_NHM_CLOCK_SOURCE	133333333ULL
-#define DEBUG_CPU_EXTREME		0
 
 //==============================================================================
-// DFE: Measures the TSC frequency in Hz (64-bit) using the ACPI PM timer
+// Measures TSC frequency using the i8254 Programmable Interval Timer counter 2
 
 static uint64_t getTSCFrequency(void)
 {
@@ -214,6 +213,14 @@ void initCPUStruct(void)
 	if ((getCachedCPUID(LEAF_80, eax) & 0x0000000f) >= 1)
 	{
 		do_cpuid(0x80000001, gPlatform.CPU.ID[LEAF_81]);		// Extended Feature Bits (Function 80000001h).
+
+		#if DEBUG_CPU
+		// Test if the LongMode-bit is set or not.
+		if ((getCachedCPUID(LEAF_81, edx) & 0x20000000) == 0x20000000)
+		{
+			_CPU_DEBUG_DUMP("CPU: LongMode (64-bit) is support\n");
+		}
+		#endif
 	}
 #if DEBUG_CPU_EXTREME
 	{
@@ -414,7 +421,7 @@ void initCPUStruct(void)
 #if AUTOMATIC_SSDT_PR_CREATION || DEBUG_CPU_TDP
 					gPlatform.CPU.TDP = getTDP();
 #endif
-					qpiSpeed = 0; // No QPI but DMI for Sandy Bridge processors.
+					qpiSpeed = 0; // No QPI but DMI for Sandy Bridge and greater processors.
 					
 					// Disable C1/C3 state auto demotion i.e. it won't change C3/C6/C7 requests to C1/C3.
 					// wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x1E000003ULL);
@@ -426,6 +433,11 @@ void initCPUStruct(void)
 					// Disable I/O MWAIT Redirection.
 					// msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);
 					// wrmsr64(MSR_MISC_PWR_MGMT, (msr & 0xFFFEFBFF));
+
+					wrmsr64(MSR_PKG_POWER_LIMIT, 0x4283E800DD8230);
+					// wrmsr64(MSR_PP0_CURRENT_CONFIG, 0x40101414000002F8);
+					wrmsr64(MSR_PP0_POWER_LIMIT, 0);
+					wrmsr64(MSR_PP1_POWER_LIMIT, 0);
 
 					checkFlexRatioMSR();
 				}

@@ -30,6 +30,7 @@
 #include "vbe.h"
 #include "bootstruct.h"
 
+
 //==============================================================================
 
 bool inGraphicsMode(void)
@@ -222,9 +223,8 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 										 maColorModeBit | maModeIsSupportedBit | maGraphicsModeBit | maLinearFrameBufferAvailBit, 
 										 0, &minfo, &vesaVersion);
 #if DEBUG
-		printf("\nsetVESAGraphicsMode: %d\n%d\n%d\n%d\n%d\n%x\n%x\nPress a key...", mode, minfo.XResolution, 
+		printf("\nsetVESAGraphicsMode: %d\n%d\n%d\n%d\n%d\n%x\n%x\nSleeping for 25 seconds...", mode, minfo.XResolution,
 			   minfo.YResolution, minfo.BitsPerPixel, minfo.BytesPerScanline, minfo.PhysBasePtr_low, minfo.PhysBasePtr_high);
-		getc();
 #endif
 
 		if (mode == modeEndOfList)
@@ -247,13 +247,12 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 		}
 
 		// Update bootArgs with the data provided by the selected VESA mode.
-		bootArgs->Video.v_display  = GRAPHICS_MODE;
-		bootArgs->Video.v_width    = minfo.XResolution; // 1920 or 1600
-		bootArgs->Video.v_height   = minfo.YResolution; // 1200 or 900
-		bootArgs->Video.v_depth    = minfo.BitsPerPixel; // 32
-		bootArgs->Video.v_rowBytes = minfo.BytesPerScanline; // 7680 or 6400
-
-		bootArgs->Video.v_baseAddr = VBEMakeUInt32(minfo.PhysBasePtr);
+		bootArgs->Video.v_display	= GRAPHICS_MODE;
+		bootArgs->Video.v_width		= minfo.XResolution;		/* 1920 or 1600 */
+		bootArgs->Video.v_height	= minfo.YResolution;		/* 1200 or 900 */
+		bootArgs->Video.v_depth		= minfo.BitsPerPixel;		/* 32 */
+		bootArgs->Video.v_rowBytes	= minfo.BytesPerScanline;	/* 7680 or 6400 */
+		bootArgs->Video.v_baseAddr	= VBEMakeUInt32(minfo.PhysBasePtr);
 	}
 	while (0);
 
@@ -346,7 +345,7 @@ void setVideoMode(int mode)
 	{
 		if ((status = initGraphicsMode()) == EFI_SUCCESS)
 		{
-			bootArgs->Video.v_display = (gVerboseMode) ? FB_TEXT_MODE : GRAPHICS_MODE;
+			bootArgs->Video.v_display = (gVerboseMode) ? /* 2 */ FB_TEXT_MODE : /* 1 */ GRAPHICS_MODE;
 		}
 	}
 
@@ -358,4 +357,64 @@ void setVideoMode(int mode)
 		setVESATextMode(params[0], params[1], 4);
 		bootArgs->Video.v_display = VGA_TEXT_MODE;
 	}
+}
+
+//==============================================================================
+
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
+#define VIDEO(x) (bootArgs->Video.v_ ## x)
+
+void blendImage(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t *data)
+{
+    uint8_t *vram = (uint8_t *) VIDEO(baseAddr) + VIDEO(rowBytes) * y + 4 * x;
+
+    uint16_t drawWidth = (MIN(width, VIDEO(width) - x) * 4);
+
+    height = MIN(height, VIDEO(height) - y);
+	width = (width * 4);
+
+    while (height--)
+	{
+		uint32_t s; uint32_t* d; // Source (img) and destination (bkgd) pixels
+		uint32_t a; // Alpha
+		uint32_t dstrb, dstg, srcrb, srcg, drb, dg, rb, g, tempB; // Intermediate variables
+		uint16_t pos = 0;
+
+		for (; pos < drawWidth; pos += 4)
+		{
+			// Fast pseudo-vector alpha blending, adapted from: http://www.stereopsis.com/doubleblend.html
+			s = *((uint32_t*) (data + pos));
+			d =   (uint32_t*) (vram + pos);
+
+			// Flip B and R in source
+			// TODO: use XCHG and inline assembly to do this in a faster, saner way
+			tempB = (s & 0xFF0000);                     // save B
+			s = (s & 0xFF00FFFF) | ((s & 0xFF) << 16);  // put R in B
+			s = (s & 0xFFFFFF00) | (tempB >> 16);       // put B in R
+		
+			a = (s >> 24) + 1;
+
+			dstrb = *d & 0xFF00FF;
+			dstg  = *d & 0xFF00;
+			srcrb =  s & 0xFF00FF;
+			srcg  =  s & 0xFF00;
+					
+			drb = srcrb - dstrb;
+			dg  =  srcg - dstg;
+			drb *= a;
+			dg *= a;
+			drb >>= 8;
+			dg  >>= 8;
+					
+			rb = (drb + dstrb) & 0xFF00FF;
+			g  = (dg  + dstg) & 0xFF00;
+					
+			*d = rb | g;
+		}
+
+        vram += VIDEO(rowBytes);
+        data += width;
+    }
 }

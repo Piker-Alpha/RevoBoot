@@ -34,7 +34,6 @@
 
 #include "bootstruct.h"		// For bootArgs.
 
-
 //------------------------------------------------------------------------------
 
 extern void setupACPI(void);
@@ -120,13 +119,19 @@ extern EFI_STATUS addConfigurationTable(EFI_GUID const *pGuid, void * table, cha
 		{
 			DT__AddProperty(tableNode, "alias", strlen(tableAlias) + 1, (char *)tableAlias);
 		}
+		
+		if (strcmp(tableAlias, "ACPI_20") == 0)
+		{
+			Node *acpiTablesNode = DT__AddChild(tableNode, "ACPI Tables");
+
+			gPlatform.EFI.Nodes.ACPI_Tables = acpiTablesNode;
+		}
       
 		gPlatform.EFI.SystemTable->NumberOfTableEntries++;
 	}
 	
 	return EFI_SUCCESS;
 }
-
 
 //==============================================================================
 // Allocate fake EFI system / runtime services table.

@@ -1,36 +1,37 @@
-About this project:
--------------------
-This Open Source hobby project is maintained by Pike (http://pikeralpha.wordpress.com). A long time supporter of the RevoBoot project.
+- About this project
 
-Note that we do not tolerate/share any (links to) copyrighted material. We only use purchased software and we won't share any of it. Just get your copy of OS X in the Apple store. Should be affordable for everyone.
+This Open Source hobby project was first started by Master Chief, then taken over by RevoGitl (Samantha) and is now maintained by Pike R. Alpha (http://pikeralpha.wordpress.com). A long time supporter of the RevoBoot project.
 
-Mountain Lion Server:
----------------------
-RevoBoot has been confirmed to work with the Server app for Mountain Lion and Mavaricks.
 
-Fusion Drive Support:
----------------------
+- Server.app
+
+RevoBoot works with the Server app for Mountain Lion (12C60) and Mavericks.
+
+
+- Fusion Drive Support
+
+
 Apple's Fusion Drive* is a software implementation to speedup the boot and load process for frequently used applications, without limiting the storage capacity in a bad way. See also: http://support.apple.com/kb/HT5446
 
-The new Mac's that come with a Fusion Drive boot from the third (Recovery HD like) partition on the SSD. This partition is 134.2 MB in size and is called "Boot OS X".
-The Recovery HD partition can be found as third partition on the HDD. Setting up a Fusion Drive on a Mac need to be done with Internet Recovery.
+The new Mac's that come with a Fusion Drive, boot from the third (Recovery HD like) partition on the SSD. This partition is 134.2 MB in size and is called "Boot OS X". The Recovery HD partition can be found as third partition on the HDD. RevoBoot detects CoreStorage partitions and will boot from the boot helper partition on the SDD.
 
-RevoBoot detects CoreStorage partitions and will boot from the boot helper partition on the SDD.
 
-NetBoot/NetInstall:
--------------------
+- NetBoot/NetInstall
+
 People who have Mountain Lion Server setup and like to install their hack from it... sorry that won't work. The source 
-code snippets for it have been stripped out (by Master Chief in 2009) but we might fix this in future update of RevoBoot. 
+code snippets for it have been stripped out (by Master Chief in 2009). 
 
-Xcode Support for Mountain Lion:
---------------------------------
-RevoBoot can be built on Snow Leopard, Lion, Mountain Lion (requires Xcode 4.5.1 or greater) and Mavericks, and the latest 'command line tools' need to be installed. See change log for instructions.
 
-Configuration:
---------------
+- Xcode Support for Mountain Lion, Mavericks and Yosemite
+
+RevoBoot can be built on Snow Leopard, Lion and Mountain Lion. The latter requires Xcode 4.5.1 (and greater) and the latest 'command line tools' need to be installed. See change log for instructions.
+
+
+- Configuration
+
 Please note that RevoBoot must be configured for your hardware so start reading our WiKi. See also:
 
-https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder – sorry folks, no longer available!
+https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder
 
 We also have a configuration README available at:
 
@@ -38,6 +39,6 @@ https://github.com/RevoGirl/RevoBoot/blob/master/i386/config/README
 
 There's also RevoBuilder (a great tool for first starters) over at:
 
-https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder – sorry folks, no longer available!
+https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder
 
 Note: RevoBuilder is most likeky broken for RevoBoot v.1.5.00 and greater!

@@ -44,7 +44,7 @@ void updateACPITableData(struct acpi_2_rsdp * rsdp, struct acpi_2_xsdt * xsdt, i
 {
 #if ACPI_10_SUPPORT
 
-	_ACPI_DEBUG_DUMP("\nPatching RSDP and RSDT tables... ");
+	_ACPI_DEBUG_DUMP("\nPatching RSDP and XSDT tables... ");
 
 	// Update revision info (fake ACPI 2.0).
 	rsdp->Revision = 1;

@@ -5,6 +5,8 @@
  * Updates:
  *
  *			- STATIC_SMBIOS_MODEL_ID renamed to SMB_PRODUCT_NAME (PikerAlpha, October 2012).
+ *			- Yosemite support added (PikerAlpha, June 2014).
+ *			- Replaced hard-coded OS version control with a flexible one (PikerAlpha, June 2014).
  *
  */
 
@@ -132,7 +134,7 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 	// Copied from cpu/dynamic_data.h to make printf work this early on.
 #if DEBUG_STATE_ENABLED
 	extern void setVideoMode(int mode);
-	setVideoMode(0); // Switch to VGA_TEXT_MODE
+	setVideoMode(VGA_TEXT_MODE);
 #endif
 
 #if ENABLE_HPET
@@ -200,16 +202,10 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 		gPlatform.CPU.Mobile		= true;	// Will be initialized in cpu/cpu_dynamic.h (used in smbios/dynamic_data.h)
 	}
 
-#if (MAKE_TARGET_OS == MAVERICKS)
-	gPlatform.OSVersion				= strdup("10.9");
-#elif (MAKE_TARGET_OS == LION)
-	gPlatform.OSVersion				= strdup("10.7");
-#elif (MAKE_TARGET_OS == MOUNTAIN_LION)
-	gPlatform.OSVersion				= strdup("10.8");
-#else // Snow Leopard
-	gPlatform.OSVersion				= strdup("10.6");
-#endif
-
+	// MAKE_TARGET_OS_VER is defined in RevoBoot/i386/libsaio/Makefile
+	// and exported from the main RevoBoot/Makefile
+	gPlatform.OSVersion				= MAKE_TARGET_OS_VER;
+	
 	// _PLATFORM_DEBUG_DUMP("REVOBOOT_OS_TARGET: %d\n", REVOBOOT_OS_TARGET);
 
 	gPlatform.OSType				= (int) MAKE_TARGET_OS;

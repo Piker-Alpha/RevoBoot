@@ -14,6 +14,8 @@
 #			- Output added for cp/mkdir/rm actions (PikerAlpha, November 2012).
 #			- New build target 'help' added (PikerAlpha, November 2012).
 #			- Cleanups and output changed (PikerAlpha, November 2012).
+#			- Yosemite support added (PikerAlpha, June 2014).
+#			- Changed default from Mavericks to Yosemite (PikerAlpha, June 2014).
 #
 
 #
@@ -50,33 +52,40 @@ VPATH = $(OBJROOT):$(SYMROOT)
 
 ifeq ($(MAKECMDGOALS),)
 	#
-	# No OS build target given. Build for Mavericks (default).
+	# No OS build target given. Build for Yosemite (default).
 	#
-	MAKE_TARGET_OS = 10;
-	MAKEGOAL = mavericks
+	MAKEGOAL = yosemite
+	MAKE_TARGET_OS = 26;
+	MAKE_TARGET_OS_VER = 10.10
 else
 	#
 	# Setting MAKE_TARGET_OS and MAKEGOAL based on OS build target.
 	#
-	ifeq ($(MAKECMDGOALS), mountain-lion)
-		MAKE_TARGET_OS = 6;
+	ifeq ($(MAKECMDGOALS), yosemite)
+		MAKEGOAL = yosemite
+		MAKE_TARGET_OS = 26;
+		MAKE_TARGET_OS_VER = 10.10
+	else ifeq ($(MAKECMDGOALS), mavericks)
+		MAKEGOAL = mavericks
+		MAKE_TARGET_OS = 10;
+		MAKE_TARGET_OS_VER = 10.9
+	else ifeq ($(MAKECMDGOALS), mountain-lion)
 		MAKEGOAL = mountain-lion
-	else
-		ifeq ($(MAKECMDGOALS), mavericks)
-			MAKE_TARGET_OS = 10;
-			MAKEGOAL = mavericks
-		else ifeq ($(MAKECMDGOALS), lion)
-			MAKE_TARGET_OS = 2;
-			MAKEGOAL = lion
-		else ifeq ($(MAKECMDGOALS), legacy)
-			MAKE_TARGET_OS = 1;
-			MAKEGOAL = legacy
-		endif
+		MAKE_TARGET_OS = 6;
+		MAKE_TARGET_OS_VER = 10.8
+	else ifeq ($(MAKECMDGOALS), lion)
+		MAKEGOAL = lion
+		MAKE_TARGET_OS = 2;
+		MAKE_TARGET_OS_VER = 10.7
+	else ifeq ($(MAKECMDGOALS), legacy)
+		MAKEGOAL = legacy
+		MAKE_TARGET_OS = 1;
+		MAKE_TARGET_OS_VER = 10.6
 	endif
 endif
 
 #
-# Export our make goal i.e. mavericks, mountain-lion, lion or legacy (snow-leopard or leopard).
+# Export our make goal i.e. yosemite, mavericks, mountain-lion, lion or legacy (snow-leopard or leopard).
 #
 
 export MAKEGOAL
@@ -86,6 +95,12 @@ export MAKEGOAL
 #
 
 export PRODUCT_OS_TARGET = `echo $(MAKE_TARGET_OS)`
+
+#
+# Export target OS version (picked up by: i386/libsaio/Makefile) for platform.c
+#
+
+export PRODUCT_OS_TARGET_VERSION = `echo \"$(MAKE_TARGET_OS_VER)\"`
 
 #
 # Check if a target model was specified (example: make MODEL=16 mountain-lion).
@@ -139,6 +154,23 @@ SETTINGS_DIR=$(CONFIG_DIR)/SETTINGS
 SETTINGS_FILE=$(SETTINGS_DIR)/$(MAKE_TARGET_MODEL).h
 
 $(MAKEGOAL):
+#
+# autoclean
+#
+	@if [ -d "$(OBJROOT)" ]; then \
+		echo "\t[RMDIR] $(OBJROOT)" > /dev/null; \
+	fi;
+
+	@if [ -d "$(SYMROOT)" ]; then \
+		echo "\t[RMDIR] $(SYMROOT)" > /dev/null; \
+	fi;
+
+	@rm -rf sym obj dst out.log 
+#
+# normal make goal
+#
+	@printf "Compiling RevoBoot, setup for a $(MODEL) running OS X $(MAKE_TARGET_OS_VER) ($@)\n\n" >&2;
+
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE) ]; then \
 		echo "\t[CP] $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE)"; \
 		cp -n $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE); \

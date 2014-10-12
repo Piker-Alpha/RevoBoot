@@ -394,7 +394,15 @@ int main(int argc, char * argv[])
 						droppedTables++;
 						droppedTableStructureStart = tablePtr;
 				}
-				
+
+				if (header->type == kSMBTypeProcessorInformation)
+				{
+					SMBProcessorInformation * cpuInfo = (SMBProcessorInformation *) tablePtr;
+					VERBOSE_DUMP("cpu.externalClock: %d\n", cpuInfo->externalClock);
+					VERBOSE_DUMP("cpu.maximumClock : %d\n", cpuInfo->maximumClock);
+					VERBOSE_DUMP("cpu.currentClock :%d\n", cpuInfo->currentClock);
+				}
+
 				VERBOSE_DUMP("Table: %3d %37s  @%p  Formatted area: %2d bytes  ", header->type, tableDescriptions[header->type], tablePtr, header->length);
 
 				// Skip the formatted area of the structure.

@@ -5,11 +5,15 @@
  *
  *			- SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
  *			- Now includes: RevoBoot/libsaoi/i386/SMBIOS/model_data.h (PikerAlpha, October 2012).
+ *			- DDR4 support added (PikerAlpha, June 2014).
+ *			- Yosemite support added (PikerAlpha, June 2014).
  *
  */
 
 #ifndef __LIBSAIO_PLATFORM_H
 #define __LIBSAIO_PLATFORM_H
+
+#define __LP64__	1
 
 #include "libsaio.h"
 #include "cpu/essentials.h"
@@ -17,18 +21,22 @@
 #include "efi/efi.h"
 #include "device_tree.h"
 
+
+
 //------------------------------------------------------------------------------
 
 #define	SNOW_LEOPARD			1	// Snow Leopard.
 #define LION					2	// Lion (the default).
 #define MOUNTAIN_LION			6	// Mountain Lion (includes Lion changes).
 #define MAVERICKS				10	// Mavericks (includes Lion changes).
+#define YOSEMITE				26	// Yosemite (incl. Lion/Mavericks changes).
 
 //------------------------------------------------------------------------------
 
 #define SMB_MEM_TYPE_DDR2		19
 #define SMB_MEM_TYPE_FBDIMM		20
 #define SMB_MEM_TYPE_DDR3		24
+#define SMB_MEM_TYPE_DDR4		26
 
 //------------------------------------------------------------------------------
 
@@ -39,6 +47,7 @@
 #define SMB_MEM_SIZE_8GB		(SMB_MEM_SIZE_1GB * 8)
 #define SMB_MEM_SIZE_16GB		(SMB_MEM_SIZE_1GB * 16)
 #define SMB_MEM_SIZE_32GB		(SMB_MEM_SIZE_1GB * 32)	// May not be supported!
+#define SMB_MEM_SIZE_64GB		(SMB_MEM_SIZE_1GB * 64)	// May not be supported!
 
 //------------------------------------------------------------------------------
 // All currently supported models are defined below.
@@ -284,7 +293,7 @@ typedef struct _PlatformInfo_t
 	{
 		Node *	RootNode;						// Path: /
 	} DT;
-	
+
 	struct EFI
 	{
 		EFI_SYSTEM_TABLE * SystemTable;			// Used to re-calculate the checksum at the end of the run.
@@ -296,6 +305,7 @@ typedef struct _PlatformInfo_t
 			
 			// EFI specific stuff.
 			Node *	ConfigurationTable;			// Path: /efi/configuration-table
+			Node *	ACPI_Tables;				// Path: /efi/configuration-table/ACPI Tables
 			Node *	RuntimeServices;			// Path: /efi/runtime-services
 			Node *	Platform;					// Path: /efi/platform
 		} Nodes;
@@ -328,6 +338,7 @@ typedef struct _PlatformInfo_t
 	} SMBIOS;
 	
 } PlatformInfo_t;
+
 
 //------------------------------------------------------------------------------
 

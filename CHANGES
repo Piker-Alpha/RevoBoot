@@ -1,71 +1,76 @@
-RevoBoot v1.5.50 (Next Major Release)
+RevoBoot v2.0.00
 ================
-- Improved CPU detection (with new/additional CPU's).
-- Improved P-State generation (less settings).
+- Support for OS X 10.10 aka Yosemite added (Pike R. Alpha, June 2013).
+- VERSION updated to v2.0.00
+- LZVN decompression added for Yosemite.
+- IODeviceTree:/chosen/random-seed added for Yosemite.
+- kernel and kernelcache path updated for Yosemite.
+- boot2/picopng.c and boot2/picopng.c added (removed in v2.0.10).
+- bootstruct.c and bootstruct.h updated for Yosemite.
 
 
 RevoBoot v1.5.40
 ================
-- Support for OS X 10.9 aka Mavericks added (Piker, June 2013).
+- Support for OS X 10.9 aka Mavericks added (Pike R. Alpha, June 2013).
 - VERSION updated to v1.5.40
 
 
 RevoBoot v1.5.39
 ================
-- Fixed boot failure for InstallESD/BaseSystem.dmg/patched kernelcache (Piker, April 2013).
-- LION_INSTALL_SUPPORT renamed to INSTALL_ESD_SUPPORT (Piker, April 2013).
-- Stripped (unnecessary) argument from loadSystemConfig (Pike, April 2013).
-- Renamed function loadSystemConfig to loadCABootPlist (Pike, April 2013).
-- Simplified search for and read of com.apple.Boot.plist (Pike, April 2013).
+- Fixed boot failure for InstallESD/BaseSystem.dmg/patched kernelcache (Pike R. Alpha, April 2013).
+- LION_INSTALL_SUPPORT renamed to INSTALL_ESD_SUPPORT (Pike R. Alpha, April 2013).
+- Stripped (unnecessary) argument from loadSystemConfig (Pike R. Alpha, April 2013).
+- Renamed function loadSystemConfig to loadCABootPlist (Pike R. Alpha, April 2013).
+- Simplified search for and read of com.apple.Boot.plist (Pike R. Alpha, April 2013).
 - Board ID's for iMac12,n fixed (Jeroen, April 2013).
-- Settings template updated (Pike, April 2013).
+- Settings template updated (Pike R. Alpha, April 2013).
 - VERSION updated to v1.5.39
 
 
 RevoBoot v1.5.38
 ================
-- RevoBoot/i386/libsaio/efi.c modified to workaround iMessage login/registration problems (PikerAlpha, January 2013).
-- getBoardType in RevoBoot/i386/libsaio/SMBIOS/getters.h now always returns a board type (PikerAlpha, January 2013).
-- STATIC_NVRAM_ROM/STATIC_NVRAM_MLB added (used in efi.c) to settings-template.h (PikerAlpha, January 2013).
+- RevoBoot/i386/libsaio/efi.c modified to workaround iMessage login/registration problems (Pike R. Alpha, January 2013).
+- getBoardType in RevoBoot/i386/libsaio/SMBIOS/getters.h now always returns a board type (Pike R. Alpha, January 2013).
+- STATIC_NVRAM_ROM/STATIC_NVRAM_MLB added (used in efi.c) to settings-template.h (Pike R. Alpha, January 2013).
 - VERSION updated to v1.5.38
 
 
 RevoBoot v1.5.37
 ================
-- DISK_TARGET_SUPPORT in settings-template.h renamed to STARTUP_DISK_SUPPORT (PikerAlpha, November 2012).
-- Restored copyright of efi_tables.c to original developer (PikerAlpha, November 2012).
-- Renamed RevoBoot/i386/libsa/efi_tables.c to crc32.c (PikerAlpha, November 2012).
-- Moved GUID function from efi_tables.c to RevoBoot/i386/libsaio/guid.c (PikerAlpha, November 2012). 
-- Fixed some minor C99 issues / restoring gcc compatibility (PikerAlpha, November 2012).
+- DISK_TARGET_SUPPORT in settings-template.h renamed to STARTUP_DISK_SUPPORT (Pike R. Alpha, November 2012).
+- Restored copyright of efi_tables.c to original developer (Pike R. Alpha, November 2012).
+- Renamed RevoBoot/i386/libsa/efi_tables.c to crc32.c (Pike R. Alpha, November 2012).
+- Moved GUID function from efi_tables.c to RevoBoot/i386/libsaio/guid.c (Pike R. Alpha, November 2012). 
+- Fixed some minor C99 issues / restoring gcc compatibility (Pike R. Alpha, November 2012).
 - Cleanups and other minor improvements.
 - VERSION updated to v1.5.37
 
 
 RevoBoot v1.5.36
 ================
-- Now reading efi-boot-device-data from /Extra/NVRAM/nvramStorage.plist to select the Startup Disk (PikerAlpha, November 2012).
-- New DISK_TARGET_SUPPORT setting in settings-template.h (PikerAlpha, November 2012).
-- New file RevoBoot/i386/libsaio/base64.c (written by Sam) added (PikerAlpha, November 2012).
-- Support for data fields added (PikerAlpha, November 2012). 
-- Copied macro's from EDK2's EfiDevicePath.h to RevoBoot/i386/libsaio/efi/essentials.h (PikerAlpha, November 2012).
-- Port of EDK2's function (getGUIDFromDevicePath written by Sam) added (PikerAlpha, November 2012).
-- Function loadSystemConfig now calls new function loadConfigFile (PikerAlpha, November 2012).
+- Now reading efi-boot-device-data from /Extra/NVRAM/nvramStorage.plist to select the Startup Disk (Pike R. Alpha, November 2012).
+- New DISK_TARGET_SUPPORT setting in settings-template.h (Pike R. Alpha, November 2012).
+- New file RevoBoot/i386/libsaio/base64.c (written by Sam) added (Pike R. Alpha, November 2012).
+- Support for data fields added (Pike R. Alpha, November 2012). 
+- Copied macro's from EDK2's EfiDevicePath.h to RevoBoot/i386/libsaio/efi/essentials.h (Pike R. Alpha, November 2012).
+- Port of EDK2's function (getGUIDFromDevicePath written by Sam) added (Pike R. Alpha, November 2012).
+- Function loadSystemConfig now calls new function loadConfigFile (Pike R. Alpha, November 2012).
 - Cleanups and other minor improvements.
 - VERSION updated to v1.5.36
 
 
 RevoBoot v1.5.35
 ================
-- SMBIOS related enhancements for RevoBoot v1.5.35 (PikerAlpha, November 2012).
+- SMBIOS related enhancements for RevoBoot v1.5.35 (Pike R. Alpha, November 2012).
 - VERSION updated to v1.5.35
 
 
 RevoBoot v1.5.34
 ================
-- LOAD_STATIC_EFI_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (PikerAlpha, October 2012).
-- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (PikerAlpha, October 2012).
-- New LOAD_MODEL_SPECIFIC_ACPI_DATA setting in settings-template.h (PikerAlpha, October 2012).
-- New LOAD_MODEL_SPECIFIC_STATIC_DATA setting in settings-template.h (PikerAlpha, October 2012).
+- LOAD_STATIC_EFI_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_EFI_DATA (Pike R. Alpha, October 2012).
+- LOAD_STATIC_SMBIOS_DATA_FROM_EXTRA in settings-template.h renamed to LOAD_MODEL_SPECIFIC_SMBIOS_DATA (Pike R. Alpha, October 2012).
+- New LOAD_MODEL_SPECIFIC_ACPI_DATA setting in settings-template.h (Pike R. Alpha, October 2012).
+- New LOAD_MODEL_SPECIFIC_STATIC_DATA setting in settings-template.h (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.34
 
 Notes:
@@ -77,77 +82,77 @@ You <i>must</i> use the latest version of RevoBoot/i386/config/settings-template
 
 RevoBoot v1.5.33
 ================
-- Restored lost lines in RevoBoot/i386/libsaio/SMBIOS/static_data.h (PikerAlpha, November 2012).
+- Restored lost lines in RevoBoot/i386/libsaio/SMBIOS/static_data.h (Pike R. Alpha, November 2012).
 - VERSION updated to v1.5.33
 
 
 RevoBoot v1.5.32
 ================
-- Optionally include Recovery HD support code in boot.c (PikerAlpha, October 2012).
-- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT in disk.c (PikerAlpha, October 2012).
-- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT in disk.c (PikerAlpha, November 2012).
-- Renamed encryptedBootPartition to coreStoragePartition in disk.c (PikerAlpha, October 2012).
-- Cleaned up settings-template.h (PikerAlpha, October 2012).
+- Optionally include Recovery HD support code in boot.c (Pike R. Alpha, October 2012).
+- Renamed LION_RECOVERY_SUPPORT to CORE_STARAGE_SUPPORT in disk.c (Pike R. Alpha, October 2012).
+- Renamed LION_FILEVAULT_SUPPORT to CORE_STARAGE_SUPPORT in disk.c (Pike R. Alpha, November 2012).
+- Renamed encryptedBootPartition to coreStoragePartition in disk.c (Pike R. Alpha, October 2012).
+- Cleaned up settings-template.h (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.32
 
 
 RevoBoot v1.5.31
 ================
-- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
-- Restored lost STATIC_SMSERIALNUMBER in setings-template.h (PikerAlpha, October 2012).
-- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
+- STATIC_SYSTEM_SERIAL_NUMBER renamed to EFI_SYSTEM_SERIAL_NUMBER (Pike R. Alpha, October 2012).
+- Restored lost STATIC_SMSERIALNUMBER in setings-template.h (Pike R. Alpha, October 2012).
+- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.31
 
 
 RevoBoot v1.5.30
 ================
-- Move/update /Extra/ data reading to RevoBoot/i386/libsaio/load.c (PikerAlpha, October 2012).
-- Option to read /Extra/EFI/[MacModelNN.bin] when static EFI data is used (PikerAlpha, October 2012).
-- Option to read /Extra/SMBIOS/[MacModelNN.bin] when static SMBIOS data is used (PikerAlpha, October 2012).
-- Makefile changes for above features(PikerAlpha, October 2012).
+- Move/update /Extra/ data reading to RevoBoot/i386/libsaio/load.c (Pike R. Alpha, October 2012).
+- Option to read /Extra/EFI/[MacModelNN.bin] when static EFI data is used (Pike R. Alpha, October 2012).
+- Option to read /Extra/SMBIOS/[MacModelNN.bin] when static SMBIOS data is used (Pike R. Alpha, October 2012).
+- Makefile changes for above features(Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.30
 
 
 RevoBoot v1.5.25
 ================
-- RevoBoot/i386/config/data.h is no longer included with (PikerAlpha, October 2012).
-- New static data paths in RevoBoot/i386/libsaio/Makefile (PikerAlpha, October 2012).
-- Use model identifier as filename for static data (PikerAlpha, October 2012).
+- RevoBoot/i386/config/data.h is no longer included with (Pike R. Alpha, October 2012).
+- New static data paths in RevoBoot/i386/libsaio/Makefile (Pike R. Alpha, October 2012).
+- Use model identifier as filename for static data (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.25
 
 
 RevoBoot v1.5.23
 ================
-- Bug fix and cleanups in RevoBoot/i386/libsaio/SMBIOS/dynamic_data.h (PikerAlpha, October 2012).
+- Bug fix and cleanups in RevoBoot/i386/libsaio/SMBIOS/dynamic_data.h (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.23
 
 
 RevoBoot v1.5.22
 ================
-- Bug fix in RevoBoot/Makefile (PikerAlpha, October 2012).
+- Bug fix in RevoBoot/Makefile (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.22
 
 
 RevoBoot v1.5.21
 ================
-- Model data for new Macmini6,N added (PikerAlpha, October 2012).
+- Model data for new Macmini6,N added (Pike R. Alpha, October 2012).
 - VERSION updated to v1.5.21
 
 
 RevoBoot v1.5.20
 ================
-- Automatic data selection for ACPI/EFI and SMBIOS data (PikerAlpha, October 2012)
-- Copies ACPI/EFI/SMBIOS/data-template.h to [your model.h] for new configurations (PikerAlpha, October 2012)
+- Automatic data selection for ACPI/EFI and SMBIOS data (Pike R. Alpha, October 2012)
+- Copies ACPI/EFI/SMBIOS/data-template.h to [your model.h] for new configurations (Pike R. Alpha, October 2012)
 
 
 RevoBoot v1.5.10
 ================
-- Makefiles cleaned up/optimized (PikerAlpha, October 2012).
-- make now defaults to Mountain Lion (PikerAlpha, October 2012).
-- MODEL=[your model] argument added to makefiles (PikerAlpha, October 2012).
-- MODEL=$1 added to RevoBoot/r for optional model identifier (PikerAlpha, October 2012).
-- make now creates RevoBoot/i386/config/SETTINGS when missing (PikerAlpha, October 2012).
-- Makefile now copies settings-template.h to SETTINGS/[your model.h] when missing (PikerAlpha, October 2012).
+- Makefiles cleaned up/optimized (Pike R. Alpha, October 2012).
+- make now defaults to Mountain Lion (Pike R. Alpha, October 2012).
+- MODEL=[your model] argument added to makefiles (Pike R. Alpha, October 2012).
+- MODEL=$1 added to RevoBoot/r for optional model identifier (Pike R. Alpha, October 2012).
+- make now creates RevoBoot/i386/config/SETTINGS when missing (Pike R. Alpha, October 2012).
+- Makefile now copies settings-template.h to SETTINGS/[your model.h] when missing (Pike R. Alpha, October 2012).
 
 
 RevoBoot v1.5.01
@@ -157,16 +162,16 @@ RevoBoot v1.5.01
 
 RevoBoot v1.5.00
 ================
-- RevoBoot project forked (PikerAlpha, October 2012).
+- RevoBoot project forked (Pike R. Alpha, October 2012).
 - 
 - Time to say goodbye to some of the legacy code.  Something I will do with the help of Sam's notes, 
 - but not everything is written in stone.  Unfortenately.  Meaning that I will have to experiment and 
 - improvise.  Hopefully achieving the same goals that she had in mind for you.
 -
-- Support for self compiled libcc_kext.a (Xcode 4.5.1 compatibility) added (PikerAlpha, October 2012).
-- SMBIOS legacy code removed (PikerAlpha, October 2012).
-- EFI/SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
-- RevoBoot/i386/config/settings.h stripped for simplicity (PikerAlpha, October 2012).
+- Support for self compiled libcc_kext.a (Xcode 4.5.1 compatibility) added (Pike R. Alpha, October 2012).
+- SMBIOS legacy code removed (Pike R. Alpha, October 2012).
+- EFI/SMBIOS data logic moved to preprocessor code (Pike R. Alpha, October 2012).
+- RevoBoot/i386/config/settings.h stripped for simplicity (Pike R. Alpha, October 2012).
 - 
 - Note: If there is anything that doesn't work for you... let me know and I will look at it.
 -

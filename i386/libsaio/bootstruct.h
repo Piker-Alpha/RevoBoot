@@ -30,7 +30,28 @@
 #include "bios.h"
 #include "platform.h"
 
-#define kDefaultKernel	"mach_kernel"
+#if (MAKE_TARGET_OS == YOSEMITE)
+	#define kDefaultKernel	"kernel"
+#else
+	#define kDefaultKernel	"mach_kernel"
+#endif
+
+// Bitfields for boot_args->flags
+#ifndef kBootArgsFlagRebootOnPanic
+	#define kBootArgsFlagRebootOnPanic	(1 << 0)
+#endif
+
+#ifndef kBootArgsFlagHiDPI
+	#define kBootArgsFlagHiDPI			(1 << 1)
+#endif
+
+#ifndef kBootArgsFlagBlack
+	#define kBootArgsFlagBlack			(1 << 2)
+#endif
+
+#ifndef kBootArgsFlagBlackTheme
+	#define kBootArgsFlagBlackTheme		(1 << 6)
+#endif
 
 // Snapshot constants with supported version / revision info.
 #define kBootArgsVersion_SnowLeopard	1
@@ -138,20 +159,19 @@ typedef struct PrivateBootInfo
 
 extern PrivateBootInfo_t *bootInfo; 
 
-
 typedef struct boot_args_new
 {
     uint16_t    Revision;							// Revision of boot_args structure.
     uint16_t    Version;							// Version of boot_args structure.
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION)				// Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
     uint8_t     efiMode;							// 32 = 32-bit, 64 = 64-bit.
 
     uint8_t     debugMode;							// Bit field with behavior changes.
 
-#if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-    uint8_t     __reserved0;
-    uint8_t     __reserved1;
+// #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
+#if (MAKE_TARGET_OS & MOUNTAIN_LION)
+    uint16_t    flags;
 #else
     uint8_t     __reserved1[2];
 #endif
@@ -175,14 +195,14 @@ typedef struct boot_args_new
     uint32_t    efiRuntimeServicesPageStart;		// Physical address of defragmented runtime pages.
     uint32_t    efiRuntimeServicesPageCount;
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION)				// Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
     uint64_t    efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
 #endif
 
     uint32_t    efiSystemTable;						// Physical address of system table in runtime area.
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// Mavericks and Mountain Lion also have bit 1 set like Lion.
-    uint32_t    __reserved2;
+#if ((MAKE_TARGET_OS & LION) == LION)				// Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+    uint32_t    kslide;
 
     uint32_t    performanceDataStart;				// Physical address of log.
     uint32_t    performanceDataSize;
@@ -196,7 +216,8 @@ typedef struct boot_args_new
     uint64_t    PhysicalMemorySize;
     uint64_t    FSBFrequency;
     
-#if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
+// #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
+#if (MAKE_TARGET_OS & MOUNTAIN_LION)
     uint64_t    pciConfigSpaceBaseAddress;
     uint32_t    pciConfigSpaceStartBusNumber;
     uint32_t    pciConfigSpaceEndBusNumber;

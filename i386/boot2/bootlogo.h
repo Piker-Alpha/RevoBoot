@@ -5,7 +5,41 @@
 #define VIDEO(x) (bootArgs->Video.v_ ## x)
 
 
-const unsigned char appleLogoRLE[] =
+#if (MAKE_TARGET_OS == YOSEMITE)
+
+typedef struct
+{
+	uint16_t	revision;
+	uint16_t	imageCount;
+} __attribute__((packed)) EFIRES_HEADER;
+
+typedef struct
+{
+	char		filename[64];
+	uint32_t	offset;
+	uint32_t	imageSize;
+} __attribute__((packed)) EFIRES_IMAGE_HEADER;
+
+typedef struct
+{
+	char		signature[8];
+	uint32_t	length;
+	char		chunkType[4];
+	uint32_t	width;
+	uint32_t	height;
+	uint8_t		bitDepth;
+	uint8_t		colorType;
+	uint8_t		compressionMethod;
+	uint8_t		filterMethod;
+	uint8_t		interlaceMethod;
+	uint32_t	checksum;
+} __attribute__((packed)) IMAGE_CHUNK_HEADER;
+
+extern void blendImage(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t *data);
+
+#else
+
+const unsigned char appleLogoRLE[1372] =
 {
     0xff, 0x01, 0xff, 0x01, 0xff, 0x01, 0x50, 0x01, 0x01, 0x02, 0x01, 0x17,
     0x01, 0x34, 0x01, 0x47, 0x03, 0x50, 0x01, 0x13, 0x76, 0x01, 0x01, 0x03,
@@ -123,3 +157,4 @@ const unsigned char appleLogoRLE[] =
 	0xff, 0x01, 0xff, 0x01, 0xff, 0x01, 0xff, 0x01, 0xff, 0x01, 0xff, 0x01,
 	0xff, 0x01, 0xb3, 0x01
 };
+#endif

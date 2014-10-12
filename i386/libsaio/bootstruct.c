@@ -34,7 +34,7 @@ PrivateBootInfo_t *bootInfo;
 
 
 //==============================================================================
-// Called from: boot() (common_boot() in Chameleon) in boot.c
+// Called from function initPlatform in platform.c
 
 void initKernelBootConfig(void)
 {
@@ -49,8 +49,10 @@ void initKernelBootConfig(void)
 	bzero(bootArgs, sizeof(boot_args));
 	bzero(bootInfo, sizeof(PrivateBootInfo_t));
 
-	// Set the default kernel name to: 'mach_kernel'.
-	strcpy(bootInfo->bootFile, kDefaultKernel);
+	// Set kernel name to: '/System/Library/Kernels/kernel' for 10.10 and greater
+	// and 'mach_kernel' for all previous versions of OS X.
+	// strcpy(bootInfo->bootFile, kDefaultKernel);
+	sprintf(bootInfo->bootFile, "%s", kDefaultKernel);
 
 	// Get system memory map. Also update the size of the
 	// conventional/extended memory for backwards compatibility.
@@ -69,7 +71,6 @@ void initKernelBootConfig(void)
 	}
 
 	bootInfo->configEnd = bootInfo->config;
-
 	bootArgs->Video.v_display = VGA_TEXT_MODE;
 
 	// What Lion species is screaming here?
@@ -87,9 +88,37 @@ void initKernelBootConfig(void)
 	// EFI selection is based on the CPU type.
 	bootArgs->efiMode = (gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? kBootArgsEfiMode64 : kBootArgsEfiMode32;
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Lion's new debug output (replacing a couple of former boot arguments).
 	bootArgs->debugMode = EFI_DEBUG_MODE;					// Defined in config/settings.h
+#endif
+	
+#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+	// Adding a 16 KB log space.
+	bootArgs->performanceDataSize	= 0;
+	bootArgs->performanceDataStart	= 0;
+	
+	// AppleKeyStore.kext
+	bootArgs->keyStoreDataSize		= 0;
+	bootArgs->keyStoreDataStart		= 0;
+	
+	bootArgs->bootMemSize			= 0;
+	bootArgs->bootMemStart			= 0;
+	bootArgs->flags					= 0;
+
+#if REBOOT_ON_PANIC
+	bootArgs->flags					= kBootArgsFlagRebootOnPanic;
+#endif
+
+#if UISCALE_2X
+	bootArgs->flags					|= kBootArgsFlagHiDPI;
+#endif
+
+#if BLACKMODE
+	bootArgs->flags					|= kBootArgsFlagBlackTheme; // (kBootArgsFlagBlack + kBootArgsFlagBlackTheme);
+#endif
+
+	bootArgs->kslide				= 0;
 #endif
 }
 
@@ -171,7 +200,7 @@ void finalizeKernelBootConfig(void)
     bootArgs->deviceTreeP = (uint32_t)addr;
     bootArgs->deviceTreeLength = size;
 	
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
+/* #if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Adding a 16 KB log space.
 	bootArgs->performanceDataSize	= 0;
 	bootArgs->performanceDataStart	= 0;
@@ -182,9 +211,12 @@ void finalizeKernelBootConfig(void)
 
 	bootArgs->bootMemSize	= 0;
 	bootArgs->bootMemStart	= 0;
-#endif
+	
+	bootArgs->flags			= kBootArgsFlagBlack;
+	bootArgs->kslide		= 0;
+#endif */
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	bootArgs->FSBFrequency	= gPlatform.CPU.FSBFrequency;
 #endif
 }

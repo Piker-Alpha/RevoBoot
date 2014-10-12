@@ -199,14 +199,14 @@ long loadDrivers(char * dirSpec)
 
 		if ((gKextLoadStatus & 1) == 0)
 		{
-#if (MAKE_TARGET_OS == MAVERICKS)
+#if ((MAKE_TARGET_OS & MAVERICKS) == MAVERICKS) // Mavericks and Yosemite specifics.
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/Library/Extensions\");\n");
 
-			// For Mavericks we first load the signed kexts.
+			/* For Mavericks we first load the signed kexts.
 			if (loadKexts("/Library/Extensions", 0) == EFI_SUCCESS)
 			{
 				_DRIVERS_DEBUG_DUMP("loadKexts(1) OK.\n");
-			}
+			} */
 #endif
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/System/Library/Extensions\");\n");
 			// System kexts
@@ -309,7 +309,7 @@ static int loadMultiKext(char * path)
 
 		// Add the MKext to the memory map.
 		sprintf(segName, "DriversPackage-%lx", driversAddr);
-		AllocateMemoryRange(segName, driversAddr, driversLength, kBootDriverTypeMKEXT);
+		AllocateMemoryRange(segName, driversAddr, driversLength);
 
 		_DRIVERS_DEBUG_DUMP("loadMultiKext(Success : 0) @ 0x%08x\n", driversAddr);
 
@@ -355,12 +355,12 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 			{
 				sprintf(gPlatform.KextFileName, "%s/%s", targetFolder, dirEntryName);
 
-#if DEBUG_DRIVERS
+// #if DEBUG_DRIVERS
 				if (strlen(gPlatform.KextFileName) >= MAX_KEXT_PATH_LENGTH)
 				{
 					stop("Error: gPlatform.KextFileName >= %d chars. Change MAX_KEXT_PATH_LENGTH!", MAX_KEXT_PATH_LENGTH);
 				}
-#endif
+// #endif
 				// Determine bundle type.
 				isBundleType2 = (GetFileInfo(gPlatform.KextFileName, "Contents", &dirEntryFlags, &dirEntryTime) == 0);
 
@@ -372,12 +372,12 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 					// Setup plug-ins path.
 					sprintf(gPlatform.KextFileSpec, "%s/%sPlugIns", gPlatform.KextFileName, (isBundleType2) ? "Contents/" : "");
 
-#if DEBUG_DRIVERS
+// #if DEBUG_DRIVERS
 					if (strlen(gPlatform.KextFileSpec) >= MAX_KEXT_PATH_LENGTH)
 					{
 						stop("Error: gPlatform.KextFileSpec >= %d chars. Change MAX_KEXT_PATH_LENGTH!", MAX_KEXT_PATH_LENGTH);
 					}
-#endif
+// #endif
 					_DRIVERS_DEBUG_DUMP("R");
 
 					// Recursive call for kexts in the PlugIns folder.
@@ -398,9 +398,9 @@ static int loadPlist(char * targetFolder, bool isBundleType2)
     ModulePtr module;
     TagPtr    personalities;
 
-    char * plistBuffer = 0;
-    char * tmpExecutablePath = 0;
-    char * tmpBundlePath = 0;
+    char * plistBuffer			= NULL;
+    char * tmpExecutablePath	= NULL;
+    char * tmpBundlePath		= NULL;
 
     long plistLength, bundlePathLength, result = -1;
 
@@ -452,16 +452,20 @@ static int loadPlist(char * targetFolder, bool isBundleType2)
 
 			if (plistLength > 0)
 			{
+				_DRIVERS_DEBUG_DUMP("p");
+
 				plistLength += 1;
 				plistBuffer = malloc(plistLength);
 
 				if (plistBuffer)
 				{
+					_DRIVERS_DEBUG_DUMP("1");
 					strlcpy(plistBuffer, (char *)kLoadAddr, plistLength);
 
 					// parseXML returns 0 on success so we check that here.
 					if (parseXML(plistBuffer, &module, &personalities) == 0)
 					{
+						_DRIVERS_DEBUG_DUMP("2");
 						// Allocate memory for the driver path and the plist.
 						module->executablePath = tmpExecutablePath;
 						module->bundlePath = tmpBundlePath;
@@ -470,6 +474,7 @@ static int loadPlist(char * targetFolder, bool isBundleType2)
 
 						if (module->plistAddr)
 						{
+							_DRIVERS_DEBUG_DUMP("3");
 							// Tell free() to take no action for these two (by passing 0 as argument).
 							tmpBundlePath = tmpExecutablePath = 0;
 
@@ -523,6 +528,7 @@ static int loadPlist(char * targetFolder, bool isBundleType2)
 			// Free on failure only.
 			free(tmpBundlePath);
 		}
+		
 		// Free on failure only.
 		free(tmpExecutablePath);
 	}
@@ -555,12 +561,12 @@ static long loadMatchedModules(void)
                 fileName = prop->string;
 
                 sprintf(gPlatform.KextFileSpec, "%s%s", module->executablePath, fileName);
-#if DEBUG_DRIVERS
+// #if DEBUG_DRIVERS
 				if (strlen(gPlatform.KextFileSpec) >= MAX_KEXT_PATH_LENGTH)
 				{
 					stop("Error: gPlatform.KextFileSpec >= %d chars. Change MAX_KEXT_PATH_LENGTH!", MAX_KEXT_PATH_LENGTH);
 				}
-#endif
+// #endif
                 length = LoadThinFatFile(gPlatform.KextFileSpec, &executableAddr);
 
 				if (length == 0)
@@ -616,8 +622,8 @@ static long loadMatchedModules(void)
                 strcpy(driver->bundlePathAddr, module->bundlePath);
 
                 // Add an entry to the memory map.
-                sprintf(segName, "Driver-%lx", (unsigned long)driver);
-                AllocateMemoryRange(segName, driverAddr, driverLength, kBootDriverTypeKEXT);
+				sprintf(segName, "Driver-%lx", (unsigned long)driver);
+				AllocateMemoryRange(segName, driverAddr, driverLength);
             }
         }
         module = module->nextModule;
@@ -743,17 +749,21 @@ const char * gRequiredKexts[] =
 
 static bool isLoadableInSafeBoot(char * OSBundleRequired)
 {
-	if (gBootMode == kBootModeNormal)
+//	if (gBootMode == kBootModeNormal)
+	if (gBootMode == kBootModeSafe)
 	{
 		return (strcmp(OSBundleRequired, kOSBundleRequiredSafeBoot) != 0);
+		// return (strcmp(OSBundleRequired, kOSBundleRequiredRoot) != 0);
 	}
-	else if (gBootMode == kBootModeSafe)
+//	else if (gBootMode == kBootModeSafe)
+	else
 	{
 		if (strcmp(OSBundleRequired, kOSBundleRequiredRoot) == 0 ||
-			strcmp(OSBundleRequired, kOSBundleRequiredLocalRoot) == 0 ||
+			strcmp(OSBundleRequired, kOSBundleRequiredLocalRoot) == 0 / * ||
 			strcmp(OSBundleRequired, kOSBundleRequiredNetworkRoot) == 0 ||
 			strcmp(OSBundleRequired, kOSBundleRequiredSafeBoot)	== 0 ||
-			strcmp(OSBundleRequired, kOSBundleRequiredConsole))
+			strcmp(OSBundleRequired, kOSBundleRequiredConsole) * /
+			)
 		{
         
 			return true;
@@ -801,16 +811,59 @@ static long parseXML(char * buffer, ModulePtr * module, TagPtr * personalities)
 		return -1;
 	}
 
+	/* #define kAppleKernelExternalComponentKey	"AppleKernelExternalComponent"
+	#define kAppleSecurityExtensionKey	"AppleSecurityExtension"
+
+	TagPtr isKernelExternalComponent = XMLGetProperty(moduleDict, kAppleSecurityExtensionKey);
+	
+	if (isKernelExternalComponent->type == kTagTypeTrue)
+	{
+		XMLFreeTag(moduleDict);
+		//#if DEBUG_DRIVERS
+		printf("Dropping AppleKernelExternalComponent(1)\n");
+		sleep(1);
+		//#endif
+		return -2;
+	}
+
+	TagPtr isSecurityKext = XMLGetProperty(moduleDict, kAppleSecurityExtensionKey);
+
+	if (isSecurityKext->type == kTagTypeTrue)
+	{
+		XMLFreeTag(moduleDict);
+//#if DEBUG_DRIVERS
+		printf("Dropping AppleSecurityExtension\n");
+		sleep(1);
+//#endif
+		return -2;
+	}
+
+	#define	COM_APPLE_KEC "com.apple.kec."
+
+	TagPtr bundle_id = XMLGetProperty(moduleDict, kPropCFBundleIdentifier);
+	
+	if (strncmp(bundle_id, COM_APPLE_KEC, strlen(COM_APPLE_KEC)) == 0))
+	{
+//#if DEBUG_DRIVERS
+		printf("Dropping AppleKernelExternalComponent(2)\n");
+		sleep(1);
+//#endif
+		return -2;
+	} */
+
 	required = XMLGetProperty(moduleDict, kPropOSBundleRequired);
 
 	if ((required == 0) || (required->type != kTagTypeString) || !strcmp(required->string, "Safe Boot"))
+	// if ((required == 0) || (required->type != kTagTypeString) || !strcmp(required->string, "Root"))
 	// if ((required == 0) || (required->type != kTagTypeString) || !isLoadableInSafeBoot(required->string))
+	// if ( (required != NULL)  && (required->type == kTagTypeString) && !strcmp(required->string, "Safe Boot"))
 	{
 		XMLFreeTag(moduleDict);
 		return -2;
 	}
 
-	tmpModule = (ModulePtr)malloc(sizeof(Module));
+	// tmpModule = (ModulePtr)malloc(sizeof(Module));
+	tmpModule = malloc(sizeof(Module));
 
 	if (tmpModule == 0)
 	{
@@ -836,16 +889,14 @@ static long parseXML(char * buffer, ModulePtr * module, TagPtr * personalities)
 
 //==============================================================================
 
-long decodeKernel(void *binary, entry_t *rentry, char **raddr, int *rsize)
+long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsize)
 {
 	// return DecodeMachO(binary, rentry, raddr, rsize);
-
-	void *buffer;
 	long ret;
 	unsigned long len;
 
-	u_int32_t uncompressedSize, size;
-	compressed_kernel_header * kernel_header = (compressed_kernel_header *) binary;
+	u_int32_t compressedSize, uncompressedSize, size = 0;
+	compressed_kernel_header * kernel_header = (compressed_kernel_header *) fileLoadBuffer;
 
 #if DEBUG_DRIVERS
 	printf("Kernel header data.\n");
@@ -858,12 +909,16 @@ long decodeKernel(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	printf("platformName      : %s\n",		kernel_header->platformName);
 	printf("rootPath          : %s\n",		kernel_header->rootPath);
 	printf("Sleeping for 5 seconds...\n");
-	sleep(5);
 #endif
 
 	if (kernel_header->signature == OSSwapBigToHostConstInt32('comp'))
 	{
-		if (kernel_header->compressType != OSSwapBigToHostConstInt32('lzss'))
+		if (kernel_header->compressType != OSSwapBigToHostConstInt32('lzss')
+#if (MAKE_TARGET_OS == YOSEMITE)
+			&& kernel_header->compressType != OSSwapBigToHostConstInt32('lzvn')
+#endif
+			)
+
 		{
 			error("kernel compression is bad\n");
 			return -1;
@@ -880,40 +935,56 @@ long decodeKernel(void *binary, entry_t *rentry, char **raddr, int *rsize)
 			return -1;
 		}
 #endif
-
+		compressedSize = OSSwapBigToHostInt32(kernel_header->compressedSize);
 		uncompressedSize = OSSwapBigToHostInt32(kernel_header->uncompressedSize);
-		binary = buffer = malloc(uncompressedSize);
+		fileLoadBuffer = malloc(uncompressedSize);
 
-		size = decompressLZSS((u_int8_t *) binary, &kernel_header->data[0], OSSwapBigToHostInt32(kernel_header->compressedSize));
+#if (MAKE_TARGET_OS == YOSEMITE)
+		if (kernel_header->compressType == OSSwapBigToHostConstInt32('lzvn'))
+		{
+			void *tmpBuffer = malloc(uncompressedSize);
+			size = lzvn_decode(tmpBuffer, uncompressedSize, &kernel_header->data[0], compressedSize);
+			memcpy(fileLoadBuffer, tmpBuffer, uncompressedSize);
+			free(tmpBuffer);
+		} else
+#endif
+		if (kernel_header->compressType == OSSwapBigToHostConstInt32('lzss'))
+		{
+			size = decompressLZSS((u_int8_t *) fileLoadBuffer, &kernel_header->data[0], compressedSize);
+		}
 
 		if (uncompressedSize != size)
         {
-			error("Size mismatch from lzss: 0x08%x\n", size);
+			error("Size mismatch, is 0x%x but 0x%x is expected!\n", size, uncompressedSize);
 			return -1;
 		}
 
-		if (OSSwapBigToHostInt32(kernel_header->adler32) != localAdler32(binary, uncompressedSize))
+		if (OSSwapBigToHostInt32(kernel_header->adler32) != localAdler32(fileLoadBuffer, uncompressedSize))
 		{
-			printf("Adler mismatch\n");
+			printf("Adler mismatch, is 0x%x but 0x%x is expected\n", localAdler32(fileLoadBuffer, uncompressedSize));
 			return -1;
 		}
 	}
 
-	ret = ThinFatFile(&binary, &len);
+	ret = ThinFatFile(&fileLoadBuffer, &len);
 
 	if (ret == 0 && len == 0 && gArchCPUType == CPU_TYPE_X86_64)
 	{
 		gArchCPUType = CPU_TYPE_I386;
-		ret = ThinFatFile(&binary, &len);
+		ret = ThinFatFile(&fileLoadBuffer, &len);
 	}
 
-	ret = DecodeMachO(binary, rentry, raddr, rsize);
+	ret = DecodeMachO(fileLoadBuffer, rentry, raddr, rsize);
 
 	if (ret < 0 && gArchCPUType == CPU_TYPE_X86_64)
 	{
 		gArchCPUType = CPU_TYPE_I386;
-		ret = DecodeMachO(binary, rentry, raddr, rsize);
+		ret = DecodeMachO(fileLoadBuffer, rentry, raddr, rsize);
 	}
 
+#if DEBUG_DRIVERS
+	printf("decodeKernel(ret = %d)\n", ret);
+	sleep(5);
+#endif
 	return ret;
 }

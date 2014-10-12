@@ -53,7 +53,6 @@
  *
  */
 
-
 #include "boot.h"
 #include "bootstruct.h"
 #include "sl.h"
@@ -168,6 +167,7 @@ void boot(int biosdev)
 
 	bool	haveCABootPlist	= false;
 	bool	quietBootMode	= true;
+	bool	bootRecoveryHD	= false;
 
 	void *fileLoadBuffer = (void *)kLoadAddr;
 
@@ -186,40 +186,55 @@ void boot(int biosdev)
 
 #if PRE_LINKED_KERNEL_SUPPORT
 	bool	mayUseKernelCache	= false;
+	bool	flushCaches			= false;
 
 	long flags, cachetime;
 #endif
 
-#if RECOVERY_HD_SUPPORT
-	/* extern void setVideoMode(int mode);
-	setVideoMode(0); // Switch to VGA_TEXT_MODE
-	printf("RecoveryHD boot support enabled\n");
+#if DEBUG_STATE_ENABLED
+	extern  void setVideoMode(int mode);
+	setVideoMode(VGA_TEXT_MODE);
+#endif
 
-	bool bootRecoveryHD = false;
+#if RECOVERY_HD_SUPPORT
+	#if DEBUG_BOOT
+		printf("RecoveryHD boot support enabled\n");
+	#endif
 
 	while (readKeyboardStatus())
 	{
 		int key = (bgetc() & 0xff);
-		printf("key: %d\n", key);
+		#if DEBUG_BOOT
+			printf("key: %d\n", key);
+		#endif
 		if ((key |= 0x20) == 'r')
 		{
 			bootRecoveryHD = true;
-			printf("RecoveryHD boot support is active\n");
+			#if DEBUG_BOOT
+				printf("RecoveryHD boot support is active\n");
+			#endif
 		}
 	}
-
-	printf("bootRecoveryHD: %s\n", bootRecoveryHD ? "True" : "False"); */
+#if DEBUG_BOOT
+	printf("bootRecoveryHD: %s\n", bootRecoveryHD ? "True" : "False");
+#endif
 	initPlatform(biosdev, true);
 #else
 	initPlatform(biosdev, false);
 #endif
 
-#if DEBUG_STATE_ENABLED
-	// Don't switch graphics mode / show boot logo when DEBUG is set to 1.
-	printf("\ngArchCPUType (CPU): %s\n", (gArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
-	sleep(3); // Silent sleep.
+#if DEBUG_BOOT
+	/*
+	 * In DEBUG mode we don't switch to graphics mode and do not show the Apple boot logo.
+	 */
+	printf("\nModel: %s\n", gPlatform.ModelID);
+
+	#if ((MAKE_TARGET_OS & LION) != LION)
+		printf("\ngArchCPUType (CPU): %s\n", (gArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
+		sleep(3); // Silent sleep.
+	#endif
 #else
-	showBootLogo();
+	showBootLogo(bootRecoveryHD);
 #endif
 
 #if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0)
@@ -302,18 +317,26 @@ void boot(int biosdev)
 				gVerboseMode =	getValueForBootKey(kernelFlags, kVerboseModeFlag, &val, &length) || 
 								getValueForBootKey(kernelFlags, kSingleUserModeFlag, &val, &length);
 				
-				if (gVerboseMode)
+				/* if (gVerboseMode)
 				{
 #if (DEBUG_BOOT == false)
 					setVideoMode(VGA_TEXT_MODE);
 #endif
-				}
+				} */
 
-				// Check for -x (safe) and -f (flush cache) flags.
-				if (getValueForBootKey(kernelFlags, kSafeModeFlag, &val, &length) || 
-					getValueForBootKey(kernelFlags, kIgnoreCachesFlag, &val, &length))
+				// Check for -x (safe) flag.
+				if (getValueForBootKey(kernelFlags, kSafeModeFlag, &val, &length))
 				{
 					gBootMode = kBootModeSafe;
+				}
+
+				// Check for -f (flush cache) flag.
+				if (getValueForBootKey(kernelFlags, kIgnoreCachesFlag, &val, &length))
+				{
+					_BOOT_DEBUG_DUMP("Notice: -f (flush cache) specified!\n");
+#if PRE_LINKED_KERNEL_SUPPORT
+					flushCaches = true;
+#endif
 				}
 
 				// Is rootUUID still empty and 'boot-uuid=<value>' specified as kernel flag?
@@ -422,31 +445,43 @@ void boot(int biosdev)
 	if (haveCABootPlist) // Check boolean before doing more time consuming tasks.
 	{
 #if PRE_LINKED_KERNEL_SUPPORT
-		_BOOT_DEBUG_DUMP("Checking Kernel Cache key in com.apple.Boot.plist\n");
-
-		if (getValueForKey(kKernelCacheKey, &val, &length, &bootInfo->bootConfig))
+		/*
+		 * We cannot use the kernelcache from the Yosemite installer, not yet,
+		 * and thus we load: /System/Library/Caches/Startup/kernelcache instead
+		 */
+#if (MAKE_TARGET_OS == YOSEMITE)
+		// Installation directory located?
+		if (flushCaches == false) //  && (gPlatform.BootVolume->flags != kBVFlagInstallVolume))
 		{
-#if RECOVERY_HD_SUPPORT
-			_BOOT_DEBUG_DUMP("Kernel Cache key located in com.apple.Boot.plist\n");
-			_BOOT_DEBUG_DUMP("length: %d, val: %s\n", length, val);
-			// XXX: Required for booting from the Recovery HD.
-			if (strncmp(val, "\\com.apple.recovery.boot\\kernelcache", length) == 0)
-			{
-				val = "/com.apple.recovery.boot/kernelcache";
-			}
-#endif
-			if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
-			{
-				_BOOT_DEBUG_DUMP("Kernel Cache set to: %s\n", val);
+#endif // #if (MAKE_TARGET_OS == YOSEMITE)
+			_BOOT_DEBUG_DUMP("Checking Kernel Cache key in com.apple.Boot.plist\n");
 
-				// File located. Init kernelCacheFile so that we can use it as boot file.
-				gPlatform.KernelCachePath = strdup(val);
+			if (getValueForKey(kKernelCacheKey, &val, &length, &bootInfo->bootConfig))
+			{
+				_BOOT_DEBUG_DUMP("Kernel Cache key located in com.apple.Boot.plist\n");
+				_BOOT_DEBUG_DUMP("length: %d, val: %s\n", length, val);
+#if RECOVERY_HD_SUPPORT
+				// XXX: Required for booting from the Recovery HD.
+				if (strncmp(val, "\\com.apple.recovery.boot\\kernelcache", length) == 0)
+				{
+					val = "/com.apple.recovery.boot/kernelcache";
+				}
+#endif
+				if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
+				{
+					_BOOT_DEBUG_DUMP("Kernel Cache set to: %s\n", val);
+
+					// File located. Init kernelCacheFile so that we can use it as boot file.
+					gPlatform.KernelCachePath = strdup(val);
 				
-				// Set flag to inform the load process to skip parts of the code.
-				gPlatform.KernelCacheSpecified = true;
+					// Set flag to inform the load process to skip parts of the code.
+					gPlatform.KernelCacheSpecified = true;
+				}
 			}
+#if (MAKE_TARGET_OS == YOSEMITE)
 		}
-		// _BOOT_DEBUG_ELSE_DUMP("No 'Kernel Cache' key given.\n");
+#endif // #if (MAKE_TARGET_OS == YOSEMITE)
+
 #endif
 		if (getBoolForKey(kQuietBootKey, &quietBootMode, &bootInfo->bootConfig) && !quietBootMode)
 		{
@@ -466,14 +501,17 @@ void boot(int biosdev)
 
 		getAndProcessBootArguments(kernelFlags);
 
-		// Initialize bootFile (defaults to: mach_kernel).
+		/* Initialize bootFile (defaults to: mach_kernel).
 		strcpy(bootFile, bootInfo->bootFile);
+		_BOOT_DEBUG_DUMP("bootFile: %s\n", bootFile);
+		_BOOT_DEBUG_DUMP("bootInfo->bootFile: %s\n", bootInfo->bootFile);
+		_BOOT_DEBUG_SLEEP(5); */
 
 #if PRE_LINKED_KERNEL_SUPPORT
 		_BOOT_DEBUG_DUMP("gBootMode = %d\n", gBootMode);
 
 		// Preliminary checks to prevent us from doing useless things.
-		mayUseKernelCache = ((gBootMode & kBootModeSafe) == 0);
+		mayUseKernelCache = ((flushCaches == false) && ((gBootMode & kBootModeSafe) == 0));
 
 		_BOOT_DEBUG_DUMP("mayUseKernelCache = %s\n", mayUseKernelCache ? "true" : "false");
 
@@ -490,18 +528,24 @@ void boot(int biosdev)
 		{
 			_BOOT_DEBUG_DUMP("Warning: kernelcache will be ignored!\n");
 
-			// True when 'Kernel Cache' is set in com.apple.Boot.plist
+			/* True when 'Kernel Cache' is set in com.apple.Boot.plist
 			if (gPlatform.KernelCacheSpecified == true)
 			{
 				sprintf(bootFile, "%s", bootInfo->bootFile);
-			}
+			} */
+#if (MAKE_TARGET_OS == YOSEMITE)
+//			else
+//			{
+				sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
+//			}
+#endif
 		}
 		else
 		{
 			// True when 'Kernel Cache' is set in com.apple.Boot.plist
 			if (gPlatform.KernelCacheSpecified == true)
 			{
-				_BOOT_DEBUG_DUMP("kernelcache: %s\n", gPlatform.KernelCachePath);
+				_BOOT_DEBUG_DUMP("kernelcache path: %s\n", gPlatform.KernelCachePath);
 
 				/*
 				 * Starting with Lion, we can take a shortcut by simply pointing 
@@ -539,7 +583,7 @@ void boot(int biosdev)
 				
 				_BOOT_DEBUG_DUMP("adler32: %08X\n", adler32);
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set (like Lion).
 
 				_BOOT_DEBUG_DUMP("Checking for kernelcache...\n");
 
@@ -608,14 +652,17 @@ void boot(int biosdev)
 #endif // PRE_LINKED_KERNEL_SUPPORT
 
 		/*
-		 * The bootFile normally points to 'mach_kernel' but it will be empty when a
+		 * The bootFile normally points to (mach_)kernel but it will be empty when a
 		 * pre-linked kernel was processed, and that is why we check the length here.
 		 */
 
 		if (strlen(bootFile))
 		{
+			_BOOT_DEBUG_DUMP("About to load: %s\n", bootFile);
+
 			retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
 
+#if SUPPORT_32BIT_MODE
 			if (retStatus <= 0 && gArchCPUType == CPU_TYPE_X86_64)
 			{
 				_BOOT_DEBUG_DUMP("Load failed for arch=x86_64, trying arch=i386 now.\n");
@@ -626,6 +673,7 @@ void boot(int biosdev)
 			}
 
 			_BOOT_DEBUG_DUMP("LoadStatus(%d): %s\n", retStatus, bootFile);
+#endif // SUPPORT_32BIT_MODE
 		}
 
 		_BOOT_DEBUG_ELSE_DUMP("bootFile empty!\n");	// Should not happen, but helped me once already.
@@ -651,7 +699,7 @@ void boot(int biosdev)
 				stop("DecodeKernel() failed!");
 			}
 			
-			_BOOT_DEBUG_DUMP("execKernel-2\n");
+			_BOOT_DEBUG_DUMP("execKernel-2 address: 0x%x\n", kernelEntry);
 			
 			// Allocate and copy boot args.
 			moveKernelBootArgs();
@@ -690,13 +738,13 @@ void boot(int biosdev)
 			_BOOT_DEBUG_DUMP("execKernel-7 / gVerboseMode is %s\n", gVerboseMode ? "true" : "false");
 
 			// Did we switch to graphics mode yet (think verbose mode)?
-			if (gVerboseMode || bootArgs->Video.v_display == VGA_TEXT_MODE)
+			if (gVerboseMode || bootArgs->Video.v_display != GRAPHICS_MODE)
 			{
 				
-				_BOOT_DEBUG_SLEEP(6);
+				// _BOOT_DEBUG_SLEEP(6);
 				
 				// Switch to graphics mode and show the Apple logo on a gray-ish background.
-				showBootLogo(); // formerly drawBootGraphics();
+				showBootLogo(bootRecoveryHD);
 			}
 			
 			_BOOT_DEBUG_DUMP("execKernel-8\n");

@@ -34,6 +34,7 @@
 #include <mach/machine/thread_status.h>
 
 #include <sl.h>
+#include "platform.h"
 
 /***
  * Backward compatibility fix for the SDK 10.7 version of loader.h
@@ -43,9 +44,18 @@
 	#define LC_MAIN (0x28|LC_REQ_DYLD) /* replacement for LC_UNIXTHREAD */
 #endif
 
-#define NVRAM_GUID_UINT64		0x3530454445314434
-#define OPTIONS_STRING_UINT64	0x736e6f6974706f2f
+#define NVRAM_GUID_UINT64				0x3530454445314434
+#define OPTIONS_STRING_UINT64			0x736e6f6974706f2f
 
+/***
+ * Tip: Reverse bytes if you search for the IDs with grep/HexEdit.
+ */
+// #define APPLE_HDA_PATCH_ID			0x11D419843D107410 10.9.2 and 10.9.3
+// #define APPLE_HDA_PATCH_ID				0x11D419843D397410
+// #define APPLE_HDA_TARGET_ID				0x10EC08923D397410
+
+// #define APPLE_HDA_CONTROLLER_PATCH_ID	0x30EB617500000C0C
+// #define APPLE_HDA_CONTROLLER_TARGET_ID	0x0EEB617500000C0C
 
 // Load MKext(s) or separate kexts (default behaviour / behavior).
 bool gLoadKernelDrivers = true;
@@ -53,7 +63,10 @@ bool gLoadKernelDrivers = true;
 // Private functions.
 static long DecodeSegment(long cmdBase, unsigned int*load_addr, unsigned int *load_size);
 static long DecodeUnixThread(long cmdBase, unsigned int *entry);
+
+#if ADD_SYMTAB
 static long DecodeSymbolTable(long cmdBase);
+#endif
 
 static unsigned long gBinaryAddress;
 
@@ -136,6 +149,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	mH = (struct mach_header *)(gBinaryAddress);
 
 #if DEBUG
+	printf("In DecodeMachO()\n");
 	printf("magic:      %x\n", (unsigned)mH->magic);
 	printf("cputype:    %x\n", (unsigned)mH->cputype);
 	printf("cpusubtype: %x\n", (unsigned)mH->cpusubtype);
@@ -159,7 +173,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 
 			if (mH->magic != MH_MAGIC)
 			{
-				error("Mach-O file has bad magic number\n");
+				error("Mach-O (i386) file has bad magic number\n");
 				return -1;
 			}
 
@@ -175,7 +189,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 
 			if (mH->magic != MH_MAGIC_64)
 			{
-				error("Mach-O file has bad magic number\n");
+				error("Mach-O file (x86_64) has bad magic number\n");
 				return -1;
 			}
 
@@ -240,6 +254,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	*rsize = vmend - vmaddr;
 	*raddr = (char *)vmaddr;
 
+#if ADD_SYMTAB
 	cmdBase = cmdstart;
 
 	for (cnt = 0; cnt < ncmds; cnt++)
@@ -257,9 +272,71 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 
 		cmdBase += cmdsize;
 	}
-	
+#endif
 	return ret;
 }
+
+
+/* #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION_NEW)
+//==============================================================================
+//
+// Kernel patch routine for iMessage
+//
+// This segment will be replaced by random data (since 18 April 2011) and released
+// when the kernel is done with it. Meaning that our data is short lived as well.
+if (strncmp(segname, "__KLD", 5) == 0)
+{
+	uint32_t	index	= 0;
+	uint32_t	offset	= sizeof(struct segment_command_64);
+	
+	while(offset < segCmd->cmdsize)
+	{
+		struct section_64 *section = (struct section_64 *)((char *)segCmd + offset);
+		offset += sizeof(struct section_64);
+		
+		if (strncmp((char *)section->sectname, "__cstring", 9) == 0)
+		{
+			uint64_t sectionStart	= (fileaddr + index);
+			uint64_t sectionEnd		= (fileaddr + filesize);
+			
+			unsigned char * baseAddress = (unsigned char *)sectionStart;
+			
+			// Search for the NVRAM GUID.
+			for (; baseAddress <= (unsigned char *)sectionEnd; baseAddress++)
+			{
+				if (*(uint64_t *)baseAddress == NVRAM_GUID_UINT64)
+				{
+					// Zero out NVRAM GUID
+					bzero((char *)baseAddress, 36);
+					// Replace/inject GUID replacement
+					memcpy((char *)baseAddress, "NVRAM", 5);
+					// Point to the end of the (former) NVRAM GUID string
+					baseAddress += 36;
+					
+					// Search for "/options" after the GUID.
+					for (; baseAddress <= (unsigned char *)sectionEnd; baseAddress++)
+					{
+						if (*(uint64_t *)baseAddress == OPTIONS_STRING_UINT64)
+						{
+							// Rename /option to /RevoEFI (just temporarily)
+							memcpy((unsigned char *)baseAddress, "/RevoEFI", 8);
+							// Prepare to break out early.
+							baseAddress = (unsigned char *)(sectionEnd + 1);
+							// Done.
+							break;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			// Skip unwanted sections (which makes us a little faster).
+			index += section->size;
+		}
+	}
+}
+#endif */
 
 
 //==============================================================================
@@ -282,14 +359,19 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 		filesize = segCmd->filesize;
 		segname = segCmd->segname;
 
-#if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-		//
-		// Kernel patch routine for iMessage
+#if ((MAKE_TARGET_OS & LION) == LION)
+	//
+	// Kernel patch routine for iMessage (LION, MOUNTAIN_LION, MAVERICKS and YOSEMITE).
+	//
+	#if IMESSAGE_PATCH_ENABLED
 		//
 		// This segment will be replaced by random data (since 18 April 2011) and released
 		// when the kernel is done with it. Meaning that our data is short lived as well.
+		//
 		if (strncmp(segname, "__KLD", 5) == 0)
 		{
+			// printf ("__KLD found!\n");
+
 			uint32_t	index	= 0;
 			uint32_t	offset	= sizeof(struct segment_command_64);
 
@@ -300,6 +382,8 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 
 				if (strncmp((char *)section->sectname, "__cstring", 9) == 0)
 				{
+					// printf ("__KLD found!\n");
+
 					uint64_t sectionStart	= (fileaddr + index);
 					uint64_t sectionEnd		= (fileaddr + filesize);
 
@@ -310,6 +394,8 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 					{
 						if (*(uint64_t *)baseAddress == NVRAM_GUID_UINT64)
 						{
+							// printf ("NVRAM GUID found!\n");
+
 							// Zero out NVRAM GUID
 							bzero((char *)baseAddress, 36);
 							// Replace/inject GUID replacement
@@ -322,6 +408,8 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 							{
 								if (*(uint64_t *)baseAddress == OPTIONS_STRING_UINT64)
 								{
+									// printf ("/option renamed to /RevoEFI!\n");
+
 									// Rename /option to /RevoEFI (just temporarily)
 									memcpy((unsigned char *)baseAddress, "/RevoEFI", 8);
 									// Prepare to break out early.
@@ -339,8 +427,75 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 					index += section->size;
 				}
 			}
-		}
+#if DEBUG
+			sleep(5);
 #endif
+		}
+	#endif // #if IMESSAGE_PATCH_ENABLED
+
+#if KERNELCACHE_PATCHING_ENABLED
+	#if IMESSAGE_PATCH_ENABLED
+		else
+	#endif
+		if (strncmp(segname, "__PRELINK_TEXT", 14) == 0)
+		{
+			// printf("Target segname found: __PRELINK_TEXT\n");
+
+			uint32_t	index2	= 0;
+			uint32_t	offset2	= sizeof(struct segment_command_64);
+			
+			while(offset2 < segCmd->cmdsize)
+			{
+				struct section_64 *section2 = (struct section_64 *)((char *)segCmd + offset2);
+				offset2 += sizeof(struct section_64);
+
+				if (strncmp((char *)section2->sectname, "__text", 6) == 0)
+				{
+					// printf("Target section found: __PRELINK_TEXT\n");
+
+					uint64_t sectionStart2	= (fileaddr + index2);
+					uint64_t sectionEnd2	= (fileaddr + filesize);
+					
+					unsigned char * baseAddress2 = (unsigned char *)sectionStart2;
+					
+					// Search for APPLE_HDA_PATCH_ID byte sequence.
+					for (; baseAddress2 <= (unsigned char *)sectionEnd2; baseAddress2++)
+					{
+#ifdef APPLE_HDA_PATCH_ID
+						if (*(uint64_t *)baseAddress2 == APPLE_HDA_PATCH_ID)
+						{
+							// printf("DO APPLE_HDA_PATCH_ID\n");
+							// Replace APPLE_HDA_PATCH_ID with APPLE_HDA_TARGET_ID
+							*(uint64_t *)baseAddress2 = APPLE_HDA_TARGET_ID;
+						}
+#endif
+
+#ifdef APPLE_HDA_CONTROLLER_PATCH_ID
+	#if APPLE_HDA_PATCH_ID
+						else if
+	#else
+						if
+	#endif
+						(*(uint64_t *)baseAddress2 == APPLE_HDA_CONTROLLER_PATCH_ID)
+						{
+							// printf("DO APPLE_HDA_CONTROLLER_PATCH_ID\n");
+							// Replace APPLE_HDA_CONTROLLER_PATCH_ID with APPLE_HDA_CONTROLLER_TARGET_ID
+							*(uint64_t *)baseAddress2 = APPLE_HDA_CONTROLLER_TARGET_ID;
+						}
+#endif
+					}
+				}
+				else
+				{
+					// Skip unwanted sections.
+					index2 += section2->size;
+				}
+			}
+			// printf("sleeping for 2 seconds!\n");
+			// sleep(2);
+		}
+#endif // #if KERNELCACHE_PATCH_ENABLED
+#endif // #if ((MAKE_TARGET_OS & LION) == LION)
 	}
 	else
 	{
@@ -443,7 +598,7 @@ static long DecodeUnixThread(long cmdBase, unsigned int *entry)
 	}
 }
 
-
+#if ADD_SYMTAB
 //==============================================================================
 // Private function. Called from DecodeMachO()
 
@@ -468,7 +623,7 @@ static long DecodeSymbolTable(long cmdBase)
 	gSymbolTableSize = totalSize + sizeof(struct symtab_command);
 	gSymbolTableAddr = AllocateKernelMemory(gSymbolTableSize);
 	// Add the SymTab to the memory-map.
-	AllocateMemoryRange("Kernel-__SYMTAB", gSymbolTableAddr, gSymbolTableSize, -1);
+	AllocateMemoryRange("Kernel-__SYMTAB", gSymbolTableAddr, gSymbolTableSize);
 
 	symTableSave = (struct symtab_command *)gSymbolTableAddr;
 	tmpAddr = gSymbolTableAddr + sizeof(struct symtab_command);
@@ -482,7 +637,7 @@ static long DecodeSymbolTable(long cmdBase)
 
 	return 0;
 }
-
+#endif
 
 //==============================================================================
 // Public function (RevoBoot v1.5.30 and greater). Called from our ACPI patcher

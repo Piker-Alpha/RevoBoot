@@ -23,7 +23,7 @@
  *
  *
  * Updates:
- *			- Layout change only (PikerAlpha, November 2012)
+ *			- Layout only change (PikerAlpha, November 2012)
  *
  */
 
@@ -39,31 +39,31 @@
 
 //==============================================================================
 
-long AllocateMemoryRange(char * rangeName, long start, long length, long type)
+long AllocateMemoryRange(char * rangeName, long start, long length)
 {
-	char *nameBuf = malloc(strlen(rangeName) + 1);
-
-	if (nameBuf)
+	if (rangeName)
 	{
-		strcpy(nameBuf, rangeName);
-
-		uint32_t *buffer = malloc(2 * sizeof(uint32_t));
-
-		if (buffer)
+		char *nameBuf = malloc(strlen(rangeName) + 1);
+	
+		if (nameBuf)
 		{
-			buffer[0] = start;
-			buffer[1] = length;
+			strcpy(nameBuf, rangeName);
+			uint32_t *buffer = malloc(2 * sizeof(uint32_t));
 
+			if (buffer)
+			{
+				buffer[0] = start;
+				buffer[1] = length;
 #if DEBUG
-			printf("AllocateMemoryRange : %s - 0x%lx - 0x%lx\n", nameBuf, length, start);
+				printf("AllocateMemoryRange(%s) @0x%lx, length 0x%lx\n", rangeName, start, length);
 #endif
+				DT__AddProperty(gPlatform.EFI.Nodes.MemoryMap, nameBuf, 2 * sizeof(uint32_t), (char *)buffer);
+			
+				return 0;
+			}
 
-			DT__AddProperty(gPlatform.EFI.Nodes.MemoryMap, nameBuf, 2 * sizeof(uint32_t), (char *)buffer);
-
-			return 0;
+			free(nameBuf);
 		}
-
-		free(nameBuf);
 	}
 
 	return -1;
@@ -91,7 +91,7 @@ long AllocateKernelMemory(long inSize)
 
 #if DEBUG
 	printf("AllocateKernelMemory: 0x%lx - 0x%lx\n", address, inSize);
-	getchar();
+	sleep(3);
 #endif
 
 	return address;

@@ -44,7 +44,7 @@
 #define EFI_MAX_CONFIG_TABLES			5
 
 #if EFI_64_BIT
-	// Mountain Lion
+	// Mountain Lion, Mavericks and Yosemite
 	//
 	// movabs $0x8000000000000003,%rax
 	// ret

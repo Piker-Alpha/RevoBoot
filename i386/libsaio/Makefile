@@ -11,6 +11,7 @@
 #			- Enabled clang compilation (dgsga, PikerAlpha, November 2012. Credits to Evan Lojewski for original work).
 #			- Output change and now using libtool instead of ar/ranlib (PikerAlpha, November 2012).
 #			- SAIO_OBJS changed / base64.o added (PikerAlpha, November 2012).
+#			- MAKE_TARGET_OS_VER added (PikerAlpha, June 2014).
 
 include ../MakePaths.dir
 
@@ -25,6 +26,7 @@ CFLAGS	= $(RC_CFLAGS) $(OPTIM) -arch i386 -g -Wmost \
 		-DRCZ_COMPRESSED_FILE_SUPPORT $(DEBUG) \
 		-DREVOBOOT_VERSION_INFO=\"RevoBoot\ v$(PRODUCT_VERSION_NUMBER)\" \
 		-DMAKE_TARGET_OS=$(PRODUCT_OS_TARGET) \
+		-DMAKE_TARGET_OS_VER=$(PRODUCT_OS_TARGET_VERSION) \
 		-DSETTINGS_FILE=SETTINGS/$(MAKE_TARGET_MODEL).h \
 		-DSTATIC_DATA_FILENAME=$(MAKE_TARGET_MODEL).bin \
 		-DACPI_DATA_FILE=../../config/$(MAKE_ACPI_DATA_FILE) \

@@ -97,7 +97,7 @@ static SMBWord getFSBFrequency(void)
 
 	/*
 	 * Returning zero (0) here is invalid, but we can get away with it because 
-	 * of XNU's check in tsc.init() which effectively catches the invalid value 
+	 * of XNU's check in tsc_init() which effectively catches the invalid value
 	 * and set it to 100 MHz for Sandy Bridge CPU's (133 MHz when quad pumped).
 	 *
 	 * Note: We don't want to lose the OC feedback in GeekBench et all and that 
@@ -322,7 +322,7 @@ static const char * getBIOSDate(void)
 
 	// biosDate[10] = 0;
 
-	_SMBIOS_DEBUG_DUMP("biosData = %s\n", biosDate);
+	_SMBIOS_DEBUG_DUMP("biosDate = %s\n", biosDate);
 	_SMBIOS_DEBUG_SLEEP(5);
 
 	const char * retValue = biosDate;

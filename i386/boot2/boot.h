@@ -34,6 +34,7 @@
 
 #include "platform.h"
 
+
 #if USE_STATIC_DISPLAY_RESOLUTION
 	#define DEFAULT_SCREEN_WIDTH	STATIC_SCREEN_WIDTH
 	#define DEFAULT_SCREEN_HEIGHT	STATIC_SCREEN_HEIGHT
@@ -81,7 +82,6 @@
 #define kACPIKey            "acpi"
 #define kScanSingleDriveKey "Scan Single Drive"
 #define kInsantMenuKey      "Instant Menu"
-#define kDefaultKernel      "mach_kernel"
 #define kWaitForKeypressKey "Wait"
 
 /*
@@ -130,7 +130,7 @@ enum
  * bootlogo.c
  */
 
-extern void showBootLogo();
+extern void showBootLogo(bool aBootRecoveryHDFlag);
 
 /*
  * fake_efi.c
@@ -176,6 +176,12 @@ extern long (*LoadExtraDrivers_p)(FileLoadDrivers_t FileLoadDrivers_p);
  */
 
 extern int decompressLZSS(u_int8_t *dst, u_int8_t *src, u_int32_t srclen);
+
+/*
+ * lzss.c
+ */
+
+extern int lzvn_decode(void * decompressedData, uint32_t decompressedSize, void * compressedData, uint32_t compressedSize);
 
 /*
  * options.c

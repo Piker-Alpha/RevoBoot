@@ -52,9 +52,9 @@ static char * zalloc_base;
 static char * zalloc_end;
 
 #if SAFE_MALLOC
-	static void  (*zerror)(char *, size_t, const char *, int);
+	static void		(*zerror)(char *, size_t, const char *, int);
 #else
-	static void   (*zerror)(char *, size_t);
+	static void		(*zerror)(char *, size_t);
 #endif
 
 static void   zallocate(char * start,int size);
@@ -66,7 +66,7 @@ static void   zcoalesce(void);
 	size_t zalloced_size;
 #endif
 
-#define ZALLOC_NODES	16384
+#define ZALLOC_NODES	32767 /* was 16384 */
 
 #if SAFE_MALLOC
 	static void mallocError(char *addr, size_t size, const char *file, int line)
@@ -141,8 +141,9 @@ static void   zcoalesce(void);
  
 	for (i = 0; i < availableNodes; i++)
 	{
-		// find node with equal size, or if not found,
-                // then smallest node that fits.
+		/*
+		 * Find node with equal size, or if not found, then smallest node that fits.
+		 */
 		if (zavailable[i].size == size)
 		{
 			zallocate(ret = zavailable[i].start, size);
@@ -208,11 +209,13 @@ void free(void * pointer)
                   "subl $4, %%eax\n\t"
                   "movl 0(%%eax), %%eax" : "=a" (rp));
 #else
-        rp = 0;
+	rp = 0;
 #endif
 
 	if (!start)
+	{
         return;
+	}
 
 	for (i = 0; i < allocedNodes; i++)
 	{
