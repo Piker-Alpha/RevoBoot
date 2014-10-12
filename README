@@ -1,6 +1,6 @@
 - About this project
 
-This Open Source hobby project was first started by Master Chief, then taken over by RevoGirl (Samantha) and is now maintained by Pike R. Alpha (http://pikeralpha.wordpress.com). A long time supporter of the RevoBoot project.
+This Open Source hobby project was first started by Master Chief, then taken over by DHP/RevoGirl (Samantha †) and is now maintained by Pike R. Alpha (http://pikeralpha.wordpress.com). A long time supporter of the RevoBoot project.
 
 
 - Server.app
@@ -29,16 +29,4 @@ RevoBoot can be built on Snow Leopard, Lion and Mountain Lion. The latter requir
 
 - Configuration
 
-Please note that RevoBoot must be configured for your hardware so start reading our WiKi. See also:
-
-https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder
-
-We also have a configuration README available at:
-
-https://github.com/RevoGirl/RevoBoot/blob/master/i386/config/README
-
-There's also RevoBuilder (a great tool for first starters) over at:
-
-https://github.com/blackosx/RevoBuilder/wiki/Using-RevoBuilder
-
-Note: RevoBuilder is most likeky broken for RevoBoot v.1.5.00 and greater!
+Please note that RevoBoot must be configured for your hardware specifically. This makes it on of, if not the most difficult boot loader to setup, but that's just what you have to do. And sorry, but don't expect any help from me, because I don't have the time for it.
