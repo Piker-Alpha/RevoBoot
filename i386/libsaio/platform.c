@@ -289,7 +289,7 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 
 	initKernelBootConfig();
 
-#if (LOAD_MODEL_SPECIFIC_EFI_DATA)
+#if (LOAD_MODEL_SPECIFIC_EFI_DATA || BLACKMODE)
 	/*
 	 * We need to call this much earlier in the boot process when static EFI data
 	 * is read from: /Extra/EFI[MacModelNN.bin]. Otherwise LoadFile (load.c) fails.

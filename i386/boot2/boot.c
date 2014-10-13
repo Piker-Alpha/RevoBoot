@@ -58,8 +58,6 @@
 #include "sl.h"
 #include "libsa.h"
 
-#include "cpu/proc_reg.h"
-
 // DHP: Dump all global junk a.s.a.p.
 
 long gBootMode = kBootModeQuiet; // no longer defaults to 0 aka kBootModeNormal
@@ -237,12 +235,15 @@ void boot(int biosdev)
 	showBootLogo(bootRecoveryHD);
 #endif
 
-#if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0)
+#if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0 && BLACKMODE == 0)
 	/*
 	 * We can only make this call here when static EFI is included from:
 	 * RevoBoot/i386/config/EFI/[MacModelNN.h] Not when the data is read from:
 	 * /Extra/EFI/ because then RevoBoot/i386/libsaio/platform.c makes the call.
-	 */
+	 *
+ 	 * We can also <em>not</em> call it here if BLACKMODE is enabled, because
+	 * then it fails to load: /usr/standalone/i386/EfiLoginUI/appleLogo.efires
+ 	 */
 	initPartitionChain();
 #endif
 

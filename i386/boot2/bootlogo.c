@@ -105,7 +105,6 @@ void drawDataRectangle(unsigned short x, unsigned short y, unsigned short width,
 
 #include "picopng.h"
 
-
 //==============================================================================
 
 void showBootLogo(bool aBootRecoveryHDFlag)
@@ -149,8 +148,10 @@ void showBootLogo(bool aBootRecoveryHDFlag)
 	setBackgroundColor(backGroundColor);
 	
 	void *imageLoadBuffer = (void *)kLoadAddr;
-
-	sprintf(filename, "%s%s", (aBootRecoveryHDFlag) ? "/com.apple.Boot.P" : "", "/usr/standalone/i386/EfiLoginUI/appleLogo.efires");
+	//
+	// Rock, Paper, Scissors?
+	//
+	sprintf(filename, "%s", (aBootRecoveryHDFlag) ? "/com.apple.Boot.P" : "", "/usr/standalone/i386/EfiLoginUI/appleLogo.efires");
 
 	int EFIResourceFile = open(filename, 0);
 	
@@ -188,18 +189,14 @@ void showBootLogo(bool aBootRecoveryHDFlag)
 					uint8_t *bootImage = malloc((info->width * 4) * info->height);
 					memcpy(bootImage, info->image->data, ((info->width * 4) * info->height));
 	
+#if DEBUG
+					setVideoMode(GRAPHICS_MODE);
+#endif
 					uint16_t x = (VIDEO(width) - MIN(info->width, VIDEO(width)) ) / 2;
 					uint16_t y = (VIDEO(height) - MIN(info->height, VIDEO(height)) ) / 2;
-	
 					blendImage(x, y, info->width, info->height, bootImage);
 					png_alloc_free_all();
-
 					free(bootImage);
-#if INTEL_VGA_REG_DUMP
-					setVideoMode(VGA_TEXT_MODE);
-#endif
-					// extern void vga(void);
-					// vga();
 
 					return;
 				}

@@ -26,7 +26,7 @@ INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSAIODIR)
 
 VPATH = $(OBJROOT):$(SYMROOT)
 
-SA_OBJS = prf.o printf.o zalloc.o string.o strtol.o setjmp.o crc32.o
+SA_OBJS = prf.o printf.o zalloc.o string.o strtol.o crc32.o
 
 LIBS = libsa.a
 

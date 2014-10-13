@@ -7,17 +7,17 @@ if [[ "$1" =~ [iMac|Mac] ]];
     #
     # Use specified MacModelNN from argument.
     #
-    make MODEL=$1 > out.log
+    make MODEL=$1
   else
     #
     # Check RevoBoot/MODEL for default model.
     #
-    if [[ -f MODEL ]];
+    if [ -f MODEL ];
       then
         #
         # Get MacModelNN from MODEL (assuming it to be correct).
         #
-        make MODEL=`cat MODEL` > out.log
+        make MODEL=`cat MODEL`
       else
         #
         # No default model found. Create MODEL file for future use.
@@ -26,7 +26,7 @@ if [[ "$1" =~ [iMac|Mac] ]];
         #
         # Use Macmini62 as our default (matches settings-template.h)
         #
-        make MODEL=Macmini62 > out.log
+        make MODEL=Macmini62
   fi;
 fi
 
