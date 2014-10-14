@@ -37,9 +37,15 @@
 unsigned long lookUpCLUTIndex(unsigned char index)
 {
 	long colorIndex = (index * 3);
+#if BLACKMODE
 	long red   = AppleLogoBlackClut[ colorIndex   ];
 	long green = AppleLogoBlackClut[ colorIndex++ ];
 	long blue  = AppleLogoBlackClut[ colorIndex++ ];
+#else
+	long red   = AppleLogoClut[ colorIndex   ];
+	long green = AppleLogoClut[ colorIndex++ ];
+	long blue  = AppleLogoClut[ colorIndex++ ];
+#endif
 	
 	return (red << 16) | (green << 8) | blue;
 }
@@ -55,7 +61,6 @@ void * stosl(void *dst, long val, long len)
 	
 	return dst;
 }
-
 
 //==============================================================================
 
@@ -149,7 +154,7 @@ void showBootLogo(bool aBootRecoveryHDFlag)
 	void *logoData = (void *)AppleLogoBlackPacked;
 #else
 	setBackgroundColor(0xbfbfbf);
-	uint32_t compressedSize = sizeof(AppleLogoBlackPacked);
+	uint32_t compressedSize = sizeof(AppleLogoPacked);
 	void *logoData = (void *)AppleLogoPacked;
 #endif
 
