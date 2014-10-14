@@ -231,7 +231,9 @@ void boot(int biosdev)
 		printf("\ngArchCPUType (CPU): %s\n", (gArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
 		sleep(3); // Silent sleep.
 	#endif
-#else
+#endif
+
+#if (DEBUG_STATE_ENABLED == 0)
 	showBootLogo(bootRecoveryHD);
 #endif
 
@@ -747,7 +749,7 @@ void boot(int biosdev)
 				// Switch to graphics mode and show the Apple logo on a gray-ish background.
 				showBootLogo(bootRecoveryHD);
 			}
-			
+
 			_BOOT_DEBUG_DUMP("execKernel-8\n");
 
 			startMachKernel(kernelEntry, bootArgs); // asm.s
