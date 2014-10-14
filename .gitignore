@@ -7,14 +7,9 @@ sym/*
 
 i386/config/SETTINGS/*.h
 
-i386/config/ACPI/default.h
-i386/config/ACPI/*Mac*.h
-
-i386/config/EFI/default.h
-i386/config/EFI/*Mac*.h
-
-i386/config/SMBIOS/default.h
-i386/config/SMBIOS/*Mac*.h
+i386/config/ACPI/*.h
+i386/config/EFI/*.h
+i386/config/SMBIOS/*.h
 
 i386/util/libcc_kext.a
 
