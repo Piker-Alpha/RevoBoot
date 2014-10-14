@@ -32,6 +32,8 @@ PAX = /bin/pax
 OBJROOT = `pwd`/obj
 SYMROOT = `pwd`/sym
 
+DEFAULT_MODEL=$(shell cat MODEL)
+
 #
 # Export version number (picked up by i386/libsaio/Makefile)
 #
@@ -103,12 +105,12 @@ export PRODUCT_OS_TARGET = `echo $(MAKE_TARGET_OS)`
 export PRODUCT_OS_TARGET_VERSION = `echo \"$(MAKE_TARGET_OS_VER)\"`
 
 #
-# Check if a target model was specified (example: make MODEL=16 mountain-lion).
+# Check if a target model was specified (example: make MODEL=MacPro61).
 #
 
 ifdef MODEL
 	#
-	# MODEL=[MacModelNN] specified, export target model as PRODUCT_MODEL_TARGET.
+	# MODEL=[MacModelNN] specified, export target model.
 	#
 	ifneq ($(MODEL),)
 		export MAKE_TARGET_MODEL = $(MODEL)
@@ -117,25 +119,41 @@ ifdef MODEL
 		#
 		DATA_FILE = $(MODEL)
 	else
+		#
+		# No. Use Macmini62 as a fallback default.
+		#
+		MODEL = Macmini62
 		export MAKE_TARGET_MODEL = Macmini62
 		#
-		# Include default/empty static data file (no model identifier specified).
+		# Include default/empty static data files (no model identifier specified).
 		#
 		DATA_FILE = data-template
 	endif
 else
 	#
-	# Include default settings template (no model identifier specified).
+	# MODEL=[MacModelNN], check if DEFAULT_MODEL was set (first run only).
 	#
-	export MAKE_TARGET_MODEL = Macmini62
-	#
-	#
-	#
-	MODEL=Macmini62
-	#
-	# Include default/empty static data file (no model identifier specified).
-	#
-	DATA_FILE = data-template
+	ifdef DEFAULT_MODEL
+		#
+		# Yes it is. Use Macmodel[nn] from RevoBoot/MODEL
+		#
+		MODEL = $(DEFAULT_MODEL)
+		export MAKE_TARGET_MODEL = $(MODEL)
+		#
+		# Include static ACPI/EFI/SMBIOS data files per model identifier.
+		#
+		DATA_FILE = $(MODEL)
+	else
+		#
+		# No. Use Macmini62 as a fallback default.
+		#
+		MODEL = Macmini62
+		export MAKE_TARGET_MODEL = $(MODEL)
+		#
+		# Include default/empty static data file (no model identifier specified).
+		#
+		DATA_FILE = data-template
+	endif
 endif
 
 #
@@ -173,7 +191,7 @@ $(MAKEGOAL):
 #
 # normal make goal
 #
-	@printf "Compiling RevoBoot, setup for a $(MODEL) running OS X $(MAKE_TARGET_OS_VER) ($@)\n\n" >&2;
+	@printf "\nCompiling RevoBoot, setup for a $(MODEL) running OS X $(MAKE_TARGET_OS_VER) ($@)\n" >&2;
 
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE) ]; then \
 		echo "\t[CP] $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE)"; \
