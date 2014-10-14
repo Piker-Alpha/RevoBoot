@@ -38,13 +38,6 @@ VPATH = $(OBJROOT):$(SYMROOT)
 #
 OBJS = boot2.o boot.o bootlogo.o graphics.o drivers.o options.o lzss.o lzvn.o
 
-ifeq ($(MAKECMDGOALS), yosemite)
-#	OBJS = boot2.o boot.o bootlogo.o graphics.o picopng.o drivers.o options.o lzss.o
-OBJS+=picopng.o
-#else
-#	OBJS = boot2.o boot.o bootlogo.o graphics.o drivers.o options.o lzss.o
-endif
-
 DIRS_NEEDED = $(OBJROOT) $(SYMROOT)
 
 #
