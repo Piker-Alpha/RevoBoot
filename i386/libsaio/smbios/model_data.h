@@ -74,11 +74,23 @@
 		#define SMB_PRODUCT_NAME	"iMac14,3"
 		#define SMB_BOARD_PRODUCT	"Mac-77EB7D7DAF985301"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '3' }
-	#else // Defaults to iMac 14,4
+	#elif (TARGET_MODEL == IMAC_144)
 		#define SMB_BIOS_VERSION	"IM144.88Z.0179.B03.1405241029"
 		#define SMB_PRODUCT_NAME	"iMac14,4"
 		#define SMB_BOARD_PRODUCT	"Mac-81E3E92DD6088272"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '4' }
+	#elif (TARGET_MODEL == IMAC_152)
+		// Intel Core i7-4790K @ 4 GHz
+		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B00.1409291931"
+		#define SMB_PRODUCT_NAME	"iMac15,2"
+		#define SMB_BOARD_PRODUCT	"Mac-FA842E06C61E91C5"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '2' }
+	#else // Defaults to iMac 15,1
+		// Intel Core i5-4690 @ 3.50 GHz
+		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B00.1409291931"
+		#define SMB_PRODUCT_NAME	"iMac15,1"
+		#define SMB_BOARD_PRODUCT	"Mac-42FD25EABCABB274"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '1' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
@@ -251,18 +263,11 @@
 		#define SMB_PRODUCT_NAME	"Macmini6,2"
 		#define SMB_BOARD_PRODUCT	"Mac-F65AE981FFA204ED"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '6', ',', '2' }
-	#elif (TARGET_MODEL == MACMINI_71)
-		//
-		#define SMB_BIOS_VERSION	"MM71.88Z.0106.B03.1411161202"
+	#else // Defaults to Macmini7,1
+		#define SMB_BIOS_VERSION	"MM71.88Z.0220.B00.1409291751"
 		#define SMB_PRODUCT_NAME	"Macmini7,1"
-		#define SMB_BOARD_PRODUCT	"Mac-F65AE981FFA204ED"
+		#define SMB_BOARD_PRODUCT	"Mac-35C5E08120C7EEAF"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '7', ',', '1' }
-	#else // Defaults to MacPro7,2
-		//
-		#define SMB_BIOS_VERSION	"MM71.88Z.0106.B03.1411161202"
-		#define SMB_PRODUCT_NAME	"Macmini7,2"
-		#define SMB_BOARD_PRODUCT	"Mac-F65AE981FFA204ED"
-		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'm', 'i', 'n', 'i', '7', ',', '2' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
