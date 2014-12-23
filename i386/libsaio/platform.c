@@ -217,8 +217,9 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 
 	_PLATFORM_DEBUG_DUMP("gPlatform.OSVersion: %s\n", gPlatform.OSVersion);
 
+	gPlatform.HelperPath			= NULL; // Will be initialized in stringTable.c
+
 	gPlatform.KernelCachePath		= strdup(kKernelCachePath);	// Used in boot.c and driver.c
-	
 	_PLATFORM_DEBUG_DUMP("Kernel cache path: %s\n", gPlatform.KernelCachePath);
 
 	gPlatform.BIOSDevice			= (biosDevice & kBIOSDevMask);	// Device number masked with 0xFF.
