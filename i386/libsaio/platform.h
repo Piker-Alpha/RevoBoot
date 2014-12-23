@@ -64,14 +64,17 @@
 // Additional model selectors to select a specific target model.
 //------------------------------------------------------------------------------
 
-#define IMAC_111				(IMAC | (1 << 15))
-#define IMAC_121				(IMAC | (2 << 15))
-#define IMAC_122				(IMAC | (3 << 15))
-#define IMAC_131				(IMAC | (4 << 15))
-#define IMAC_132				(IMAC | (5 << 15))
-#define IMAC_141				(IMAC | (6 << 15))
-#define IMAC_142				(IMAC | (7 << 15))
-#define IMAC_143				 IMAC						// Defaults to iMac14,3
+#define IMAC_111				(IMAC | ( 1 << 15))
+#define IMAC_121				(IMAC | ( 2 << 15))
+#define IMAC_122				(IMAC | ( 3 << 15))
+#define IMAC_131				(IMAC | ( 4 << 15))
+#define IMAC_132				(IMAC | ( 5 << 15))
+#define IMAC_141				(IMAC | ( 6 << 15))
+#define IMAC_142				(IMAC | ( 7 << 15))
+#define IMAC_143				(IMAC | ( 8 << 15))
+#define IMAC_144				(IMAC | ( 9 << 15))
+#define IMAC_152				(IMAC | (10 << 15))
+#define IMAC_151				 IMAC						// Defaults to iMac15,1
 
 #define MACBOOK_41				 MACBOOK					// Defaults to MacBook4,1
 
@@ -100,7 +103,6 @@
 #define MACMINI_53				(MACMINI | (4 << 15))
 #define MACMINI_61				(MACMINI | (5 << 15))
 #define MACMINI_62				(MACMINI | (6 << 15))
-#define MACMINI_72				(MACMINI | (7 << 15))
 #define MACMINI_71				 MACMINI					// Defaults to Macmini7,1
 
 #define MACPRO_31				(MACPRO | (1 << 15))
@@ -186,9 +188,8 @@ typedef struct _PlatformInfo_t
 	char *				KextFileName;			// Initialized and used in drivers.c
 	char *				KextFileSpec;			// Initialized and used in drivers.c
 	char *				KextPlistSpec;			// Initialized and used in drivers.c
-	
 	char *				KernelCachePath;		// Initialized in platform.c and used in boot.c, driver.c
-	
+	char *				HelperPath;				// Initialized in stringTable.c and used in boot.c 	
 #if PRE_LINKED_KERNEL_SUPPORT
 	bool				KernelCacheSpecified;	// Set to indicate that a full path is specified.
 #endif
