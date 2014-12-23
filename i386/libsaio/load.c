@@ -50,7 +50,7 @@
 /***
  * Tip: Reverse bytes if you search for the IDs with grep/HexEdit.
  */
-// #define APPLE_HDA_PATCH_ID			0x11D419843D107410 10.9.2 and 10.9.3
+// #define APPLE_HDA_PATCH_ID				0x11D419843D107410 10.9.2 and 10.9.3
 // #define APPLE_HDA_PATCH_ID				0x11D419843D397410
 // #define APPLE_HDA_TARGET_ID				0x10EC08923D397410
 
