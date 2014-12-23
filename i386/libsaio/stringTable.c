@@ -382,11 +382,8 @@ long loadCABootPlist(void)
 #endif
 		"Library/Preferences/SystemConfiguration" // The default.
 
-#if APPLE_RAID_SUPPORT
-		/*
-		 * This is a temporarily change to test RAID support, but it
-		 * will be rewritten right after Bryan confirms that it works.
-		 */
+#if (APPLE_RAID_SUPPORT || CORE_STORAGE_SUPPORT)
+		// Helper Locations
 		,
 		"com.apple.boot.P/Library/Preferences/SystemConfiguration",
 		"com.apple.boot.R/Library/Preferences/SystemConfiguration",
@@ -421,6 +418,14 @@ long loadCABootPlist(void)
 				{
 					// Installation data directory located
 					gPlatform.BootVolume->flags = kBVFlagInstallVolume;
+				}
+#endif
+#if (APPLE_RAID_SUPPORT || CORE_STORAGE_SUPPORT)
+				if (strncmp(path, "/com.apple.boot.", 16) == 0)
+				{
+					gPlatform.HelperPath = malloc(18);
+					bzero(gPlatform.HelperPath, 18);
+					strncpy(gPlatform.HelperPath, path, 17);
 				}
 #endif
 				break;
