@@ -3,10 +3,10 @@
 #
 # Updates:
 #
-#		- Major cleanup (PikerAlpha, October 2012).
+#		- Major cleanup (Pike R. Alpha, October 2012).
 #		- Fixed clang compilation (dgsga, November 2012).
-#		- Single pass compilation (PikerAlpha, November 2012).
-#		- Removed unused CPPFLAGS (PikerAlpha, November 2012).
+#		- Single pass compilation (Pike R. Alpha, November 2012).
+#		- Removed unused CPPFLAGS (Pike R. Alpha, November 2012).
 #
 
 
