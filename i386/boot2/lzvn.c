@@ -84,7 +84,7 @@ size_t lzvn_decode(void * decompressedData, size_t decompressedSize, void * comp
 	uint8_t jmpTo			= CASE_TABLE;
 
 	/*
-	 * This jump table was developed by someone using the handle 'MnusZwei'
+	 * This jump table was developed by someone using the handle 'MinusZwei'
 	 * over at insanelymac.com
 	 */
 	static short caseTable[ 256 ] =
