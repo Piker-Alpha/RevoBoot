@@ -193,7 +193,7 @@ long LoadThinFatFile(const char *fileSpec, void **binary)
 	*binary = (void *)kLoadAddr;
 
 	// Read file into load buffer. The data in the load buffer will be
-	// overwritten by the next LoadFile() call.
+	// overwritten by the next call to LoadFile().
 
 	gFSLoadAddress = (void *) LOAD_ADDR;
 
