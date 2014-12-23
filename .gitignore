@@ -5,6 +5,9 @@ out.log
 obj/*
 sym/*
 
+i386/boot0/boot0
+i386/boot1/boot1h
+
 i386/config/SETTINGS/*.h
 
 i386/config/ACPI/*.h
