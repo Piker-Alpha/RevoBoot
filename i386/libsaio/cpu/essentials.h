@@ -189,5 +189,6 @@
 #define SANDY_BRIDGE	2
 #define IVY_BRIDGE		4
 #define HASWELL			8
+#define BROADWELL		16
 
 #endif /* !__LIBSAIO_CPU_ESSENTIALS_H */
