@@ -363,6 +363,12 @@ void initCPUStruct(void)
 					hiBit = 31;
 					break;
 
+//				case CPU_MODEL_BROADWELL:
+				case CPU_MODEL_BROADWELL_ULT:
+					CoreBridgeType = BROADWELL;
+					hiBit = 31;
+					break;
+
 				case CPU_MODEL_NEHALEM:
 				case CPU_MODEL_NEHALEM_EX:
 				case CPU_MODEL_FIELDS:
@@ -434,10 +440,12 @@ void initCPUStruct(void)
 					// msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);
 					// wrmsr64(MSR_MISC_PWR_MGMT, (msr & 0xFFFEFBFF));
 
-					wrmsr64(MSR_PKG_POWER_LIMIT, 0x4283E800DD8230);
+					// wrmsr64(MSR_PKG_POWER_LIMIT, 0x4283E800DD8230);
 					// wrmsr64(MSR_PP0_CURRENT_CONFIG, 0x40101414000002F8);
-					wrmsr64(MSR_PP0_POWER_LIMIT, 0);
-					wrmsr64(MSR_PP1_POWER_LIMIT, 0);
+					// wrmsr64(MSR_PP0_POWER_LIMIT, 0);
+					// wrmsr64(MSR_PP1_POWER_LIMIT, 0);
+					
+					// wrmsr64(MSR_TURBO_RATIO_LIMIT, 0x25252525);
 
 					checkFlexRatioMSR();
 				}
