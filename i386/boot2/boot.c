@@ -58,10 +58,6 @@
 #include "sl.h"
 #include "libsa.h"
 
-// DHP: Dump all global junk a.s.a.p.
-
-long gBootMode = kBootModeQuiet; // no longer defaults to 0 aka kBootModeNormal
-
 //==============================================================================
 // Local adler32 function.
 
@@ -330,7 +326,7 @@ void boot(int biosdev)
 				// Check for -x (safe) flag.
 				if (getValueForBootKey(kernelFlags, kSafeModeFlag, &val, &length))
 				{
-					gBootMode = kBootModeSafe;
+					gPlatform.BootMode = kBootModeSafe;
 				}
 
 				// Check for -f (flush cache) flag.
@@ -496,7 +492,7 @@ void boot(int biosdev)
 #endif
 		if (getBoolForKey(kQuietBootKey, &quietBootMode, &bootInfo->bootConfig) && !quietBootMode)
 		{
-			gBootMode = kBootModeNormal; // Reversed from: gBootMode |= kBootModeQuiet;
+			gPlatform.BootMode = kBootModeNormal; // Reversed from: gPlatform.BootMode |= kBootModeQuiet;
 		}
 	}
 
@@ -519,10 +515,10 @@ void boot(int biosdev)
 		_BOOT_DEBUG_SLEEP(5); */
 
 #if PRE_LINKED_KERNEL_SUPPORT
-		_BOOT_DEBUG_DUMP("gBootMode = %d\n", gBootMode);
+		_BOOT_DEBUG_DUMP("gPlatform.BootMode = %d\n", gPlatform.BootMode);
 
 		// Preliminary checks to prevent us from doing useless things.
-		mayUseKernelCache = ((flushCaches == false) && ((gBootMode & kBootModeSafe) == 0));
+		mayUseKernelCache = ((flushCaches == false) && ((gPlatform.BootMode & kBootModeSafe) == 0));
 
 		_BOOT_DEBUG_DUMP("mayUseKernelCache = %s\n", mayUseKernelCache ? "true" : "false");
 
@@ -766,6 +762,9 @@ void boot(int biosdev)
 			
 			_BOOT_DEBUG_DUMP("execKernel-7 / gVerboseMode is %s\n", gVerboseMode ? "true" : "false");
 
+#if DISABLE_LEGACY_XHCI
+			disableLegacyXHCI();
+#endif
 			// Did we switch to graphics mode yet (think verbose mode)?
 			if (gVerboseMode || bootArgs->Video.v_display != GRAPHICS_MODE)
 			{

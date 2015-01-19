@@ -34,6 +34,10 @@
 
 #include "platform.h"
 
+#if DISABLE_LEGACY_XHCI
+	#include "pci.h"
+	#include "xhci.h"
+#endif
 
 #if USE_STATIC_DISPLAY_RESOLUTION
 	#define DEFAULT_SCREEN_WIDTH	STATIC_SCREEN_WIDTH
@@ -88,19 +92,7 @@
 
 #define kBootTimeout         -1
 
-// A global set by boot() to record the device that the booter was loaded from.
-
-extern long gBootMode;
 extern char bootPrompt[];
-
-// Kernel Boot Modes
-enum
-{
-	kBootModeNormal = 0,
-	kBootModeSafe   = 1,
-	kBootModeSecure = 2,
-	kBootModeQuiet  = 4
-};
 
 /* 
  * Note well that we take an easier approice, and this should not be 

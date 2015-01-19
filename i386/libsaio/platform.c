@@ -129,6 +129,7 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 {
 	memset(&gPlatform, 0, sizeof(gPlatform));
 
+	gPlatform.BootMode = kBootModeQuiet; // no longer defaults to 0 aka kBootModeNormal
 	gPlatform.BootRecoveryHD = bootRecoveryHD;
 
 	// Copied from cpu/dynamic_data.h to make printf work this early on.

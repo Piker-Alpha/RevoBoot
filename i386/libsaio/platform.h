@@ -147,6 +147,17 @@
 #endif
 
 //==============================================================================
+// Kernel boot modes (moved from boot.h)
+
+enum
+{
+	kBootModeNormal = 0,
+	kBootModeSafe   = 1,
+	kBootModeSecure = 2,
+	kBootModeQuiet  = 4
+};
+
+//==============================================================================
 
 typedef struct _RamSlotInfo_t
 {
@@ -195,7 +206,9 @@ typedef struct _PlatformInfo_t
 #endif
 	
 	int					BIOSDevice;				// Initialized in platform.c (formely know as gBIOSDev).
-	
+
+	long				BootMode;				// Initialized in platform.c
+
 	BVRef				BootVolume;				// Initialized in disk.c
 	BVRef				BootPartitionChain;		// Initialized in sys.c
 	BVRef				RootVolume;				// Initialized in disk.c (used in sys.c).
@@ -306,7 +319,7 @@ typedef struct _PlatformInfo_t
 			
 			// EFI specific stuff.
 			Node *	ConfigurationTable;			// Path: /efi/configuration-table
-			Node *	ACPI_Tables;				// Path: /efi/configuration-table/ACPI Tables
+			// Node *	ACPI_Tables;				// Path: /efi/configuration-table/ACPI Tables
 			Node *	RuntimeServices;			// Path: /efi/runtime-services
 			Node *	Platform;					// Path: /efi/platform
 		} Nodes;

@@ -140,7 +140,7 @@ void getAndProcessBootArguments(char * configKernelFlags)
 			// printf("And action...\n");
 			if (gBootArgsPtr + 3 < gBootArgsEnd)
 			{
-				gBootMode = currentMode;
+				gPlatform.BootMode = currentMode;
 				copyArgument(0, bootFlags[index], 3, &argP, &cntRemaining);
 			}
 

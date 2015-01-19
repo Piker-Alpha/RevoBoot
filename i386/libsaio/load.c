@@ -408,9 +408,9 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 							{
 								if (*(uint64_t *)baseAddress == OPTIONS_STRING_UINT64)
 								{
-									// printf ("/option renamed to /RevoEFI!\n");
+									// printf ("/options renamed to /RevoEFI!\n");
 
-									// Rename /option to /RevoEFI (just temporarily)
+									// Rename /options to /RevoEFI (just temporarily)
 									memcpy((unsigned char *)baseAddress, "/RevoEFI", 8);
 									// Prepare to break out early.
 									baseAddress = (unsigned char *)(sectionEnd + 1);

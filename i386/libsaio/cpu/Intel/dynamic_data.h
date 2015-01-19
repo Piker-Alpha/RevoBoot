@@ -420,7 +420,7 @@ void initCPUStruct(void)
 					requestMaxTurbo(maxBusRatio);
 				}
 
-				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell)
+				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell || Broadwell)
 				{
 					// gPlatform.CPU.Type += CoreBridgeType;
 
