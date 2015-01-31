@@ -21,6 +21,29 @@
 #endif
 
 
+#if VERIFY_OPREGION_GNVS_ADDRESS
+//==============================================================================
+
+unsigned int search64bitPattern(unsigned int aStartAddress, int aNumberOfBytes, uint64_t aSearchPattern)
+{
+	unsigned char * baseAddress = (unsigned char *) aStartAddress;
+	unsigned char * endAddress = (baseAddress + aNumberOfBytes);
+
+	for (; baseAddress <= endAddress; baseAddress++)
+	{
+		if (*(uint64_t *)baseAddress == aSearchPattern)
+		{
+			_ACPI_DEBUG_DUMP("GNVS Address Found @ 0x%x\n", baseAddress);
+
+			return (unsigned int)baseAddress; // Found!
+		}
+	}
+
+	return 0; // Not found!
+}
+#endif // VERIFY_OPREGION_GNVS_ADDRESS
+
+
 #if (LOAD_EXTRA_ACPI_TABLES && (LOAD_DSDT_TABLE_FROM_EXTRA_ACPI || LOAD_SSDT_TABLE_FROM_EXTRA_ACPI))
 //==============================================================================
 
@@ -257,6 +280,44 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 	overrideACPIMethods(patchedFADT);
 #elif STATIC_DSDT_TABLE_INJECTION || (LOAD_EXTRA_ACPI_TABLES && LOAD_DSDT_TABLE_FROM_EXTRA_ACPI)
 	patchedFADT->DSDT = (uint32_t)customTables[DSDT].tableAddress; // The original DSDT without DSDT table injection!
+
+#if VERIFY_OPREGION_GNVS_ADDRESS
+	#define OP_REGION_GNVS_ADDRESS_LE 0x0C0053564E47805B
+	// First try to locate the OperationRegion (GNVS, SystemMemory, 0xNNNNNNNN, 0xNNNN) in the factory DSDT.
+	unsigned int opRegFactoryDSDTAddress = search64bitPattern(factoryFADT->DSDT + sizeof(ACPI_DSDT), 2000, OP_REGION_GNVS_ADDRESS_LE);
+
+	if (opRegFactoryDSDTAddress) // Found?
+	{
+		// Yes. Get the GNVS address.
+		unsigned int factoryDSDT_GNVS_Address = (*(uint32_t *)(opRegFactoryDSDTAddress + 8));
+
+		_ACPI_DEBUG_DUMP("GNVS address (0x%x) found @: 0x%x\n", factoryDSDT_GNVS_Address, opRegFactoryDSDTAddress);
+
+		// Now try to locate the OperationRegion (GNVS, SystemMemory, 0xNNNNNNNN, 0xNNNN) in the patched DSDT.
+		unsigned int opRegPatchedDSDTAddress = search64bitPattern(patchedFADT->DSDT + sizeof(ACPI_DSDT), 2000, OP_REGION_GNVS_ADDRESS_LE);
+
+		if (opRegPatchedDSDTAddress) // Found?
+		{
+			// Yes. Get the GNVS address.
+			unsigned int patchedDSDT_GNVS_Address = (*(uint32_t *)(opRegPatchedDSDTAddress + 8));
+
+			_ACPI_DEBUG_DUMP("GNVS address (0x%x) found @: 0x%08x\n", patchedDSDT_GNVS_Address, opRegPatchedDSDTAddress);
+
+			// Are both GNVS address values the same?
+			if (patchedDSDT_GNVS_Address != factoryDSDT_GNVS_Address)
+			{
+				_ACPI_DEBUG_DUMP("Patching GNVS address ... ");
+				// Copy the 4 address bytes from the factory DSDT into the patched DSDT.
+				// Note: We do not copy the length (may be different for a patched DSDT).
+				memcpy((void *)opRegPatchedDSDTAddress, (void *)opRegFactoryDSDTAddress, 4);
+
+				_ACPI_DEBUG_DUMP("Done.\n");
+			}
+		}
+
+		_ACPI_DEBUG_SLEEP(1);
+	}
+#endif // VERIFY_OPREGION_GNVS_ADDRESS
 		
 	_ACPI_DEBUG_DUMP("Replacing factory DSDT with ");
 
