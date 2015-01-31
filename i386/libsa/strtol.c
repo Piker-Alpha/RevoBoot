@@ -97,14 +97,6 @@ static inline int isupper(char c)
 
 //==========================================================================
 
-static inline int islower(char c)
-{
-	return (c >= 'a' && c <= 'z');
-}
-
-
-//==========================================================================
-
 static inline int isalpha(char c)
 {
 	return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));

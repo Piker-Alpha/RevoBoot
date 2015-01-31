@@ -36,41 +36,6 @@ static biosBuf_t bb;
 
 //==============================================================================
 
-static inline void outi(int port, int index, int val)
-{
-    outw (port, (val << 8) | index);
-}
-
-
-//==============================================================================
-
-static inline void outib(int port, int index, int val)
-{
-    outb (port, index);
-    outb (port + 1, val);
-}
-
-
-//==============================================================================
-
-static inline int ini(int port, int index)
-{
-    outb (port, index);
-    return inb (port + 1);
-}
-
-
-//==============================================================================
-
-static inline void rmwi(int port, int index, int clear, int set)
-{
-    outb (port, index);
-    outb (port + 1, (inb (port + 1) & ~clear) | set);
-}
-
-
-//==============================================================================
-
 int getVBEInfo(void * infoBlock)
 {
     bb.intno  = 0x10;
