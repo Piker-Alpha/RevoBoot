@@ -83,7 +83,9 @@
 #define MACBOOK_AIR_51			(MACBOOK_AIR | (3 << 15))
 #define MACBOOK_AIR_52			(MACBOOK_AIR | (4 << 15))
 #define MACBOOK_AIR_61			(MACBOOK_AIR | (5 << 15))
-#define MACBOOK_AIR_62			 MACBOOK_AIR				// Defaults to MacBookAir6,2
+#define MACBOOK_AIR_62			(MACBOOK_AIR | (6 << 15))
+#define MACBOOK_AIR_71			(MACBOOK_AIR | (7 << 15))
+#define MACBOOK_AIR_72			 MACBOOK_AIR				// Defaults to MacBookAir7,2
 
 #define MACBOOK_PRO_61			(MACBOOK_PRO | ( 1 << 15))
 #define MACBOOK_PRO_81			(MACBOOK_PRO | ( 2 << 15))
@@ -95,7 +97,8 @@
 #define MACBOOK_PRO_102			(MACBOOK_PRO | ( 8 << 15))
 #define MACBOOK_PRO_111			(MACBOOK_PRO | ( 9 << 15))
 #define MACBOOK_PRO_112			(MACBOOK_PRO | (10 << 15))
-#define MACBOOK_PRO_113			 MACBOOK_PRO				// Defaults to MacBookPro11,3
+#define MACBOOK_PRO_113			(MACBOOK_PRO | (11 << 15))
+#define MACBOOK_PRO_121			 MACBOOK_PRO				// Defaults to MacBookPro12,1
 
 #define MACMINI_41				(MACMINI | (1 << 15))
 #define MACMINI_51				(MACMINI | (2 << 15))
