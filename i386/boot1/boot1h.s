@@ -29,7 +29,7 @@
 ; This version requires a BIOS with EBIOS (LBA) support.
 ;
 ; This code is written for the NASM assembler.
-;   nasm boot1.s -o boot1h
+;   nasm boot1h.s -o boot1h
 
 ;
 ; This version of boot1h tries to find a stage2 boot file in the root folder.
