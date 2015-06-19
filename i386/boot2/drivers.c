@@ -199,7 +199,7 @@ long loadDrivers(char * dirSpec)
 
 		if ((gKextLoadStatus & 1) == 0)
 		{
-#if ((MAKE_TARGET_OS & MAVERICKS) == MAVERICKS) // Mavericks and Yosemite specifics.
+#if ((MAKE_TARGET_OS & MAVERICKS) == MAVERICKS) // Mavericks, Yosemite and El Capitan specifics.
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/Library/Extensions\");\n");
 
 			/* For Mavericks we first load the signed kexts.
@@ -626,6 +626,7 @@ static long loadMatchedModules(void)
 				AllocateMemoryRange(segName, driverAddr, driverLength);
             }
         }
+
         module = module->nextModule;
     }
 
@@ -914,7 +915,7 @@ long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsiz
 	if (kernel_header->signature == OSSwapBigToHostConstInt32('comp'))
 	{
 		if (kernel_header->compressType != OSSwapBigToHostConstInt32('lzss')
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan
 			&& kernel_header->compressType != OSSwapBigToHostConstInt32('lzvn')
 #endif
 			)
@@ -939,7 +940,7 @@ long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsiz
 		uncompressedSize = OSSwapBigToHostInt32(kernel_header->uncompressedSize);
 		fileLoadBuffer = malloc(uncompressedSize);
 
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan
 		if (kernel_header->compressType == OSSwapBigToHostConstInt32('lzvn'))
 		{
 			void *tmpBuffer = malloc(uncompressedSize);

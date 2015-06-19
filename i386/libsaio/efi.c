@@ -188,7 +188,7 @@ void initEFITree(void)
 
 	DT__AddProperty(chosenNode, "machine-signature", sizeof(MACHINE_SIGNATURE), (EFI_UINT8*) &MACHINE_SIGNATURE);
 
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // El Capitan and Yosemite
 	UInt8 index = 0;
 	EFI_UINT16 PMTimerValue = 0;
 	uint64_t randomValue, tempValue, cpuTick;
@@ -255,14 +255,14 @@ void initEFITree(void)
 	}
 #endif
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 
 	// Used by boot.efi - cosmetic only node/properties on hacks.
 	Node * kernelCompatNode = DT__AddChild(efiNode, "kernel-compatibility");
 
 	static EFI_UINT8 const COMPAT_MODE[] = { 0x01, 0x00, 0x00, 0x00 };
 
-	#if ((MAKE_TARGET_OS == MAVERICKS) || (MAKE_TARGET_OS == YOSEMITE))
+	#if ((MAKE_TARGET_OS & MAVERICKS) == MAVERICKS) // El Capitan, Yosemite and Mavericks.
 		DT__AddProperty(kernelCompatNode, "x86_64", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);
 	#else
 		DT__AddProperty(kernelCompatNode, "i386", sizeof(COMPAT_MODE), (EFI_UINT8*) &COMPAT_MODE);

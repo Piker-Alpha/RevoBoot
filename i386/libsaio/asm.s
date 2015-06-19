@@ -334,7 +334,7 @@ LABEL(_halt)
     call    _bgetc
     jmp     _halt
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks, Mountain Lion and Lion
+#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks, Mountain Lion and Lion
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // disableIRQs()
 //
@@ -368,7 +368,7 @@ LABEL(_disableIRQs)
 // Passes boot arguments in %eax.
 //
 LABEL(_startMachKernel)
-#if ((MAKE_TARGET_OS & LION) == LION)	// Yosemite, Mavericks, Lion and Mountain Lion
+#if ((MAKE_TARGET_OS & LION) == LION)	// El Capitan, Yosemite, Mavericks, Lion and Mountain Lion
 	call    _disableIRQs				// Taking care of an early reboot bug.
 #endif
 	push    %ebp
@@ -428,7 +428,7 @@ LABEL(__switch_stack)
 
     ret
 
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // computeRand()
 //

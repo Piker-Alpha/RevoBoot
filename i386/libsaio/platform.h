@@ -3,10 +3,11 @@
  *
  * Updates:
  *
- *			- SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
- *			- Now includes: RevoBoot/libsaoi/i386/SMBIOS/model_data.h (PikerAlpha, October 2012).
- *			- DDR4 support added (PikerAlpha, June 2014).
- *			- Yosemite support added (PikerAlpha, June 2014).
+ *			- SMBIOS data logic moved to preprocessor code (Pike R. Alpha, October 2012).
+ *			- Now includes: RevoBoot/libsaoi/i386/SMBIOS/model_data.h (Pike R. Alpha, October 2012).
+ *			- DDR4 support added (Pike R. Alpha, June 2014).
+ *			- Yosemite support added (Pike R. Alpha, June 2014).
+ *			- El Capitan support added (Pike R. Alpha, June 2015).
  *
  */
 
@@ -30,6 +31,7 @@
 #define MOUNTAIN_LION			6	// Mountain Lion (includes Lion changes).
 #define MAVERICKS				10	// Mavericks (includes Lion changes).
 #define YOSEMITE				26	// Yosemite (incl. Lion/Mavericks changes).
+#define EL_CAPITAN				62	// El Capitan (incl. Lion/Mavericks/Yosemite changes).
 
 //------------------------------------------------------------------------------
 
@@ -76,7 +78,8 @@
 #define IMAC_152				(IMAC | (10 << 15))
 #define IMAC_151				 IMAC						// Defaults to iMac15,1
 
-#define MACBOOK_41				 MACBOOK					// Defaults to MacBook4,1
+#define MACBOOK_41				(MACBOOK | ( 1 << 15))
+#define MACBOOK_81				(MACBOOK | ( 2 << 15))		// Defaults to MacBook8,1
 
 #define MACBOOK_AIR_41			(MACBOOK_AIR | (1 << 15))
 #define MACBOOK_AIR_42			(MACBOOK_AIR | (2 << 15))

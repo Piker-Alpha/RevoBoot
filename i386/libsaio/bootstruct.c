@@ -88,12 +88,12 @@ void initKernelBootConfig(void)
 	// EFI selection is based on the CPU type.
 	bootArgs->efiMode = (gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? kBootArgsEfiMode64 : kBootArgsEfiMode32;
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Lion's new debug output (replacing a couple of former boot arguments).
 	bootArgs->debugMode = EFI_DEBUG_MODE;					// Defined in config/settings.h
 #endif
 	
-#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Adding a 16 KB log space.
 	bootArgs->performanceDataSize	= 0;
 	bootArgs->performanceDataStart	= 0;
@@ -104,6 +104,8 @@ void initKernelBootConfig(void)
 	
 	bootArgs->bootMemSize			= 0;
 	bootArgs->bootMemStart			= 0;
+	
+#if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
 	bootArgs->flags					= 0;
 
 #if REBOOT_ON_PANIC
@@ -118,8 +120,17 @@ void initKernelBootConfig(void)
 	bootArgs->flags					|= kBootArgsFlagBlackTheme; // (kBootArgsFlagBlack + kBootArgsFlagBlackTheme);
 #endif
 
-	bootArgs->kslide				= 0;
+#endif // #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
+
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
+	bootArgs->flags					|= (kBootArgsFlagCSRBoot + kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRConfigMode);
+
+	bootArgs->csrActiveConfig		= CSR_VALID_FLAGS;
+	bootArgs->csrCapabilities		= (kBootArgsFlagCSRBoot + kBootArgsFlagLoginUI + kBootArgsFlagInstallUI);
 #endif
+
+	bootArgs->kslide				= 0;
+#endif // #if ((MAKE_TARGET_OS & LION) == LION)
 }
 
 
@@ -200,7 +211,7 @@ void finalizeKernelBootConfig(void)
     bootArgs->deviceTreeP = (uint32_t)addr;
     bootArgs->deviceTreeLength = size;
 	
-/* #if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+/* #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Adding a 16 KB log space.
 	bootArgs->performanceDataSize	= 0;
 	bootArgs->performanceDataStart	= 0;
@@ -216,8 +227,9 @@ void finalizeKernelBootConfig(void)
 	bootArgs->kslide		= 0;
 #endif */
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
-	bootArgs->FSBFrequency	= gPlatform.CPU.FSBFrequency;
+#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+	bootArgs->PhysicalMemorySize	= (1024 * 1024 * 1024);
+	bootArgs->FSBFrequency			= gPlatform.CPU.FSBFrequency;
 #endif
 }
 

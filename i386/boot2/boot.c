@@ -58,6 +58,11 @@
 #include "sl.h"
 #include "libsa.h"
 
+#if DISABLE_LEGACY_XHCI
+	#include "pci.h"
+	#include "xhci.h"
+#endif
+
 //==============================================================================
 // Local adler32 function.
 
@@ -316,12 +321,13 @@ void boot(int biosdev)
 				gVerboseMode =	getValueForBootKey(kernelFlags, kVerboseModeFlag, &val, &length) || 
 								getValueForBootKey(kernelFlags, kSingleUserModeFlag, &val, &length);
 				
-				/* if (gVerboseMode)
+				if (gVerboseMode)
 				{
+					_BOOT_DEBUG_DUMP("Notice: -s (single user mode) and/or -v (verbose mode) specified!\n");
 #if (DEBUG_BOOT == false)
 					setVideoMode(VGA_TEXT_MODE);
 #endif
-				} */
+				}
 
 				// Check for -x (safe) flag.
 				if (getValueForBootKey(kernelFlags, kSafeModeFlag, &val, &length))
@@ -456,11 +462,11 @@ void boot(int biosdev)
 		 * We cannot use the kernelcache from the Yosemite installer, not yet,
 		 * and thus we load: /System/Library/Caches/Startup/kernelcache instead
 		 */
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
 		// Installation directory located?
 		if (flushCaches == false) //  && (gPlatform.BootVolume->flags != kBVFlagInstallVolume))
 		{
-#endif // #if (MAKE_TARGET_OS == YOSEMITE)
+#endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE)
 			_BOOT_DEBUG_DUMP("Checking Kernel Cache key in com.apple.Boot.plist\n");
 
 			if (getValueForKey(kKernelCacheKey, &val, &length, &bootInfo->bootConfig))
@@ -485,9 +491,9 @@ void boot(int biosdev)
 					gPlatform.KernelCacheSpecified = true;
 				}
 			}
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
 		}
-#endif // #if (MAKE_TARGET_OS == YOSEMITE)
+#endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE)
 
 #endif
 		if (getBoolForKey(kQuietBootKey, &quietBootMode, &bootInfo->bootConfig) && !quietBootMode)
@@ -540,7 +546,7 @@ void boot(int biosdev)
 			{
 				sprintf(bootFile, "%s", bootInfo->bootFile);
 			} */
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
 //			else
 //			{
 				sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
@@ -592,7 +598,7 @@ void boot(int biosdev)
 				
 					_BOOT_DEBUG_DUMP("adler32: %08X\n", adler32);
 
-#if ((MAKE_TARGET_OS & LION) == LION) // Yosemite, Mavericks and Mountain Lion also have bit 1 set (like Lion).
+#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set (like Lion).
 
 					_BOOT_DEBUG_DUMP("Checking for kernelcache...\n");
 

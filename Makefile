@@ -16,6 +16,7 @@
 #			- Cleanups and output changed (Pike R. Alpha, November 2012).
 #			- Yosemite support added (Pike R. Alpha, June 2014).
 #			- Changed default from Mavericks to Yosemite (Pike R. Alpha, June 2014).
+#			- El Capitan support added (Pike R. Alpha, June 2015).
 #
 
 #
@@ -54,16 +55,20 @@ VPATH = $(OBJROOT):$(SYMROOT)
 
 ifeq ($(MAKECMDGOALS),)
 	#
-	# No OS build target given. Build for Yosemite (default).
+	# No OS build target given. Build for El Capitan (default).
 	#
-	MAKEGOAL = yosemite
-	MAKE_TARGET_OS = 26;
-	MAKE_TARGET_OS_VER = 10.10
+	MAKEGOAL = el-capitan
+	MAKE_TARGET_OS = 62;
+	MAKE_TARGET_OS_VER = 10.11
 else
 	#
 	# Setting MAKE_TARGET_OS and MAKEGOAL based on OS build target.
 	#
-	ifeq ($(MAKECMDGOALS), yosemite)
+	ifeq ($(MAKECMDGOALS), el-capitan)
+		MAKEGOAL = el-capitan
+		MAKE_TARGET_OS = 62;
+		MAKE_TARGET_OS_VER = 10.11
+	else ifeq ($(MAKECMDGOALS), yosemite)
 		MAKEGOAL = yosemite
 		MAKE_TARGET_OS = 26;
 		MAKE_TARGET_OS_VER = 10.10
@@ -87,7 +92,7 @@ else
 endif
 
 #
-# Export our make goal i.e. yosemite, mavericks, mountain-lion, lion or legacy (snow-leopard or leopard).
+# Export our make goal i.e. El Capitan, Yosemite, Mavericks, Mountain Lion, Lion or legacy (Snow Leopard or Leopard).
 #
 
 export MAKEGOAL

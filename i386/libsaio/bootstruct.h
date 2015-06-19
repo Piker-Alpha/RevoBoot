@@ -20,6 +20,11 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Updates:
+ *
+ *			- Yosemite support added (Pike R. Alpha, June 2014).
+ *			- El Capitan support added (Pike R. Alpha, June 2015).
  */
 
 #ifndef __BOOTSTRUCT_H
@@ -30,7 +35,7 @@
 #include "bios.h"
 #include "platform.h"
 
-#if (MAKE_TARGET_OS == YOSEMITE)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // El Capitan and Yosemite
 	#define kDefaultKernel	"kernel"
 #else
 	#define kDefaultKernel	"mach_kernel"
@@ -38,19 +43,60 @@
 
 // Bitfields for boot_args->flags
 #ifndef kBootArgsFlagRebootOnPanic
-	#define kBootArgsFlagRebootOnPanic	(1 << 0)
+	#define kBootArgsFlagRebootOnPanic		(1 << 0)
 #endif
 
 #ifndef kBootArgsFlagHiDPI
-	#define kBootArgsFlagHiDPI			(1 << 1)
+	#define kBootArgsFlagHiDPI				(1 << 1)
 #endif
 
 #ifndef kBootArgsFlagBlack
-	#define kBootArgsFlagBlack			(1 << 2)
+	#define kBootArgsFlagBlack				(1 << 2)
 #endif
 
+#ifndef kBootArgsFlagCSRActiveConfig
+	#define kBootArgsFlagCSRActiveConfig	(1 << 3)
+#endif
+
+#ifndef kBootArgsFlagCSRConfigMode
+	#define kBootArgsFlagCSRConfigMode		(1 << 4)
+#endif
+
+#ifndef kBootArgsFlagCSRBoot
+	#define kBootArgsFlagCSRBoot			(1 << 5)
+#endif
+
+/* #define kBootArgsFlagBlackBg				(1 << 6) */
+
 #ifndef kBootArgsFlagBlackTheme
-	#define kBootArgsFlagBlackTheme		(1 << 6)
+	#define kBootArgsFlagBlackTheme			(1 << 6)
+#endif
+
+#ifndef kBootArgsFlagLoginUI
+	#define kBootArgsFlagLoginUI			(1 << 7)
+#endif
+
+#ifndef kBootArgsFlagInstallUI
+	#define kBootArgsFlagInstallUI			(1 << 8)
+#endif
+
+#ifndef CSR_VALID_FLAGS
+	/* Rootless configuration flags */
+	#define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)
+	#define CSR_ALLOW_UNRESTRICTED_FS		(1 << 1)
+	#define CSR_ALLOW_TASK_FOR_PID			(1 << 2)
+	#define CSR_ALLOW_KERNEL_DEBUGGER		(1 << 3)
+	#define CSR_ALLOW_APPLE_INTERNAL		(1 << 4)
+	#define CSR_ALLOW_UNRESTRICTED_DTRACE	(1 << 5)
+	#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)
+
+	#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
+			CSR_ALLOW_UNRESTRICTED_FS | \
+			CSR_ALLOW_TASK_FOR_PID | \
+			CSR_ALLOW_KERNEL_DEBUGGER | \
+			CSR_ALLOW_APPLE_INTERNAL | \
+			CSR_ALLOW_UNRESTRICTED_DTRACE | \
+			CSR_ALLOW_UNRESTRICTED_NVRAM)
 #endif
 
 // Snapshot constants with supported version / revision info.
@@ -164,13 +210,12 @@ typedef struct boot_args_new
     uint16_t    Revision;							// Revision of boot_args structure.
     uint16_t    Version;							// Version of boot_args structure.
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION)				// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
     uint8_t     efiMode;							// 32 = 32-bit, 64 = 64-bit.
 
     uint8_t     debugMode;							// Bit field with behavior changes.
 
-// #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-#if (MAKE_TARGET_OS & MOUNTAIN_LION)
+#if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
     uint16_t    flags;
 #else
     uint8_t     __reserved1[2];
@@ -195,13 +240,13 @@ typedef struct boot_args_new
     uint32_t    efiRuntimeServicesPageStart;		// Physical address of defragmented runtime pages.
     uint32_t    efiRuntimeServicesPageCount;
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION)				// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
     uint64_t    efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
 #endif
 
     uint32_t    efiSystemTable;						// Physical address of system table in runtime area.
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION)				// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
     uint32_t    kslide;
 
     uint32_t    performanceDataStart;				// Physical address of log.
@@ -215,13 +260,20 @@ typedef struct boot_args_new
 
     uint64_t    PhysicalMemorySize;
     uint64_t    FSBFrequency;
-    
-// #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-#if (MAKE_TARGET_OS & MOUNTAIN_LION)
+
     uint64_t    pciConfigSpaceBaseAddress;
-    uint32_t    pciConfigSpaceStartBusNumber;
-    uint32_t    pciConfigSpaceEndBusNumber;
-    uint32_t    __reserved4[730];
+	uint32_t    pciConfigSpaceStartBusNumber;
+	uint32_t    pciConfigSpaceEndBusNumber;
+
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
+	uint32_t    csrActiveConfig;
+	uint32_t    csrCapabilities;
+	uint32_t    boot_SMC_plimit;
+	uint16_t	bootProgressMeterStart;
+	uint16_t	bootProgressMeterEnd;
+	uint32_t    __reserved4[726];
+#elif ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
+	uint32_t    __reserved4[730];
 #else
     uint32_t    __reserved4[734];
 #endif
@@ -235,7 +287,7 @@ typedef struct boot_args_new
     uint64_t    efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
 
     uint32_t    __reserved3[2];
-#endif
+#endif // #if ((MAKE_TARGET_OS & LION) == LION)
 } kernel_boot_args;
 
 kernel_boot_args *bootArgs;

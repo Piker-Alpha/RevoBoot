@@ -18,7 +18,7 @@
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 
-#if ((MAKE_TARGET_OS == YOSEMITE) && (BLACKMODE == 1))
+#if (((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) && (BLACKMODE == 1))
 
 //
 // LZVN packed data for white Apple logo (blackmode).
