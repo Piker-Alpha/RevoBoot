@@ -66,7 +66,8 @@ static void   zcoalesce(void);
 	size_t zalloced_size;
 #endif
 
-#define ZALLOC_NODES	32767 /* was 16384 */
+#define ZALLOC_NODES	32767 /* This was 16384 */
+
 
 #if SAFE_MALLOC
 	static void mallocError(char *addr, size_t size, const char *file, int line)
