@@ -34,11 +34,6 @@
 
 #include "platform.h"
 
-#if DISABLE_LEGACY_XHCI
-	#include "pci.h"
-	#include "xhci.h"
-#endif
-
 #if USE_STATIC_DISPLAY_RESOLUTION
 	#define DEFAULT_SCREEN_WIDTH	STATIC_SCREEN_WIDTH
 	#define DEFAULT_SCREEN_HEIGHT	STATIC_SCREEN_HEIGHT
