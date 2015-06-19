@@ -100,10 +100,18 @@
 // -------------------------------------------------------------------------------------
 	#define SMB_FAMILY	"MacBook"
 
-	#define SMB_BIOS_VERSION	"MB41.88Z.0073.B00.0809221748"
-	#define SMB_PRODUCT_NAME	"MacBook4,1"
-	#define SMB_BOARD_PRODUCT	"Mac-F42D89C8"
-	#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', '4', ',', '1' }
+	#if (TARGET_MODEL == MACBOOK_41)
+		#define SMB_BIOS_VERSION	"MB41.88Z.0073.B00.0809221748"
+		#define SMB_PRODUCT_NAME	"MacBook4,1"
+		#define SMB_BOARD_PRODUCT	"Mac-F42D89C8"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', '4', ',', '1' }
+	#elif (TARGET_MODEL == MACBOOK_81)
+		// Intel Core M-5Y31 @ 1.10 GHz (2 cores, 4 threads)
+		#define SMB_BIOS_VERSION	"MB81.88Z.0164.B02.1503241252"
+		#define SMB_PRODUCT_NAME	"MacBook8,1"
+		#define SMB_BOARD_PRODUCT	"Mac-BE0E8AC46FE800CC"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', '8', ',', '1' }
+	#endif
 // -------------------------------------------------------------------------------------
 #endif
 
@@ -148,6 +156,7 @@
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'A', 'i', 'r', '7', ',', '1' }
 	#else // Defaults to MacBookAir7,2
 		// Intel Core i5-5250U @ 1.60 GHz (2 cores - 4 threads)
+		// Intel Core i7-5650U @ 2.20 GHz (2 cores - 4 threads)
 		#define SMB_BIOS_VERSION	"MBA71.88Z.0166.B00.1502131457"
 		#define SMB_PRODUCT_NAME	"MacBookAir7,2"
 		#define SMB_BOARD_PRODUCT	"Mac-937CB26E2E02BB01"
