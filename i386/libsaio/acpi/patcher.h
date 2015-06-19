@@ -21,7 +21,7 @@
 #endif
 
 
-// #if VERIFY_OPREGION_GNVS_ADDRESS
+#if VERIFY_OPREGION_GNVS_ADDRESS
 //==============================================================================
 
 unsigned int search64bitPattern(unsigned int aStartAddress, int aNumberOfBytes, uint64_t aSearchPattern)
@@ -41,7 +41,7 @@ unsigned int search64bitPattern(unsigned int aStartAddress, int aNumberOfBytes, 
 
 	return 0; // Not found!
 }
-// #endif // VERIFY_OPREGION_GNVS_ADDRESS
+#endif // VERIFY_OPREGION_GNVS_ADDRESS
 
 
 #if (LOAD_EXTRA_ACPI_TABLES && (LOAD_DSDT_TABLE_FROM_EXTRA_ACPI || LOAD_SSDT_TABLE_FROM_EXTRA_ACPI))
@@ -281,7 +281,7 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 #elif STATIC_DSDT_TABLE_INJECTION || (LOAD_EXTRA_ACPI_TABLES && LOAD_DSDT_TABLE_FROM_EXTRA_ACPI)
 	patchedFADT->DSDT = (uint32_t)customTables[DSDT].tableAddress; // The original DSDT without DSDT table injection!
 
-// #if VERIFY_OPREGION_GNVS_ADDRESS
+#if VERIFY_OPREGION_GNVS_ADDRESS
 	#define OP_REGION_GNVS_ADDRESS_LE 0x0C0053564E47805B
 	// First try to locate the OperationRegion (GNVS, SystemMemory, 0xNNNNNNNN, 0xNNNN) in the factory DSDT.
 	unsigned int opRegFactoryDSDTAddress = search64bitPattern(factoryFADT->DSDT + sizeof(ACPI_DSDT), 2000, OP_REGION_GNVS_ADDRESS_LE);
@@ -317,7 +317,7 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 
 		_ACPI_DEBUG_SLEEP(1);
 	}
-// #endif // VERIFY_OPREGION_GNVS_ADDRESS
+#endif // VERIFY_OPREGION_GNVS_ADDRESS
 		
 	_ACPI_DEBUG_DUMP("Replacing factory DSDT with ");
 
