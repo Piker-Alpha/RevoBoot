@@ -65,7 +65,4 @@ enum
 
 extern void * gFSLoadAddress;
 
-// Used in: boot/drivers/load.c
-extern cpu_type_t gArchCPUType;	// Formerly known as archCpuType.
-
 #endif /* !__LIBSAIO_SL_H */

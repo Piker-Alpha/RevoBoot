@@ -130,8 +130,13 @@
 
 //------------------------------------------------------------------------------
 
-#define kKernelCachePath		"/System/Library/Caches/com.apple.kext.caches/Startup"
-#define kKernelCache			"kernelcache"
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+	#define kKernelCachePath		"/System/Library/Prelinkedkernels"
+	#define kKernelCache			"prelinkedkernel"
+#else
+	#define kKernelCachePath		"/System/Library/Caches/com.apple.kext.caches/Startup"
+	#define kKernelCache			"kernelcache"
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -366,8 +371,6 @@ typedef struct _PlatformInfo_t
 extern void initCPUStruct(void);
 
 /* platform.c */
-extern cpu_type_t gArchCPUType;	// DHP: Fix / remove me!
-
 extern PlatformInfo_t	gPlatform;
 
 extern void initPlatform(int biosDevice, bool bootRecoveryHD);

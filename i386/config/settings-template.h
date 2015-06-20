@@ -229,6 +229,8 @@
 												//			only to give us feedback for a future release of RevoBoot.
 #endif
 
+#define DISABLE_LEGACY_XHCI					0	// Set to 0 by default. Change this to 1 when you need to disable legacy XHCI.
+
 #define DEBUG_BOOT							0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
 
 
@@ -359,17 +361,20 @@
 #define STATIC_SCREEN_HEIGHT				1200	// Used (in RevoBoot v1.0.35 and greater) when USE_STATIC_DISPLAY_RESOLUTION is 1 and when 
 													// USE_STATIC_DISPLAY_RESOLUTION is 0 but getResolutionFromEDID() isn't supported (failed).
 
+#define BLACKMODE							1	// Show white Apple logo on a black background. Set to 0 for gray mode.
+
 #define DEBUG_BOOT_GRAPHICS					0	// Set to 0 by default. Use 1 when to see debug info.
 
 
 //------------------------------------------------------------ STRINGTABLE.H ----------------------------------------------------------------
 
 #define INSTALL_ESD_SUPPORT					0	// Set to 0 by default. Setting this to 1 will make RevoBoot search in specific directories
-												// for com.apple.Boot.plist – required for Mac like Lion OS X installations.
+												// for com.apple.Boot.plist – required for Mac like installations of OS X.
 
 #if (RECOVERY_HD_SUPPORT == 1 && INSTALL_ESD_SUPPORT == 0)
 	#define INSTALL_ESD_SUPPORT				1	// This setting is mandatory for RECOVERY_HD_SUPPORT
 #endif
+
 //-------------------------------------------------------------- SMBIOS.C ------------------------------------------------------------------
 
 
@@ -421,7 +426,8 @@
 
 #if USE_STATIC_SMBIOS_DATA
 												// Do nothing.
-#elif OVERRIDE_DYNAMIC_MEMORY_DETECTION
+#elif OVERRIDE_DYNAMIC_MEMORY_DETECTION			// See settings under SMBIOS.c
+
 												// Setup RAM module info. Please note that you may have to expand this when you have more RAM modules.
 	#define STATIC_RAM_SLOTS				4	// Number of RAM slots on mainboard.
 

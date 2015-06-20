@@ -166,11 +166,9 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 	 * DHP: Booting with arch=i386 <i>and</i> setting this to CPU_TYPE_I386
 	 * and setting the EFI_64_BIT directive in private_data to 0 allowed me 
 	 * to boot in EFI32 mode. Even with my 64 bit configuration. Pretty sweet.
-	 *
-	 * Note to self: Get rid of gArchCPUType (global alarm) fast.
 	 */
 
-	gPlatform.ArchCPUType			= gArchCPUType = getArchCPUType();
+	gPlatform.ArchCPUType			= getArchCPUType();
 
 	gPlatform.AddressWidth			= (gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? 8 : 4;
 

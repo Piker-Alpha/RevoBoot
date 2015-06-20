@@ -70,8 +70,6 @@ static long DecodeSymbolTable(long cmdBase);
 
 static unsigned long gBinaryAddress;
 
-cpu_type_t gArchCPUType = 0; // CPU_TYPE_I386;
-
 
 //==============================================================================
 // Public function.
@@ -115,7 +113,7 @@ long ThinFatFile(void **binary, unsigned long *length)
 			fapsize = fap->size;
 		}
 
-		if (fapcputype == gArchCPUType)
+		if (fapcputype == gPlatform.ArchCPUType)
 		{
 			*binary = (void *) ((unsigned long)*binary + fapoffset);
 			size = fapsize;
@@ -160,14 +158,14 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	sleep(5);
 #endif
 
-	/* if ((gArchCPUType == CPU_TYPE_I386   && mH->magic != MH_MAGIC) ||
-		(gArchCPUType == CPU_TYPE_X86_64 && mH->magic != MH_MAGIC_64))
+	/* if ((gPlatform.ArchCPUType == CPU_TYPE_I386   && mH->magic != MH_MAGIC) ||
+		(gPlatform.ArchCPUType == CPU_TYPE_X86_64 && mH->magic != MH_MAGIC_64))
 	{
 		error("Mach-O file has bad magic number\n");
 		return -1;
 	} */
 
-	switch (gArchCPUType)
+	switch (gPlatform.ArchCPUType)
 	{
 		case CPU_TYPE_I386:
 
@@ -202,7 +200,7 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 			return -1;
 	}
 
-	/* cmdstart = (unsigned long)gBinaryAddress + (gArchCPUType == CPU_TYPE_I386) ? sizeof(struct mach_header) :
+	/* cmdstart = (unsigned long)gBinaryAddress + (gPlatform.ArchCPUType == CPU_TYPE_I386) ? sizeof(struct mach_header) :
 																					sizeof(struct mach_header_64); */
 	cmdBase = cmdstart;
 	ncmds = mH->ncmds;
@@ -564,7 +562,7 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 
 static long DecodeUnixThread(long cmdBase, unsigned int *entry)
 {
-	switch (gArchCPUType)
+	switch (gPlatform.ArchCPUType)
 	{
 		case CPU_TYPE_I386:
 		{

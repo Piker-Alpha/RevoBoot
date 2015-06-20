@@ -969,17 +969,17 @@ long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsiz
 
 	ret = ThinFatFile(&fileLoadBuffer, &len);
 
-	if (ret == 0 && len == 0 && gArchCPUType == CPU_TYPE_X86_64)
+	if (ret == 0 && len == 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
-		gArchCPUType = CPU_TYPE_I386;
+		gPlatform.ArchCPUType = CPU_TYPE_I386;
 		ret = ThinFatFile(&fileLoadBuffer, &len);
 	}
 
 	ret = DecodeMachO(fileLoadBuffer, rentry, raddr, rsize);
 
-	if (ret < 0 && gArchCPUType == CPU_TYPE_X86_64)
+	if (ret < 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
-		gArchCPUType = CPU_TYPE_I386;
+		gPlatform.ArchCPUType = CPU_TYPE_I386;
 		ret = DecodeMachO(fileLoadBuffer, rentry, raddr, rsize);
 	}
 

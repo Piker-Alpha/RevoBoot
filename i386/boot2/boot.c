@@ -229,7 +229,7 @@ void boot(int biosdev)
 	printf("\nModel: %s\n", gPlatform.ModelID);
 
 	#if ((MAKE_TARGET_OS & LION) != LION)
-		printf("\ngArchCPUType (CPU): %s\n", (gArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
+		printf("\nArchCPUType (CPU): %s\n", (gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
 		sleep(3); // Silent sleep.
 	#endif
 #endif
@@ -312,9 +312,9 @@ void boot(int biosdev)
 				// Is 'arch=<i386/x86_64>' specified as kernel flag?
 				if (getValueForBootKey(kernelFlags, "arch", &val, &length)) //  && len >= 4)
 				{
-					gArchCPUType = (strncmp(val, "x86_64", 6) == 0) ? CPU_TYPE_X86_64 : CPU_TYPE_I386;
+					gPlatform.ArchCPUType = (strncmp(val, "x86_64", 6) == 0) ? CPU_TYPE_X86_64 : CPU_TYPE_I386;
 
-					_BOOT_DEBUG_DUMP("gArchCPUType (c.a.B.plist): %s\n",  (gArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
+					_BOOT_DEBUG_DUMP("ArchCPUType (c.a.B.plist): %s\n",  (gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386");
 				}
 				
 				// Check for -v (verbose) and -s (single user mode) flags.
@@ -655,7 +655,7 @@ void boot(int biosdev)
 				
 				// Create path to pre-linked kernel.
 				sprintf(preLinkedKernelPath, "%s/%s_%s.%08lX", gPlatform.KernelCachePath, kKernelCache, 
-						((gArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386"), adler32);
+						((gPlatform.ArchCPUType == CPU_TYPE_X86_64) ? "x86_64" : "i386"), adler32);
 
 				// Check if this file exists.
 				if ((GetFileInfo(NULL, preLinkedKernelPath, &flags, &cachetime) == 0) && ((flags & kFileTypeMask) == kFileTypeFlat))
@@ -694,11 +694,11 @@ void boot(int biosdev)
 			retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
 
 #if SUPPORT_32BIT_MODE
-			if (retStatus <= 0 && gArchCPUType == CPU_TYPE_X86_64)
+			if (retStatus <= 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 			{
 				_BOOT_DEBUG_DUMP("Load failed for arch=x86_64, trying arch=i386 now.\n");
 
-				gArchCPUType = CPU_TYPE_I386;
+				gPlatform.ArchCPUType = CPU_TYPE_I386;
 
 				retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
 			}
