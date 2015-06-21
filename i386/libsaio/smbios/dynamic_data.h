@@ -345,6 +345,19 @@ void setupSMBIOS(void)
 			memcpy(gPlatform.UUID, ((SMBSystemInformation *)factoryHeader)->uuid, 16);
 #endif
 		}
+		else if (currentStructureType == kSMBTypeMemoryDevice)
+		{
+			UInt64 memorySize = 0;
+#if DYNAMIC_RAM_OVERRIDE_SIZE
+			memorySize = getRAMSize();
+#else
+			memorySize = ((SMBMemoryDevice *)factoryHeader)->memorySize;
+#endif
+			if (memorySize > 0 && memorySize < 0xffff)
+			{
+				gPlatform.RAM.MemorySize += (memorySize << ((memorySize & 0x8000) ? 10 : 20));
+			}
+		}
 
 		// Init handle in the new header.
 		newHeader->handle = ++handle;

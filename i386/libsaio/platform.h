@@ -131,7 +131,7 @@
 //------------------------------------------------------------------------------
 
 #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
-	#define kKernelCachePath		"/System/Library/Prelinkedkernels"
+	#define kKernelCachePath		"/System/Library/PrelinkedKernels"
 	#define kKernelCache			"prelinkedkernel"
 #else
 	#define kKernelCachePath		"/System/Library/Caches/com.apple.kext.caches/Startup"
@@ -309,6 +309,7 @@ typedef struct _PlatformInfo_t
 		uint8_t		Channels;					// Channel Configuration Single, Dual or Triple
 		uint8_t		SlotCount;					// Previously NoSlots; - Maximum no of slots available
 		uint8_t		Type;						// Standard SMBIOS v2.5 Memory Type
+		uint64_t	MemorySize;					// Initialised in setupSMBIOS() and used in initKernelBootConfig()
 		/* Remove me */
 		char *		BrandString;				// Branding String Memory Controller
 		RamSlotInfo_t	MODULE[MAX_SLOTS];		// Information about each slot

@@ -228,7 +228,7 @@ void finalizeKernelBootConfig(void)
 #endif */
 
 #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
-	bootArgs->PhysicalMemorySize	= (1024 * 1024 * 1024);
+	bootArgs->PhysicalMemorySize	= gPlatform.RAM.MemorySize;
 	bootArgs->FSBFrequency			= gPlatform.CPU.FSBFrequency;
 #endif
 }

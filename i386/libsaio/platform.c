@@ -229,6 +229,7 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 	gPlatform.UUID					= NULL;	// Will be initialized in RevoBoot/i386/libsaio/smbios/[dynamic/static]_data.h
 
 	gPlatform.RAM.SlotCount			= 0;	// Will be initialized further down (used in smbios/dynamic_data.h)
+	gPlatform.RAM.MemorySize		= 0;	// Will be initialized in setupSMBIOS()
 
 #if USE_STATIC_SMBIOS_DATA
 	// We don't have to do anything when static SMBIOS data is used.
