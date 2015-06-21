@@ -13,7 +13,7 @@
  */
 
 #include "platform.h"
-
+#include "smbios/smbios.h"
 
 #if USE_STATIC_SMBIOS_DATA
 //==============================================================================
@@ -78,12 +78,24 @@ void setupSMBIOS(void)
 		while (structureEnd > (structurePtr + sizeof(SMBStructHeader)))
 		{
 			struct SMBStructHeader * header = (struct SMBStructHeader *) structurePtr;
+			SMBByte currentStructureType = header->type;
+
+			if (currentStructureType == kSMBTypeMemoryDevice)
+			{
+				UInt64 memorySize = 0;
+#if DYNAMIC_RAM_OVERRIDE_SIZE
+				memorySize = getRAMSize();
+#else
+				memorySize = ((SMBMemoryDevice *)header)->memorySize;
+#endif
+				if (memorySize > 0 && memorySize < 0xffff)
+				{
+					gPlatform.RAM.MemorySize += (memorySize << ((memorySize & 0x8000) ? 10 : 20));
+				}
+			}
 
 #if SET_MAX_STRUCTURE_LENGTH
 			char * stringsPtr = structurePtr;
-		#if DEBUG_SMBIOS
-			SMBByte currentStructureType = header->type;
-		#endif
 #endif
 			// Skip the formatted area of the structure.
 			structurePtr += header->length;

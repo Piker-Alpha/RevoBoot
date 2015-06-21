@@ -41,7 +41,6 @@
 
 #include "libsaio.h"
 
-#include "smbios.h"
 #include "model_data.h"
 
 #define IOSERVICE_PLATFORM_FEATURE	0x0000000000000001
