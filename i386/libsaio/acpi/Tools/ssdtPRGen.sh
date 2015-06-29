@@ -1381,8 +1381,8 @@ function _findIasl()
             fi
 
             printf "Downloading iasl...\n"
-            sudo curl -o /usr/local/bin/iasl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
-#           sudo curl https://raw.github.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl -o /usr/local/bin/iasl --create-dirs
+            sudo curl -o /usr/local/bin/iasl https://raw.githubusercontent.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl
+#           sudo curl https://raw.githubusercontent.com/Piker-Alpha/RevoBoot/clang/i386/libsaio/acpi/Tools/iasl -o /usr/local/bin/iasl --create-dirs
             sudo chmod +x /usr/local/bin/iasl
             echo 'Done.'
         fi
