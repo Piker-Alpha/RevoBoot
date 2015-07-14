@@ -123,10 +123,11 @@ void initKernelBootConfig(void)
 #endif // #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
 
 #if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
-	bootArgs->flags					|= (kBootArgsFlagCSRBoot + kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRConfigMode);
+	bootArgs->flags					|= kBootArgsFlagCSRActiveConfig;
 
-	bootArgs->csrActiveConfig		= CSR_VALID_FLAGS;
-	bootArgs->csrCapabilities		= (kBootArgsFlagCSRBoot + kBootArgsFlagLoginUI + kBootArgsFlagInstallUI);
+	bootArgs->csrActiveConfig		= CSR_ALLOW_UNTRUSTED_KEXTS;
+	bootArgs->csrCapabilities		= CSR_VALID_FLAGS;
+	bootArgs->boot_SMC_plimit		= 0;
 #endif
 
 	bootArgs->kslide				= 0;
