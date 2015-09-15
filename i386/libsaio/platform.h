@@ -204,7 +204,16 @@ typedef struct _PlatformInfo_t
 	
 	char *				OSVersion;				// OS version initialized with "10.6" in platform.c and
 												// later updated in boot.c with the actual version info.
-	
+
+	struct KERNEL								// Initialised in initKernelVersionInfo()
+	{
+		uint8_t			versionMajor;
+		
+		uint8_t			versionMinor;
+		
+		uint8_t			versionRevision;
+	} KERNEL;
+
 	char *				ModelID;				// Initialized in platform.c and used in boot.c
 	char *				CommaLessModelID;		// Initialized in platform.c and used in i386/libsaio/ACPI/patcher.h,
 	char *				KextFileName;			// Initialized and used in drivers.c
