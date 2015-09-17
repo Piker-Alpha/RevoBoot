@@ -55,40 +55,40 @@
 #endif
 
 #ifndef kBootArgsFlagCSRActiveConfig
-	#define kBootArgsFlagCSRActiveConfig	(1 << 3)
+	#define kBootArgsFlagCSRActiveConfig	(1 << 3)	// 8
 #endif
 
 #ifndef kBootArgsFlagCSRConfigMode
-	#define kBootArgsFlagCSRConfigMode		(1 << 4)
+	#define kBootArgsFlagCSRConfigMode		(1 << 4)	// 16
 #endif
 
 #ifndef kBootArgsFlagCSRBoot
-	#define kBootArgsFlagCSRBoot			(1 << 5)
+	#define kBootArgsFlagCSRBoot			(1 << 5)	// 32
 #endif
 
 /* #define kBootArgsFlagBlackBg				(1 << 6) */
 
 #ifndef kBootArgsFlagBlackTheme
-	#define kBootArgsFlagBlackTheme			(1 << 6)
+	#define kBootArgsFlagBlackTheme			(1 << 6)	// 64
 #endif
 
 #ifndef kBootArgsFlagLoginUI
-	#define kBootArgsFlagLoginUI			(1 << 7)
+	#define kBootArgsFlagLoginUI			(1 << 7)	// 128
 #endif
 
 #ifndef kBootArgsFlagInstallUI
-	#define kBootArgsFlagInstallUI			(1 << 8)
+	#define kBootArgsFlagInstallUI			(1 << 8)	// 256
 #endif
 
 #ifndef CSR_VALID_FLAGS
 	/* Rootless configuration flags */
-	#define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)
-	#define CSR_ALLOW_UNRESTRICTED_FS		(1 << 1)
-	#define CSR_ALLOW_TASK_FOR_PID			(1 << 2)
-	#define CSR_ALLOW_KERNEL_DEBUGGER		(1 << 3)
-	#define CSR_ALLOW_APPLE_INTERNAL		(1 << 4)
-	#define CSR_ALLOW_UNRESTRICTED_DTRACE	(1 << 5)
-	#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)
+	#define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)	// 1
+	#define CSR_ALLOW_UNRESTRICTED_FS		(1 << 1)	// 2
+	#define CSR_ALLOW_TASK_FOR_PID			(1 << 2)	// 4
+	#define CSR_ALLOW_KERNEL_DEBUGGER		(1 << 3)	// 8
+	#define CSR_ALLOW_APPLE_INTERNAL		(1 << 4)	// 16
+	#define CSR_ALLOW_UNRESTRICTED_DTRACE	(1 << 5)	// 32
+	#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 
 	#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
 			CSR_ALLOW_UNRESTRICTED_FS | \
