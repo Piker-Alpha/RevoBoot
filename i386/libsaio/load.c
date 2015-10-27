@@ -402,7 +402,7 @@ static long patchLoadExecutable(unsigned long cmdBase, long listSize, unsigned l
 	#if (PATCH_KEXT_LOADING || PATCH_XCPI_SCOPE_MSRS)
 		else
 	#endif
-		if ((nl->n_sect == 25 / * __KLD,__text * /) && nl->n_value)
+		if ((nl->n_sect == 25 /* __KLD,__text */) && nl->n_value)
 		{
 			symbolName = (char *)stringTable + nl->n_un.n_strx;
 			
