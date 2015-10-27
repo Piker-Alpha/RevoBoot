@@ -681,7 +681,7 @@ void generateSSDT_PR(void)
 	
 	header->Length		= bufferSize;
 	header->Checksum	= 0;
-	header->Checksum	= 256 - checksum8(buffer, header->Length);
+	header->Checksum	= checksum8(buffer, header->Length);
 
 	//--------------------------------------------------------------------------
 	// Updating customTables with the required data.

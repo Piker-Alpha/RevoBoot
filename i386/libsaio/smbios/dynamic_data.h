@@ -555,8 +555,8 @@ void setupSMBIOS(void)
 	newEPS->dmi.tableLength = (newtablesPtr - (char *)newEPS->dmi.tableAddress);
 
 	// Calculate new checksums.
-	newEPS->dmi.checksum	= 256 - checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
-	newEPS->checksum		= 256 - checksum8(newEPS, sizeof(* newEPS));
+	newEPS->dmi.checksum	= checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
+	newEPS->checksum		= checksum8(newEPS, sizeof(* newEPS));
 
 	_SMBIOS_DEBUG_DUMP("newEPS->dmi.structureCount: %d - tableLength: %d\n", newEPS->dmi.structureCount, newEPS->dmi.tableLength);
 

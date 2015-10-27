@@ -217,7 +217,7 @@ void overrideACPIMethods(ACPI_FADT *patchedFADT)
 	}
 	// Fix checksum.
 	patchedDSDT->Checksum = 0;
-	patchedDSDT->Checksum = 256 - checksum8(patchedDSDT, sizeof(patchedDSDT));
+	patchedDSDT->Checksum = checksum8(patchedDSDT, sizeof(patchedDSDT));
 
 	// We're done. Using the patched factory DSDT now.
 	patchedFADT->DSDT = patchedFADT->X_DSDT = (uint32_t)patchedDSDT;
@@ -366,7 +366,7 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 	customTables[FACS].table = NULL;
 #endif	// STATIC_FACS_TABLE_INJECTION
 	patchedFADT->Checksum = 0;
-	patchedFADT->Checksum = 256 - checksum8(patchedFADT, sizeof(ACPI_FADT));
+	patchedFADT->Checksum = checksum8(patchedFADT, sizeof(ACPI_FADT));
 		
 	xsdtEntries[tableIndex - dropOffset] = (uint32_t)patchedFADT;
 
@@ -613,17 +613,17 @@ void setupACPI(void)
 
 		// Patch the checksum of the new XSDP table.
         patchedXSDT->Checksum = 0;
-        patchedXSDT->Checksum = 256 - checksum8(patchedXSDT, patchedXSDT->Length);
+        patchedXSDT->Checksum = checksum8(patchedXSDT, patchedXSDT->Length);
 
 		// Patch the checksum of the new RSDP table.
 		patchedRSDP->Checksum = 0;
-		patchedRSDP->Checksum = 256 - checksum8(patchedRSDP, 20);
+		patchedRSDP->Checksum = checksum8(patchedRSDP, 20);
 
 		// Patch the (extended) checksum of the RSDP for table revision 1 and greater. 
 		if (patchedRSDP->Revision)
 		{
 			patchedRSDP->ExtendedChecksum = 0;
-			patchedRSDP->ExtendedChecksum = 256 - checksum8(patchedRSDP, patchedRSDP->Length);
+			patchedRSDP->ExtendedChecksum = checksum8(patchedRSDP, patchedRSDP->Length);
 		}
     }
 

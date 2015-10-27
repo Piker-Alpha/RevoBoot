@@ -397,7 +397,7 @@ uint8_t checksum8(void * start, unsigned int length)
         csum += *cp++;
 	}
 
-    return csum;
+	return (256 - csum); // ((255 - csum) + 1);
 }
 
 
