@@ -369,6 +369,12 @@ void initCPUStruct(void)
 					hiBit = 31;
 					break;
 
+				case CPU_MODEL_SKYLAKE:
+				case CPU_MODEL_SKYLAKE_H_S:
+					CoreBridgeType = SKYLAKE;
+					hiBit = 31;
+					break;
+
 				case CPU_MODEL_NEHALEM:
 				case CPU_MODEL_NEHALEM_EX:
 				case CPU_MODEL_FIELDS:
@@ -420,7 +426,7 @@ void initCPUStruct(void)
 					requestMaxTurbo(maxBusRatio);
 				}
 
-				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell || Broadwell)
+				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell || Broadwell || SkyLake)
 				{
 					// gPlatform.CPU.Type += CoreBridgeType;
 
@@ -428,25 +434,17 @@ void initCPUStruct(void)
 					gPlatform.CPU.TDP = getTDP();
 #endif
 					qpiSpeed = 0; // No QPI but DMI for Sandy Bridge and greater processors.
-					
-					// Disable C1/C3 state auto demotion i.e. it won't change C3/C6/C7 requests to C1/C3.
-					// wrmsr64(MSR_PKG_CST_CONFIG_CONTROL, 0x1E000003ULL);
 
-					// Disable EIST Hardware coordination (letting AICPUPM.kext handle it).
-					// msr = rdmsr64(MSR_MISC_PWR_MGMT);
-					// wrmsr64(MSR_MISC_PWR_MGMT, (msr | 1));
+					// Check bit-15 of MSR 0xE2 to see if it is locked.
+					msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);
 
-					// Disable I/O MWAIT Redirection.
-					// msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);
-					// wrmsr64(MSR_MISC_PWR_MGMT, (msr & 0xFFFEFBFF));
+#if PATCH_XCPI_SCOPE_MSRS
+					gPlatform.CPU.CstConfigMsrLocked = (msr & 0x8000);
+#endif
 
-					// wrmsr64(MSR_PKG_POWER_LIMIT, 0x4283E800DD8230);
-					// wrmsr64(MSR_PP0_CURRENT_CONFIG, 0x40101414000002F8);
-					// wrmsr64(MSR_PP0_POWER_LIMIT, 0);
-					// wrmsr64(MSR_PP1_POWER_LIMIT, 0);
-					
-					// wrmsr64(MSR_TURBO_RATIO_LIMIT, 0x25252525);
-
+#if DEBUG_CPU
+					printf("MSR_PKG_CST_CONFIG_CONTROL(locked): 0x%x\n", msr);
+#endif
 					checkFlexRatioMSR();
 				}
 #endif // #if INTEL_CORE_TECHNOLOGY

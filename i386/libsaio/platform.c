@@ -125,12 +125,11 @@ void enableHPET(void)
 //==============================================================================
 // Public function. Called from boot/common_boot only.
 
-void initPlatform(int biosDevice, bool bootRecoveryHD)
+void initPlatform(int biosDevice)
 {
 	memset(&gPlatform, 0, sizeof(gPlatform));
 
 	gPlatform.BootMode = kBootModeQuiet; // no longer defaults to 0 aka kBootModeNormal
-	gPlatform.BootRecoveryHD = bootRecoveryHD;
 
 	// Copied from cpu/dynamic_data.h to make printf work this early on.
 #if DEBUG_STATE_ENABLED
@@ -284,11 +283,29 @@ void initPlatform(int biosDevice, bool bootRecoveryHD)
 	_PLATFORM_DEBUG_SLEEP(5);
 #endif
 
-#if RECOVERY_HD_SUPPORT
-	_PLATFORM_DEBUG_DUMP("gPlatform.BootRecoveryHD: %s\n", gPlatform.BootRecoveryHD ? "True" : "False");
-#endif
-
 	initKernelBootConfig();
+
+#if RECOVERY_HD_SUPPORT
+	int version = 1;
+
+	printf("\nRecovery HD boot support enabled\n");
+	printf("Recovery HD boot support is: enabled in version %d!\n", version);
+
+	int key = (bgetc() & 0xff);
+	printf("key: %d\n", key);
+
+	if ( ((key |= 0x20) == 0x33) || ((key |= 0x20) == 114) )
+	{
+		gPlatform.BootRecoveryHD = true;
+		gPlatform.BootMode = kBootModeNormal;
+	}
+
+	printf("gPlatform.BootRecoveryHD: %s\n", gPlatform.BootRecoveryHD ? "True" : "False");
+	sleep(1);
+#else
+	gPlatform.BootMode = kBootModeNormal;
+	gPlatform.BootRecoveryHD = false;
+#endif
 
 #if (LOAD_MODEL_SPECIFIC_EFI_DATA || BLACKMODE)
 	/*

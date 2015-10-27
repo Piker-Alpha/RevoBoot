@@ -75,8 +75,11 @@
 #define IMAC_142				(IMAC | ( 7 << 15))
 #define IMAC_143				(IMAC | ( 8 << 15))
 #define IMAC_144				(IMAC | ( 9 << 15))
-#define IMAC_152				(IMAC | (10 << 15))
-#define IMAC_151				 IMAC						// Defaults to iMac15,1
+#define IMAC_151				(IMAC | (10 << 15))
+#define IMAC_152				(IMAC | (11 << 15))
+#define IMAC_161				(IMAC | (12 << 15))
+#define IMAC_162				(IMAC | (13 << 15))
+#define IMAC_171				 IMAC						// Defaults to iMac17,1
 
 #define MACBOOK_41				(MACBOOK | ( 1 << 15))
 #define MACBOOK_81				(MACBOOK | ( 2 << 15))		// Defaults to MacBook8,1
@@ -252,6 +255,10 @@ typedef struct _PlatformInfo_t
 	struct CPU
 	{
 		bool		Mobile;						// Set to true (in cpu/dynamic_data.h) for Mobile CPU's.
+
+#if PATCH_XCPI_SCOPE_MSRS
+		bool		CstConfigMsrLocked;			// Initialised in cpu/dynamic_data.h and used in load.c
+#endif
 		uint16_t	Type;						// CPU type ('cpu-type') used in the SMBIOS patcher.
 		uint32_t	Features;					// CPU Features like MMX, SSE2, VT, MobileCPU
 		uint32_t	Vendor;						// Vendor
@@ -383,7 +390,7 @@ extern void initCPUStruct(void);
 /* platform.c */
 extern PlatformInfo_t	gPlatform;
 
-extern void initPlatform(int biosDevice, bool bootRecoveryHD);
+extern void initPlatform(int biosDevice);
 
 extern cpu_type_t getArchCPUType(void);
 

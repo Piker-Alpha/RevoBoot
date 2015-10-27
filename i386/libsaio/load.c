@@ -45,19 +45,22 @@
 	#define LC_MAIN (0x28|LC_REQ_DYLD) /* replacement for LC_UNIXTHREAD */
 #endif
 
-#define NVRAM_GUID_UINT64				0x3530454445314434
-#define OPTIONS_STRING_UINT64			0x736e6f6974706f2f
-
 // Load MKext(s) or separate kexts (default behaviour / behavior).
 bool gLoadKernelDrivers = true;
 
 // Private functions.
-static long initKernelVersionInfo(unsigned long cmdbase, long listSize, unsigned int textSegmentVMAddress);
+#if (PATCH_KEXT_LOADING && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+	static long patchLoadExecutable(unsigned long cmdBase, long listSize, unsigned long textSegmentAddress, unsigned long vldSegmentAddress);
+#endif
+
+static long initKernelVersionInfo(unsigned long cmdbase, long listSize, unsigned int textSegmentAddress);
 static long DecodeSegment(long cmdBase, unsigned int*load_addr, unsigned int *load_size);
 static long DecodeUnixThread(long cmdBase, unsigned int *entry);
 
+#define ADD_SYMTAB	1
+
 #if ADD_SYMTAB
-static long DecodeSymbolTable(long cmdBase);
+	static long DecodeSymbolTable(long cmdBase);
 #endif
 
 static unsigned long gBinaryAddress;
@@ -127,23 +130,24 @@ long ThinFatFile(void **binary, unsigned long *length)
 
 long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 {
-	long ret								= -1;
+	long ret						= -1;
+	long sectionNumber				= 0;
 
-	unsigned int vmaddr						= ~0;
-	unsigned int vmend						= 0;
-	unsigned int entry						= 0;
-	unsigned int load_addr					= 0;
-	unsigned int load_size					= 0;
-	unsigned int textSegmentVMAddress		= 0;
+	unsigned int vmaddr				= ~0;
+	unsigned int vmend				= 0;
+	unsigned int entry				= 0;
+	unsigned int load_addr			= 0;
+	unsigned int load_size			= 0;
+	unsigned int textSegmentAddress	= 0;
+	unsigned int vldSegmentAddress	= 0;
 
-
-	unsigned long ncmds						= 0;
-	unsigned long cmdBase					= 0;
-	unsigned long cmd						= 0;
-	unsigned long cmdsize					= 0;
-	unsigned long cmdstart					= 0;
-	unsigned long cnt						= 0;
-	unsigned long listSize					= 0;
+	unsigned long ncmds				= 0;
+	unsigned long cmdBase			= 0;
+	unsigned long cmd				= 0;
+	unsigned long cmdsize			= 0;
+	unsigned long cmdstart			= 0;
+	unsigned long cnt				= 0;
+	unsigned long listSize			= 0;
 
 	gBinaryAddress = (unsigned long)binary;
 
@@ -209,10 +213,16 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 		{
 			case LC_SEGMENT:
 			case LC_SEGMENT_64:
-				// Returns 1 for __TEXT segment.
-				if (DecodeSegment(cmdBase, &load_addr, &load_size))
+				sectionNumber = DecodeSegment(cmdBase, &load_addr, &load_size);
+
+				if (sectionNumber == 1) // __TEXT,__text
 				{
-					textSegmentVMAddress = load_addr;
+					textSegmentAddress = cmdBase;
+					ret = 0;
+				}
+				else if (sectionNumber == 25) // __KLD,__text
+				{
+					vldSegmentAddress = cmdBase;
 					ret = 0;
 				}
 
@@ -223,9 +233,12 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 				}
 
 				break;
-				
+
 			case LC_SYMTAB:
-				initKernelVersionInfo(cmdBase, listSize, textSegmentVMAddress);
+				initKernelVersionInfo(cmdBase, listSize, textSegmentAddress);
+#if (PATCH_KEXT_LOADING && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+				patchLoadExecutable(cmdBase, listSize, textSegmentAddress, vldSegmentAddress);
+#endif
 				break;
 
 			case LC_MAIN:	/* Mountain Lion's replacement for LC_UNIXTHREAD */
@@ -274,6 +287,163 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 	return ret;
 }
 
+#if (PATCH_KEXT_LOADING && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+
+//==============================================================================
+// Private function. Called from DecodeMachO()
+
+static long patchLoadExecutable(unsigned long cmdBase, long listSize, unsigned long textSegmentAddress, unsigned long vldSegmentAddress)
+{
+	// printf("patchLoadExecutable() called\n");
+	// sleep(1);
+
+	char * symbolName = NULL;
+
+	// Skip the first 3000 symbols, to make it located our target quicker.
+	int skippedSymbolCount	= 0; // (3000 * listSize);
+
+	long symbolNumber		= 0;
+
+	struct symtab_command * symtab = (struct symtab_command *)cmdBase;
+	struct segment_command_64 * textSegment = (struct segment_command_64 *)textSegmentAddress;
+	// struct segment_command_64 * vldSegment = (struct segment_command_64 *)vldSegmentAddress;
+
+	void * stringTable = (void *)(gBinaryAddress + symtab->stroff);
+
+	uint32_t pointer = (gBinaryAddress + symtab->symoff + skippedSymbolCount);
+
+	while (symbolNumber < symtab->nsyms)
+	{
+		struct nlist_64 * nl = (struct nlist_64 *)pointer;
+
+#if PATCH_KEXT_LOADING
+		if ((nl->n_sect == 1 /* __TEXT,__text */) && nl->n_value)
+		{
+			symbolName = (char *)stringTable + nl->n_un.n_strx;
+
+			if (strcmp(symbolName, "__ZN6OSKext14loadExecutableEv") == 0)
+			{
+				int64_t offset = (nl->n_value - textSegment->vmaddr);
+				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
+				uint64_t endAddress = (startAddress + 0x200);
+
+				/* printf("__ZN6OSKext14loadExecutableEv found!\n");
+ 				printf("offset..............: 0x%llx\n", offset);
+				printf("textSegment->vmaddr.: 0x%llx\n", textSegment->vmaddr);
+				printf("textSegment->fileoff: 0x%llx\n", textSegment->fileoff);
+				printf("startAddress........: 0x%llx\n", startAddress);
+				printf("endAddress..........: 0x%llx\n", endAddress);
+				sleep(5); */
+
+				unsigned char * p = (unsigned char *)startAddress;
+
+				for (; p <= (unsigned char *)endAddress; p++)
+				{
+					if (*(uint64_t *)p == LOAD_EXECUTABLE_TARGET_UINT64)
+					{
+						/* printf("Found @ 0x%llx ", (uint64_t)p - startAddress);
+						printf("Symbol-number: %ld\n", (symbolNumber + (skippedSymbolCount / listSize) + 1));
+						sleep(3); */
+
+						*(uint64_t *)p = LOAD_EXECUTABLE_PATCH_UINT64;
+						p = (unsigned char *)endAddress;
+					}
+				}
+			}
+		}
+#endif
+
+#if PATCH_XCPI_SCOPE_MSRS
+	#if PATCH_KEXT_LOADING
+		else
+	#endif
+		if (((nl->n_sect == 8 /* __DATA,__data */) && nl->n_value) && gPlatform.CPU.CstConfigMsrLocked)
+		{
+			symbolName = (char *)stringTable + nl->n_un.n_strx;
+		
+			if (strcmp(symbolName, "_xcpm_core_scope_msrs") == 0)
+			{
+				int64_t offset = (nl->n_value - textSegment->vmaddr);
+				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
+				uint64_t endAddress = (startAddress + 0x3f);
+
+				/* printf("_xcpm_core_scope_msrs found!\n");
+				printf("offset..............: 0x%llx\n", offset);
+				printf("textSegment->vmaddr.: 0x%llx\n", textSegment->vmaddr);
+				printf("textSegment->fileoff: 0x%llx\n", textSegment->fileoff);
+				printf("startAddress........: 0x%llx\n", startAddress);
+				printf("endAddress..........: 0x%llx\n", endAddress);
+				sleep(5); */
+
+				unsigned char * p = (unsigned char *)startAddress;
+				
+				for (; p <= (unsigned char *)endAddress; p++)
+				{
+					// Note: We don't need this check.
+					if (*(uint64_t *)p == XCPM_SCOPE_MSRS_TARGET_UINT64)
+					{
+						/* printf("Found @ 0x%llx ", (uint64_t)p - startAddress);
+						printf("Symbol-number: %ld\n", (symbolNumber + (skippedSymbolCount / listSize) + 1));
+						sleep(3); */
+						
+						*(uint64_t *)p = 0x0000000000000000ULL;
+						p += 0x30;
+						*(uint64_t *)p = 0x0000000000000000ULL;
+						p += 0x30;
+						*(uint64_t *)p = 0x0000000000000000ULL;
+						p = (unsigned char *)endAddress;
+					}
+				}
+			}
+		}
+#endif
+
+#if PATCH_LOAD_EXTRA_KEXTS
+	#if (PATCH_KEXT_LOADING || PATCH_XCPI_SCOPE_MSRS)
+		else
+	#endif
+		if ((nl->n_sect == 25 / * __KLD,__text * /) && nl->n_value)
+		{
+			symbolName = (char *)stringTable + nl->n_un.n_strx;
+			
+			if (strcmp(symbolName, "__ZN12KLDBootstrap21readStartupExtensionsEv") == 0)
+			{
+				int64_t offset = (nl->n_value - textSegment->vmaddr);
+				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
+				uint64_t endAddress = (startAddress + 0x3f);
+				
+				/* printf("__ZN12KLDBootstrap21readStartupExtensionsEv found!\n");
+				printf("offset..............: 0x%llx\n", offset);
+				printf("vldSegment->vmaddr..: 0x%llx\n", vldSegment->vmaddr);
+				printf("vldSegment->fileoff.: 0x%llx\n", vldSegment->fileoff);
+				printf("startAddress........: 0x%llx\n", startAddress);
+				printf("endAddress..........: 0x%llx\n", endAddress);
+				sleep(5); */
+ 
+				unsigned char * p = (unsigned char *)startAddress;
+				
+				for (; p <= (unsigned char *)endAddress; p++)
+				{
+					if (*(uint64_t *)p == READ_STARTUP_EXTENSIONS_TARGET_UINT64)
+					{
+						/* printf("Found @ 0x%llx ", (uint64_t)p - startAddress);
+						printf("Symbol-number: %ld\n", (symbolNumber + (skippedSymbolCount / listSize) + 1));
+						sleep(3); */
+						
+						*(uint64_t *)p = READ_STARTUP_EXTENSIONS_PATCH_UINT64;
+						p = (unsigned char *)endAddress;
+					}
+				}
+			}
+		}
+#endif
+		symbolNumber++;
+		pointer += listSize; // Point to next symbol.
+	}
+
+	return 0;
+}
+#endif
 
 //==============================================================================
 // Private function. Called from DecodeMachO()
@@ -311,41 +481,40 @@ static long initKernelVersionInfo(unsigned long cmdBase, long listSize, unsigned
 
 	uint32_t pointer = gBinaryAddress + symtab->symoff + ((symtab->nsyms - 1) * listSize);
 
+#if ((MAKE_TARGET_OS & SNOW_LEOPARD) == SNOW_LEOPARD)
 	if (gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
+#endif
 		struct nlist_64 * nl = (struct nlist_64 *)pointer;
 	
 		while (symbolNumber > 0)
 		{
 			nl = (struct nlist_64 *)pointer;
 			
-			if (nl->n_sect && nl->n_value)
+			if ((nl->n_sect == 2 /* __TEXT,__const */) && nl->n_value)
 			{
 				symbolName = (char *)stringTable + nl->n_un.n_strx;
 				symbolLength = strlen(symbolName);
 				symbolOffset = (nl->n_value - textSegmentVMAddress);
 				
-				if (symbolLength)
+				if (symbolLength && (strcmp(symbolName, targetSymbols[index]) == 0))
 				{
-					if (strcmp(symbolName, targetSymbols[index]) == 0)
+					switch(index)
 					{
-						switch(index)
-						{
-							case 0:
-								gPlatform.KERNEL.versionRevision = (uint8_t)loadBuffer[symbolOffset];
-								index++;
-								break;
-								
-							case 1:
-								gPlatform.KERNEL.versionMinor = (uint8_t)loadBuffer[symbolOffset];
-								index++;
-								break;
-								
-							case 2:
-								gPlatform.KERNEL.versionMajor = (uint8_t)loadBuffer[symbolOffset];
-								symbolNumber = 0;
-								break;
-						}
+						case 0:
+							gPlatform.KERNEL.versionRevision = (uint8_t)loadBuffer[symbolOffset];
+							index++;
+							break;
+							
+						case 1:
+							gPlatform.KERNEL.versionMinor = (uint8_t)loadBuffer[symbolOffset];
+							index++;
+							break;
+							
+						case 2:
+							gPlatform.KERNEL.versionMajor = (uint8_t)loadBuffer[symbolOffset];
+							symbolNumber = 0;
+							break;
 					}
 				}
 			}
@@ -353,6 +522,7 @@ static long initKernelVersionInfo(unsigned long cmdBase, long listSize, unsigned
 			symbolNumber--;
 			pointer -= listSize;
 		}
+#if ((MAKE_TARGET_OS & SNOW_LEOPARD) == SNOW_LEOPARD)
 	}
 	else // 32-bit compatibility code.
 	{
@@ -362,33 +532,30 @@ static long initKernelVersionInfo(unsigned long cmdBase, long listSize, unsigned
 		{
 			nl = (struct nlist *)pointer;
 			
-			if (nl->n_sect && nl->n_value)
+			if ((nl->n_sect == 2 /* __TEXT,__const */) && nl->n_value)
 			{
 				symbolName = (char *)stringTable + nl->n_un.n_strx;
 				symbolLength = strlen(symbolName);
 				symbolOffset = (nl->n_value - textSegmentVMAddress);
 				
-				if (symbolLength)
+				if (symbolLength && (strcmp(symbolName, targetSymbols[index]) == 0))
 				{
-					if (strcmp(symbolName, targetSymbols[index]) == 0)
+					switch(index)
 					{
-						switch(index)
-						{
-							case 0:
-								gPlatform.KERNEL.versionRevision = (uint8_t)loadBuffer[symbolOffset];
-								index++;
-								break;
-								
-							case 1:
-								gPlatform.KERNEL.versionMinor = (uint8_t)loadBuffer[symbolOffset];
-								index++;
-								break;
-								
-							case 2:
-								gPlatform.KERNEL.versionMajor = (uint8_t)loadBuffer[symbolOffset];
-								symbolNumber = 0;
-								break;
-						}
+						case 0:
+							gPlatform.KERNEL.versionRevision = (uint8_t)loadBuffer[symbolOffset];
+							index++;
+							break;
+							
+						case 1:
+							gPlatform.KERNEL.versionMinor = (uint8_t)loadBuffer[symbolOffset];
+							index++;
+							break;
+							
+						case 2:
+							gPlatform.KERNEL.versionMajor = (uint8_t)loadBuffer[symbolOffset];
+							symbolNumber = 0;
+							break;
 					}
 				}
 			}
@@ -397,6 +564,8 @@ static long initKernelVersionInfo(unsigned long cmdBase, long listSize, unsigned
 			pointer -= listSize;
 		}
 	}
+#endif
+
 #if DEBUG
 	printf("gPlatform.KERNEL.versionMmR: %d.%d.%d\n", gPlatform.KERNEL.versionMajor, gPlatform.KERNEL.versionMinor, gPlatform.KERNEL.versionRevision);
 	sleep(5);
@@ -411,32 +580,32 @@ static long initKernelVersionInfo(unsigned long cmdBase, long listSize, unsigned
 
 static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *load_size)
 {
-	char *segname	= NULL;
+	char *segmentName	= NULL;
 
-	long retValue	= 0;
-	long vmsize		= 0;
-	long filesize	= 0;
+	long retValue		= 0;
+	long vmsize			= 0;
+	long filesize		= 0;
 
-	unsigned long vmaddr	= 0;
-	unsigned long fileaddr	= 0;
+	unsigned long vmaddr		= 0;
+	unsigned long fileAddress	= 0;
 
 	if (((long *)cmdBase)[0] == LC_SEGMENT_64)
 	{
 		struct segment_command_64 *segCmd = (struct segment_command_64 *)cmdBase;
-		vmaddr = (segCmd->vmaddr & 0x3fffffff);
-		vmsize = segCmd->vmsize;
-		fileaddr = (gBinaryAddress + segCmd->fileoff);
-		filesize = segCmd->filesize;
-		segname = segCmd->segname;
+		vmaddr			= (segCmd->vmaddr & 0x3fffffff);
+		vmsize			= segCmd->vmsize;
+		fileAddress		= (gBinaryAddress + segCmd->fileoff);
+		filesize		= segCmd->filesize;
+		segmentName		= segCmd->segname;
 	}
 	else
 	{
 		struct segment_command *segCmd = (struct segment_command *)cmdBase;
-		vmaddr = (segCmd->vmaddr & 0x3fffffff);
-		vmsize = segCmd->vmsize;
-		fileaddr = (gBinaryAddress + segCmd->fileoff);
-		filesize = segCmd->filesize;
-		segname = segCmd->segname;
+		vmaddr			= (segCmd->vmaddr & 0x3fffffff);
+		vmsize			= segCmd->vmsize;
+		fileAddress		= (gBinaryAddress + segCmd->fileoff);
+		filesize		= segCmd->filesize;
+		segmentName		= segCmd->segname;
 	}
 	
 	// Pre-flight checks.
@@ -454,7 +623,7 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 		 * __PRELINK_TEXT, __PRELINK_STATE, __PRELINK_INFO versus __PRELINK in 10.5
 		 */
 
-		if (gLoadKernelDrivers && strncmp(segname, "__PRELINK", 9) == 0)
+		if (gLoadKernelDrivers && strncmp(segmentName, "__PRELINK", 9) == 0)
 		{
 #if DEBUG
 			printf("Setting: gLoadKernelDrivers to false.\n");
@@ -463,15 +632,19 @@ static long DecodeSegment(long cmdBase, unsigned int *load_addr, unsigned int *l
 #endif
 			gLoadKernelDrivers = false;
 		}
-		else if (strncmp(segname, "__TEXT", 6) == 0)
+		else if (strncmp(segmentName, "__TEXT", 6) == 0)
 		{
 			retValue = 1;
+		}
+		else if (strncmp(segmentName, "__KLD", 5) == 0)
+		{
+			retValue = 25;
 		}
 
 		// Copy from file load area.
 		if (filesize > 0)
 		{
-			bcopy((char *)fileaddr, (char *)vmaddr, vmsize > filesize ? filesize : vmsize);
+			bcopy((char *)fileAddress, (char *)vmaddr, vmsize > filesize ? filesize : vmsize);
 		}
 
 		// Zero space at the end of the segment.

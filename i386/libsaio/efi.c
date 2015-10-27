@@ -131,6 +131,7 @@ void initEFITree(void)
 	{
 		_EFI_DEBUG_DUMP("Adding FSBFrequency property (%dMHz)\n", (gPlatform.CPU.FSBFrequency / 1000));
 		DT__AddProperty(platformNode, "FSBFrequency", sizeof(uint64_t), &gPlatform.CPU.FSBFrequency);
+		// DT__AddProperty(platformNode, "ARTFrequency", sizeof(uint64_t), &gPlatform.CPU.FSBFrequency);
 	}
 
 	Node * chosenNode = DT__AddChild(gPlatform.DT.RootNode, "chosen");
@@ -252,6 +253,10 @@ void initEFITree(void)
 																	// jne		0x17e55		(next)
 
 		DT__AddProperty(chosenNode, "random-seed", sizeof(seedBuffer), (EFI_UINT8*) &seedBuffer);
+		
+		DT__AddProperty(chosenNode, "booter-name", 12, "bootbase.efi");
+		DT__AddProperty(chosenNode, "booter-version", 11, "version:307");
+		DT__AddProperty(chosenNode, "booter-build-time", 28, "Fri Sep  4 15:34:00 PDT 2015");
 	}
 #endif
 

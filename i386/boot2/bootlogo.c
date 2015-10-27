@@ -144,7 +144,7 @@ int convertImage(unsigned short width, unsigned short height, const unsigned cha
 
 //==============================================================================
 
-void showBootLogo(bool aBootRecoveryHDFlag)
+void showBootLogo()
 {
 	setVideoMode(GRAPHICS_MODE);
 

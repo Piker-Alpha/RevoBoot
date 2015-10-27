@@ -166,7 +166,7 @@ void boot(int biosdev)
 
 	bool	haveCABootPlist	= false;
 	bool	quietBootMode	= true;
-	bool	bootRecoveryHD	= false;
+	bool	kernelSpecified	= false;
 
 	void *fileLoadBuffer = (void *)kLoadAddr;
 
@@ -190,37 +190,7 @@ void boot(int biosdev)
 	long flags, cachetime;
 #endif
 
-#if DEBUG_STATE_ENABLED
-	extern  void setVideoMode(int mode);
-	setVideoMode(VGA_TEXT_MODE);
-#endif
-
-#if RECOVERY_HD_SUPPORT
-	#if DEBUG_BOOT
-		printf("RecoveryHD boot support enabled\n");
-	#endif
-
-	while (readKeyboardStatus())
-	{
-		int key = (bgetc() & 0xff);
-		#if DEBUG_BOOT
-			printf("key: %d\n", key);
-		#endif
-		if ((key |= 0x20) == 'r')
-		{
-			bootRecoveryHD = true;
-			#if DEBUG_BOOT
-				printf("RecoveryHD boot support is active\n");
-			#endif
-		}
-	}
-#if DEBUG_BOOT
-	printf("bootRecoveryHD: %s\n", bootRecoveryHD ? "True" : "False");
-#endif
-	initPlatform(biosdev, true);
-#else
-	initPlatform(biosdev, false);
-#endif
+	initPlatform(biosdev);
 
 #if DEBUG_BOOT
 	/*
@@ -235,7 +205,7 @@ void boot(int biosdev)
 #endif
 
 #if (DEBUG_STATE_ENABLED == 0)
-	showBootLogo(bootRecoveryHD);
+	showBootLogo();
 #endif
 
 #if (LOAD_MODEL_SPECIFIC_EFI_DATA == 0 && BLACKMODE == 0)
@@ -391,6 +361,7 @@ void boot(int biosdev)
 	else
 	{
 		_BOOT_DEBUG_DUMP("No com.apple.Boot.plist found.\n");
+		_BOOT_DEBUG_SLEEP(5);
 	}
 
 	// Was a target drive (per UUID) specified in com.apple.Boot.plist?
@@ -475,10 +446,18 @@ void boot(int biosdev)
 				_BOOT_DEBUG_DUMP("length: %d, val: %s\n", length, val);
 #if RECOVERY_HD_SUPPORT
 				// XXX: Required for booting from the Recovery HD.
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+				// FIXME: This static check sucks!
+				if (strncmp(val, "\\com.apple.recovery.boot\\prelinkedkernel", length) == 0)
+				{
+					val = "/com.apple.recovery.boot/prelinkedkernel";
+				}
+#else
 				if (strncmp(val, "\\com.apple.recovery.boot\\kernelcache", length) == 0)
 				{
 					val = "/com.apple.recovery.boot/kernelcache";
 				}
+#endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
 #endif
 				if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
 				{
@@ -492,6 +471,16 @@ void boot(int biosdev)
 				}
 			}
 #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+		}
+		else
+		{
+			if (getValueForKey(kKernelNameKey, &val, &length, &bootInfo->bootConfig))
+			{
+				_BOOT_DEBUG_DUMP("Kernel key located in com.apple.Boot.plist\n");
+				_BOOT_DEBUG_DUMP("length: %d, val: %s\n", length, val);
+				strcpy(bootFile, val);
+				kernelSpecified = true;
+			}
 		}
 #endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE)
 
@@ -541,16 +530,19 @@ void boot(int biosdev)
 		{
 			_BOOT_DEBUG_DUMP("Warning: kernelcache will be ignored!\n");
 
-			/* True when 'Kernel Cache' is set in com.apple.Boot.plist
+			// True when 'Kernel Cache' is set in com.apple.Boot.plist
 			if (gPlatform.KernelCacheSpecified == true)
 			{
 				sprintf(bootFile, "%s", bootInfo->bootFile);
-			} */
+			}
 #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
-//			else
-//			{
-				sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
-//			}
+			else
+			{
+				if (!kernelSpecified)
+				{
+					sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
+				}
+			}
 #endif
 		}
 		else
@@ -778,7 +770,7 @@ void boot(int biosdev)
 				// _BOOT_DEBUG_SLEEP(6);
 				
 				// Switch to graphics mode and show the (white) Apple logo on a black/gray background.
-				showBootLogo(bootRecoveryHD);
+				showBootLogo();
 			}
 
 			_BOOT_DEBUG_DUMP("execKernel-8\n");

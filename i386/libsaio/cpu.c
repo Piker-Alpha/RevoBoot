@@ -203,7 +203,7 @@ void checkFlexRatioMSR(void)
 	if (msr & bit(16)) // Flex ratio enabled?
 	{
 		uint8_t flexRatio = ((msr >> 8) & 0xff);
-		
+
 		// Sanity checks.
 		if (flexRatio < gPlatform.CPU.MinBusRatio || flexRatio > gPlatform.CPU.MaxBusRatio)
 		{

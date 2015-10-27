@@ -104,7 +104,7 @@ extern char bootPrompt[];
  * bootlogo.c
  */
 
-extern void showBootLogo(bool aBootRecoveryHDFlag);
+extern void showBootLogo();
 
 /*
  * fake_efi.c
