@@ -363,6 +363,8 @@
 
 #define BLACKMODE							1	// Show white Apple logo on a black background. Set to 0 for gray mode.
 
+#define UISCALE_2X							0	// Set to 0 by default. Use 1 for HiDPI mode.
+
 #define DEBUG_BOOT_GRAPHICS					0	// Set to 0 by default. Use 1 when to see debug info.
 
 
@@ -419,6 +421,24 @@
 												// Note: Safe to keep at 0 since it is only available since RevoBoot v1.5.35
 
 #define DEBUG_SMBIOS						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
+
+
+
+//---------------------------------------------------------------- LOAD.C ------------------------------------------------------------------
+
+#define PATCH_KEXT_LOADING						1	// Set to 1 by default.
+
+#define LOAD_EXECUTABLE_TARGET_UINT64			0x487074db8548c389ULL // 89c34885db747048 revered in HexEdit
+#define LOAD_EXECUTABLE_PATCH_UINT64			0x4812ebdb8548c389ULL
+
+#define PATCH_XCPI_SCOPE_MSRS					0	// Set to 0 by default.
+
+#define XCPM_SCOPE_MSRS_TARGET_UINT64			0x00000002000000E2ULL
+
+#define PATCH_LOAD_EXTRA_KEXTS					0	// Set to 0 by default.
+
+#define READ_STARTUP_EXTENSIONS_TARGET_UINT64	0xe805eb00000025e8ULL // e825000000eb05e8 revered in HexEdit
+#define READ_STARTUP_EXTENSIONS_PATCH_UINT64	0xe8909000000025e8ULL
 
 
 //-------------------------------------------------------------- PLATFORM.C ----------------------------------------------------------------
