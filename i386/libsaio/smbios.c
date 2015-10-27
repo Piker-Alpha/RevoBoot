@@ -137,8 +137,8 @@ void setupSMBIOS(void)
 	_SMBIOS_DEBUG_DUMP("newEPS->dmi.structureCount: %d\nnewEPS.dmi.tableLength: %d\n", newEPS->dmi.structureCount, newEPS->dmi.tableLength);
 
     // Take care of possible checksum errors
-    newEPS->dmi.checksum		= 256 - checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
-    newEPS->checksum			= 256 - checksum8(newEPS, sizeof(* newEPS));
+    newEPS->dmi.checksum		= checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
+    newEPS->checksum			= checksum8(newEPS, sizeof(* newEPS));
 
 	// Used to update the EFI Configuration Table (in efi.c) which is
 	// what AppleSMBIOS.kext reads to setup the SMBIOS table for OS X.
