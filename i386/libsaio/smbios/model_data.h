@@ -85,12 +85,35 @@
 		#define SMB_PRODUCT_NAME	"iMac15,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FA842E06C61E91C5"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '2' }
-	#else // Defaults to iMac 15,1
-		// Intel Core i5-4690 @ 3.50 GHz
+	#elif (TARGET_MODEL == IMAC_151)
+		// Intel Core i5-4690 @ 3.5 GHz
 		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B00.1409291931"
 		#define SMB_PRODUCT_NAME	"iMac15,1"
 		#define SMB_BOARD_PRODUCT	"Mac-42FD25EABCABB274"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '1' }
+	#elif (TARGET_MODEL == IMAC_162)
+		// Intel Core i5-5575R @ 2.8 GHz & Intel Core i5-5675R @ 3.1 GHz
+		// Intel Iris Pro Graphics 6200
+		// (21.5inch Late 2015)
+		#define SMB_BIOS_VERSION	"IM162.88Z.0206.B00.1508281353"
+		#define SMB_PRODUCT_NAME	"iMac16,2"
+		#define SMB_BOARD_PRODUCT	"Mac-FFE5EF870D7BA81A"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '6', ',', '2' }
+	#elif (TARGET_MODEL == IMAC_171)
+		// Intel Core i5-6500 @ 3.2 GHz
+		// AMD Radeon R9 M390
+		// (Retina 5k, 27inch Late 2015)
+		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B00.1509221819"
+		#define SMB_PRODUCT_NAME	"iMac17,1"
+		#define SMB_BOARD_PRODUCT	"Mac-DB15BD556843C820"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' }
+	/* #elif (TARGET_MODEL == IMAC_171) // Intel Core i5-6600 @ 3.3 GHz
+		// AMD Radeon R9 M395
+		// (Retina 5k, 27inch Late 2015)
+		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B00.1509221819"
+		#define SMB_PRODUCT_NAME	"iMac17,1"
+		#define SMB_BOARD_PRODUCT	"Mac-B809C3757DA9BB8D"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' } */
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
