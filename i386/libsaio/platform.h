@@ -379,6 +379,11 @@ typedef struct _PlatformInfo_t
 		 } DMI; */
 	} SMBIOS;
 	
+	struct XHCI
+	{
+		uint64_t ARTFrequency;
+	} XHCI;
+	
 } PlatformInfo_t;
 
 
