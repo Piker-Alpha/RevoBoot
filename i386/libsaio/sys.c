@@ -467,7 +467,7 @@ int open(const char * path, int flags)
 				// Load entire file into memory. Unnecessary open() calls must be avoided.
 				gFSLoadAddress = io->i_buf;
 				io->i_filesize = bvr->fs_loadfile(bvr, (char *)filePath);
-			
+
 				if (io->i_filesize > 0)
 				{
 					return fdesc;
@@ -665,7 +665,7 @@ int closedir(struct dirstuff * dirp)
 
 //==============================================================================
 
-int readdir(struct dirstuff * dirp, const char ** name, long * flags,long * time)
+int readdir(struct dirstuff * dirp, const char ** name, long * flags, long * time)
 {
 	return dirp->dir_bvr->fs_getdirentry(dirp->dir_bvr, 
 										 /* dirPath */   dirp->dir_path,
