@@ -290,9 +290,9 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 	{
 		// Yes. Get the GNVS address.
 		unsigned int factoryDSDT_GNVS_Address = (*(uint32_t *)(opRegFactoryDSDTAddress + 8));
-
-		_ACPI_DEBUG_DUMP("GNVS address (0x%x) found @: 0x%x\n", factoryDSDT_GNVS_Address, opRegFactoryDSDTAddress);
-
+#if (DEBUG_ACPI || DUMP_OPREGION_GNVS_ADDRESS)
+		printf("GNVS address (0x%x) found @: 0x%x\n", factoryDSDT_GNVS_Address, opRegFactoryDSDTAddress);
+#endif
 		// Now try to locate the OperationRegion (GNVS, SystemMemory, 0xNNNNNNNN, 0xNNNN) in the patched DSDT.
 		unsigned int opRegPatchedDSDTAddress = search64bitPattern(patchedFADT->DSDT + sizeof(ACPI_DSDT), 2000, OP_REGION_GNVS_ADDRESS_LE);
 
@@ -300,9 +300,9 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 		{
 			// Yes. Get the GNVS address.
 			unsigned int patchedDSDT_GNVS_Address = (*(uint32_t *)(opRegPatchedDSDTAddress + 8));
-
-			_ACPI_DEBUG_DUMP("GNVS address (0x%x) found @: 0x%08x\n", patchedDSDT_GNVS_Address, opRegPatchedDSDTAddress);
-
+#if (DEBUG_ACPI || DUMP_OPREGION_GNVS_ADDRESS)
+			printf("GNVS address (0x%x) found @: 0x%08x\n", patchedDSDT_GNVS_Address, opRegPatchedDSDTAddress);
+#endif
 			// Are both GNVS address values the same?
 			if (patchedDSDT_GNVS_Address != factoryDSDT_GNVS_Address)
 			{
@@ -314,8 +314,9 @@ bool patchFACPTable(ENTRIES * xsdtEntries, int tableIndex, int dropOffset)
 				_ACPI_DEBUG_DUMP("Done.\n");
 			}
 		}
-
-		_ACPI_DEBUG_SLEEP(1);
+#if (DEBUG_ACPI || DUMP_OPREGION_GNVS_ADDRESS)
+		sleep(1);
+#endif
 	}
 #endif // VERIFY_OPREGION_GNVS_ADDRESS
 		
@@ -409,6 +410,10 @@ void setupACPI(void)
 #endif	// LOAD_EXTRA_ACPI_TABLES
 
 	_ACPI_DEBUG_DUMP("\n");
+
+#if DROP_SELECTED_SSDT_TABLE
+	const char * oemTableIdTargets[] = OEM_TABLE_ID_TARGETS;
+#endif
 
 	int cti = 0; // CustomTableIndex
 
@@ -537,9 +542,38 @@ void setupACPI(void)
 					}
 					else if (essentialTables[idx].action & kDropTable)
 					{
-						_ACPI_DEBUG_DUMP("Dropping table: %s (on request)\n", tableName);
-						
-						dropOffset++;
+#if DROP_SELECTED_SSDT_TABLE
+						short tid = 0;
+
+						if (tableSignature == SSDT_TABLE_SIGNATURE)
+						{
+							ACPI_SSDT * currentTable = (ACPI_SSDT *)table;
+
+							_ACPI_DEBUG_DUMP("Checking SSDT(%s)\n", currentTable->OEMTableId);
+							
+							do
+							{
+								if (strncmp(currentTable->OEMTableId, oemTableIdTargets[tid], strlen(currentTable->OEMTableId)) == 0)
+								{
+									_ACPI_DEBUG_DUMP("Dropping table: %s (on request)\n", tableName);
+
+									dropOffset++;
+
+									break;
+								}
+
+								tid++;
+							} while (oemTableIdTargets[tid] != 0);
+						}
+						else
+						{
+#endif
+							_ACPI_DEBUG_DUMP("Dropping table: %s (on request)\n", tableName);
+
+							dropOffset++;
+#if DROP_SELECTED_SSDT_TABLE
+						}
+#endif
 					}
 				}
 
