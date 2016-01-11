@@ -379,7 +379,7 @@ static long patchLoadExecutable(unsigned long cmdBase, long listSize, unsigned l
 				
 				for (; p <= (unsigned char *)endAddress; p++)
 				{
-					// Note: We don't need this check.
+					// Note: We don't really need this check.
 					if (*(uint64_t *)p == XCPM_SCOPE_MSRS_TARGET_UINT64)
 					{
 						/* printf("Found @ 0x%llx ", (uint64_t)p - startAddress);

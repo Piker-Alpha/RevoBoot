@@ -136,7 +136,7 @@ void setupSMBIOS(void)
 	 */
 	_SMBIOS_DEBUG_DUMP("newEPS->dmi.structureCount: %d\nnewEPS.dmi.tableLength: %d\n", newEPS->dmi.structureCount, newEPS->dmi.tableLength);
 
-    // Take care of possible checksum errors
+    // Calculate checksums
     newEPS->dmi.checksum		= checksum8(&newEPS->dmi, sizeof(newEPS->dmi));
     newEPS->checksum			= checksum8(newEPS, sizeof(* newEPS));
 
