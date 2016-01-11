@@ -481,10 +481,16 @@ static const char * SMBMemoryDeviceTypes[] =
     "DDR SDRAM",    /* 12h  DDR */
     "DDR2 SDRAM",   /* 13h  DDR2 */
     "DDR2 FB-DIMM", /* 14h  DDR2 FB-DIMM */
-    "RAM",			/* 15h  unused */
-    "RAM",			/* 16h  unused */
-    "RAM",			/* 17h  unused */
+    "RESERVED",		/* 15h  Reserved */
+    "RESERVED",		/* 16h  Reserved */
+    "RESERVED",		/* 17h  Reserved */
     "DDR3",			/* 18h  DDR3, chosen in [5776134] */
+    "FBD2",			/* 19h  FBD2 */
+    "DDR4",			/* 1Ah  DDR4 */
+    "LPDDR",		/* 1Bh  LPDDR */
+    "LPDDR2",		/* 1Ch  LPDDR2 */
+    "LPDDR3",		/* 1Dh  LPDDR3 */
+    "LPDDR3",		/* 1Eh  LPDDR5 */
 };
 
 static const int kSMBMemoryDeviceTypeCount = sizeof(SMBMemoryDeviceTypes) / sizeof(SMBMemoryDeviceTypes[0]);
@@ -492,31 +498,40 @@ static const int kSMBMemoryDeviceTypeCount = sizeof(SMBMemoryDeviceTypes) / size
 
 
 //
-// OEM Processor Type (Apple Specific - Type 0x83/131)
+// OEM – Apple Processor Type (type 0x83/131)
 //
 
 struct SMBOemProcessorType
 {
 	SMB_STRUCT_HEADER
-	SMBWord    ProcessorType;
+	SMBWord		ProcessorType;
 } __attribute__((packed)) SMBOemProcessorType;
 
 
 //
-// OEM Processor Bus Speed (Apple Specific - Type 0x84/132)
+// OEM – Apple Processor Bus Speed (type 0x84/132)
 //
 struct SMBOemProcessorBusSpeed
 {
 	SMB_STRUCT_HEADER
-	SMBWord    ProcessorBusSpeed;   // MT/s unit
+	SMBWord		ProcessorBusSpeed;   // MT/s unit
 } __attribute__((packed)) SMBOemProcessorBusSpeed;
 
 
 //
-// OEM Platform Feature (Apple Specific - Type 0x85/133 / AppleSMBIOS-43)
+// OEM – Apple Platform Features (type 0x85/133 / AppleSMBIOS-43)
 //
 struct SMBOemPlatformFeature
 {
 	SMB_STRUCT_HEADER
-	SMBWord    PlatformFeature;
+	SMBWord		PlatformFeature;
 } __attribute__((packed)) SMBOemPlatformFeature;
+
+//
+// OEM – Apple SMC Version (type 0x86/134)
+//
+struct SMBOemSMCVersion
+{
+	SMB_STRUCT_HEADER
+	SMBString	SMCVersion
+} __attribute__((packed)) SMBOemSMCVersion;
