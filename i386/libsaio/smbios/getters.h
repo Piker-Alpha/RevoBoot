@@ -95,6 +95,11 @@ static SMBWord getFSBFrequency(void)
 {
 	_SMBIOS_DEBUG_DUMP("In getFSBFrequency() = %d Hz\n", (gPlatform.CPU.FSBFrequency < 100500000) ? 0 : (gPlatform.CPU.FSBFrequency / 1000000));
 
+	if (gPlatform.CPU.QPISpeed == 0)
+	{
+		return ((gPlatform.CPU.FSBFrequency / 1000000) / 4);
+	}
+
 	/*
 	 * Returning zero (0) here is invalid, but we can get away with it because 
 	 * of XNU's check in tsc_init() which effectively catches the invalid value
