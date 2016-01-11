@@ -533,5 +533,5 @@ struct SMBOemPlatformFeature
 struct SMBOemSMCVersion
 {
 	SMB_STRUCT_HEADER
-	SMBString	SMCVersion
+	SMBString	SMCVersion;
 } __attribute__((packed)) SMBOemSMCVersion;
