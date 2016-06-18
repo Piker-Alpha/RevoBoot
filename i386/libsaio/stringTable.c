@@ -357,6 +357,10 @@ long loadConfigFile(const char * configFile, config_file_t *config)
 		{
 			return EFI_SUCCESS;
 		}
+		else
+		{
+			error("ERROR: failed to parse: com.apple.Boot.plist");
+		}
 	}
 
 	return (long)(EFI_INVALID_PARAMETER | EFI_NOT_FOUND);
@@ -376,8 +380,8 @@ long loadCABootPlist(void)
 #endif
 
 #if INSTALL_ESD_SUPPORT
-		".IABootFiles",
 		"OS X Install Data",
+		".IABootFiles",
 		"Mac OS X Install Data",
 #endif
 		"Library/Preferences/SystemConfiguration" // The default.
@@ -405,10 +409,26 @@ long loadCABootPlist(void)
 		end++;
 	#endif
 #endif
+		char dirSpec[80];
+
+		sprintf(dirSpec, "/.IABootFiles/", BIOS_DEV_UNIT(gPlatform.BootVolume), gPlatform.BootVolume->part_no);
+
+#if DEBUG_BOOT
+		long flagss, time;
+
+		if (GetFileInfo(dirSpec, "com.apple.Boot.plist", &flagss, &time) == 0)
+		{
+			printf("/.IABootFiles/com.apple.Boot.plist found on bvr->part_no: %d\n", gPlatform.BootVolume->part_no);
+			sleep(3);
+		}
+#endif
+
 		for (; i < len; i++)
 		{
 			bzero(path, 80);
 			sprintf(path, "/%s/%s", dirspec[i], "com.apple.Boot.plist");
+
+			// Try to load com.apple.Boot.plist
 			retValue = loadConfigFile(path, &bootInfo->bootConfig);
 			
 			if (retValue == EFI_SUCCESS)
@@ -420,6 +440,7 @@ long loadCABootPlist(void)
 					gPlatform.BootVolume->flags = kBVFlagInstallVolume;
 				}
 #endif
+
 #if (APPLE_RAID_SUPPORT || CORE_STORAGE_SUPPORT)
 				if (strncmp(path, "/com.apple.boot.", 16) == 0)
 				{
