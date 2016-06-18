@@ -101,6 +101,13 @@
 			CSR_ALLOW_DEVICE_CONFIGURATION)
 #endif
 
+/* CSR capabilities that a booter can give to the system */
+#define CSR_CAPABILITY_UNLIMITED				(1 << 0)
+#define CSR_CAPABILITY_CONFIG					(1 << 1)
+#define CSR_CAPABILITY_APPLE_INTERNAL			(1 << 2)
+
+#define CSR_VALID_CAPABILITIES (CSR_CAPABILITY_UNLIMITED | CSR_CAPABILITY_CONFIG | CSR_CAPABILITY_APPLE_INTERNAL)
+
 // Snapshot constants with supported version / revision info.
 #define kBootArgsVersion_SnowLeopard	1
 #define kBootArgsRevision_SnowLeopard	6
