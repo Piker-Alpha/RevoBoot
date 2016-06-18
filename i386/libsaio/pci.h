@@ -20,11 +20,19 @@ uint32_t pciConfigRead( uint8_t readType, uint32_t pciAddress, uint8_t pciRegist
 //==============================================================================
 // Note: Currently only called from: i386/libsaio/cpu/dynamic_data.h
 
+static inline uint8_t pciConfigRead8(uint32_t pciAddress, uint8_t pciRegister)
+{
+	return (uint8_t)pciConfigRead(READ_BYTE, pciAddress, pciRegister);
+}
+
+//==============================================================================
+// Note: Currently only called from: i386/libsaio/cpu/dynamic_data.h
+
+
 static inline uint16_t pciConfigRead16(uint32_t pciAddress, uint8_t pciRegister)
 {
 	return (uint16_t)pciConfigRead(READ_WORD, pciAddress, pciRegister);
 }
-
 
 //==============================================================================
 // Note: Currently only called from: i386/libsaio/cpu/dynamic_data.h
@@ -33,4 +41,3 @@ static inline uint32_t pciConfigRead32(uint32_t pciAddress, uint8_t pciRegister)
 {
 	return (uint32_t)pciConfigRead(READ_LONG, pciAddress, pciRegister);
 }
-

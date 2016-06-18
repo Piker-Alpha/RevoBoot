@@ -355,12 +355,17 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 			{
 				sprintf(gPlatform.KextFileName, "%s/%s", targetFolder, dirEntryName);
 
-// #if DEBUG_DRIVERS
 				if (strlen(gPlatform.KextFileName) >= MAX_KEXT_PATH_LENGTH)
 				{
 					stop("Error: gPlatform.KextFileName >= %d chars. Change MAX_KEXT_PATH_LENGTH!", MAX_KEXT_PATH_LENGTH);
 				}
-// #endif
+
+#if DEBUG_DRIVERS
+				if (!isPluginRun && ((strcmp(dirEntryName, "AppleEmulator.kext") == 0) || (strcmp(dirEntryName, "FakeSMC.kext") == 0)))
+				{
+					printf("loadKext(%s) found\n", dirEntryName);
+				}
+#endif
 				// Determine bundle type.
 				isBundleType2 = (GetFileInfo(gPlatform.KextFileName, "Contents", &dirEntryFlags, &dirEntryTime) == 0);
 
@@ -396,7 +401,7 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 static int loadPlist(char * targetFolder, bool isBundleType2)
 {
     ModulePtr module;
-    TagPtr    personalities;
+    TagPtr    personalities		= NULL;
 
     char * plistBuffer			= NULL;
     char * tmpExecutablePath	= NULL;
@@ -962,7 +967,7 @@ long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsiz
 
 		if (OSSwapBigToHostInt32(kernel_header->adler32) != localAdler32(fileLoadBuffer, uncompressedSize))
 		{
-			printf("Adler mismatch, is 0x%x but 0x%x is expected\n", localAdler32(fileLoadBuffer, uncompressedSize));
+			printf("Adler mismatch, is 0x%x but 0x%x is expected\n", OSSwapBigToHostInt32(kernel_header->adler32), localAdler32(fileLoadBuffer, uncompressedSize));
 			return -1;
 		}
 	}

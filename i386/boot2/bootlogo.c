@@ -37,7 +37,7 @@
 unsigned long lookUpCLUTIndex(unsigned char index)
 {
 	long colorIndex = (index * 3);
-#if BLACKMODE
+#if (((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) && (BLACKMODE == 1)) // Yosemite, El Capitan and Sierra.
 	long red   = AppleLogoBlackClut[ colorIndex   ];
 	long green = AppleLogoBlackClut[ colorIndex++ ];
 	long blue  = AppleLogoBlackClut[ colorIndex++ ];
@@ -148,7 +148,7 @@ void showBootLogo()
 {
 	setVideoMode(GRAPHICS_MODE);
 
-#if BLACKMODE
+#if (((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) && (BLACKMODE == 1)) // Yosemite, El Capitan and Sierra.
 	setBackgroundColor(0x030000);
 	uint32_t compressedSize = sizeof(AppleLogoBlackPacked);
 	void *logoData = (void *)AppleLogoBlackPacked;

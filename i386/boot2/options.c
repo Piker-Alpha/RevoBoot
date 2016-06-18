@@ -92,6 +92,7 @@ void getAndProcessBootArguments(char * configKernelFlags)
 	int bootModes[6]			= { -1, kBootModeNormal, kBootModeNormal, -1, kBootModeSafe, kBootModeNormal };
 	const char * bootFlags[6]	= { "", kVerboseModeFlag, kSingleUserModeFlag, "", kSafeModeFlag, kIgnoreCachesFlag };
 
+	bzero(gBootArgs, sizeof(gBootArgs));
 	skipblanks(&cp);
 
     while (readKeyboardStatus())
