@@ -166,7 +166,6 @@ void boot(int biosdev)
 
 	bool	haveCABootPlist	= false;
 	bool	quietBootMode	= true;
-	bool	kernelSpecified	= false;
 
 	void *fileLoadBuffer = (void *)kLoadAddr;
 
@@ -186,9 +185,10 @@ void boot(int biosdev)
 #if PRE_LINKED_KERNEL_SUPPORT
 	bool	mayUseKernelCache	= false;
 	bool	flushCaches			= false;
+	bool	kernelSpecified	= false;
+#endif
 
 	long flags, cachetime;
-#endif
 
 	initPlatform(biosdev);
 
@@ -433,7 +433,7 @@ void boot(int biosdev)
 		 * We cannot use the kernelcache from the Yosemite installer, not yet,
 		 * and thus we load: /System/Library/Caches/Startup/kernelcache instead
 		 */
-#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
 		// Installation directory located?
 		if (flushCaches == false) //  && (gPlatform.BootVolume->flags != kBVFlagInstallVolume))
 		{
@@ -446,7 +446,7 @@ void boot(int biosdev)
 				_BOOT_DEBUG_DUMP("length: %d, val: %s\n", length, val);
 #if RECOVERY_HD_SUPPORT
 				// XXX: Required for booting from the Recovery HD.
-#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
 				// FIXME: This static check sucks!
 				if (strncmp(val, "\\com.apple.recovery.boot\\prelinkedkernel", length) == 0)
 				{
@@ -457,8 +457,8 @@ void boot(int biosdev)
 				{
 					val = "/com.apple.recovery.boot/kernelcache";
 				}
-#endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
-#endif
+#endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
+#endif // #if RECOVERY_HD_SUPPORT
 				if (length && GetFileInfo(NULL, val, &flags, &cachetime) == 0)
 				{
 					_BOOT_DEBUG_DUMP("Kernel Cache set to: %s\n", val);
@@ -470,7 +470,7 @@ void boot(int biosdev)
 					gPlatform.KernelCacheSpecified = true;
 				}
 			}
-#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
 		}
 		else
 		{
@@ -484,7 +484,15 @@ void boot(int biosdev)
 		}
 #endif // #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE)
 
-#endif
+#else // #if PRELINKED_KERNEL_SUPPORT
+	#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
+		sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
+	#else
+		// Set to mach_kernel for Mavericks and earlier versions of OS X.
+		sprintf(bootFile, "/%s", bootInfo->bootFile);
+	#endif
+#endif // #if PRELINKED_KERNEL_SUPPORT
+		
 		if (getBoolForKey(kQuietBootKey, &quietBootMode, &bootInfo->bootConfig) && !quietBootMode)
 		{
 			gPlatform.BootMode = kBootModeNormal; // Reversed from: gPlatform.BootMode |= kBootModeQuiet;
@@ -535,7 +543,7 @@ void boot(int biosdev)
 			{
 				sprintf(bootFile, "%s", bootInfo->bootFile);
 			}
-#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite and El Capitan.
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
 			else
 			{
 				if (!kernelSpecified)
@@ -590,7 +598,7 @@ void boot(int biosdev)
 				
 					_BOOT_DEBUG_DUMP("adler32: %08X\n", adler32);
 
-#if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set (like Lion).
+#if ((MAKE_TARGET_OS & LION) == LION) // Sierra, El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set (like Lion).
 
 					_BOOT_DEBUG_DUMP("Checking for kernelcache...\n");
 
@@ -615,8 +623,14 @@ void boot(int biosdev)
 				
 				if (mayUseKernelCache == false)
 				{
-					sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
 					_BOOT_DEBUG_DUMP("No kernelcache found, will load: %s!\n", bootInfo->bootFile);
+
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
+					sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
+#else
+					// Set to mach_kernel for Mavericks and earlier versions of OS X.
+					sprintf(bootFile, "/%s", bootInfo->bootFile);
+#endif
 				}
 
 				free(preLinkedKernelPath);
@@ -675,31 +689,41 @@ void boot(int biosdev)
 #endif // PRE_LINKED_KERNEL_SUPPORT
 
 		/*
-		 * The bootFile normally points to (mach_)kernel but it will be empty when a
-		 * pre-linked kernel was processed, and that is why we check the length here.
+		 * The 'bootFile' normally points to (mach_)kernel but will be empty when
+		 * a prelinkedkernel was processed, or when prelinkedkernel support is
+		 * disabled in the settings file, which is why we check the length here.
 		 */
 
-		if (strlen(bootFile))
+		if (strlen(bootFile) == 0)
 		{
-			_BOOT_DEBUG_DUMP("About to load: %s\n", bootFile);
-
-			retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
-
-#if SUPPORT_32BIT_MODE
-			if (retStatus <= 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
+#if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // Yosemite, El Capitan and Sierra.
+			sprintf(bootFile, "/System/Library/Kernels/%s", bootInfo->bootFile);
+#else
+			// Set to mach_kernel for Mavericks and earlier versions of OS X.
+			sprintf(bootFile, "/%s", bootInfo->bootFile);
+#endif
+			if (GetFileInfo(NULL, bootFile, &flags, &cachetime))
 			{
-				_BOOT_DEBUG_DUMP("Load failed for arch=x86_64, trying arch=i386 now.\n");
-
-				gPlatform.ArchCPUType = CPU_TYPE_I386;
-
-				retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
+				stop("ERROR: %s not found!\n", bootFile);
 			}
-
-			_BOOT_DEBUG_DUMP("LoadStatus(%d): %s\n", retStatus, bootFile);
-#endif // SUPPORT_32BIT_MODE
 		}
 
-		_BOOT_DEBUG_ELSE_DUMP("bootFile empty!\n");	// Should not happen, but helped me once already.
+		_BOOT_DEBUG_DUMP("About to load: %s\n", bootFile);
+
+		retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
+
+#if SUPPORT_32BIT_MODE
+		if (retStatus <= 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
+		{
+			_BOOT_DEBUG_DUMP("Load failed for arch=x86_64, trying arch=i386 now.\n");
+
+			gPlatform.ArchCPUType = CPU_TYPE_I386;
+
+			retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
+		}
+#endif // SUPPORT_32BIT_MODE
+
+		_BOOT_DEBUG_DUMP("LoadStatus(%d): %s\n", retStatus, bootFile);
 
 		/*
 		 * Time to fire up the kernel - previously known as execKernel()
@@ -753,7 +777,6 @@ void boot(int biosdev)
 				sleep(kBootErrorTimeout);
 			}
 #endif
-			
 			_BOOT_DEBUG_DUMP("execKernel-6\n");
 			
 			finalizeKernelBootConfig();
@@ -766,7 +789,6 @@ void boot(int biosdev)
 			// Did we switch to graphics mode yet (think verbose mode)?
 			if (gVerboseMode || bootArgs->Video.v_display != GRAPHICS_MODE)
 			{
-				
 				// _BOOT_DEBUG_SLEEP(6);
 				
 				// Switch to graphics mode and show the (white) Apple logo on a black/gray background.
