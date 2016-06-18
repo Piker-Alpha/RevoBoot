@@ -21,91 +21,118 @@
 
 #define DEFAULT_FSB				100000	// Hardcoded to 100MHz
 #define BASE_NHM_CLOCK_SOURCE	133333333ULL
+#define BASE_ART_CLOCK_SOURCE 	24000000ULL	// 24Mhz
 
 //==============================================================================
 // Measures TSC frequency using the i8254 Programmable Interval Timer counter 2
 
 static uint64_t getTSCFrequency(void)
 {
-	// DFE: This constant comes from older xnu:
-	#define CLKNUM					1193182	// formerly 1193167
-
-	// DFE: These two constants come from Linux except CLOCK_TICK_RATE replaced with CLKNUM
-	#define CALIBRATE_TIME_MSEC		30
-	#define CALIBRATE_LATCH ((CLKNUM * CALIBRATE_TIME_MSEC + 1000/2)/1000)
-
+	int i;
+	
+	uint64_t retval = 0;
 	uint64_t tscStart;
 	uint64_t tscEnd;
 	uint64_t tscDelta = 0xffffffffffffffffULL;
+	
 	unsigned long pollCount;
-	uint64_t retval = 0;
-	int i;
-
-	/* Time how many TSC ticks elapse in 30 msec using the 8254 PIT
-	 * counter 2.  We run this loop 3 times to make sure the cache
-	 * is hot and we take the minimum delta from all of the runs.
-	 * That is to say that we're biased towards measuring the minimum
-	 * number of TSC ticks that occur while waiting for the timer to
-	 * expire.  That theoretically helps avoid inconsistencies when
-	 * running under a VM if the TSC is not virtualized and the host
-	 * steals time.  The TSC is normally virtualized for VMware.
-	 */
-
-	for (i = 0; i < 10; ++i)
+	
+	if (getCachedCPUID(LEAF_0, eax) > 0x14) // Intel Skylake Processors.
 	{
-		enable_PIT2();
-		set_PIT2_mode0(CALIBRATE_LATCH);
-		tscStart = rdtsc64();
-		pollCount = poll_PIT2_gate();
-		tscEnd = rdtsc64();
-		/* The poll loop must have run at least a few times for accuracy */
-
-		if (pollCount <= 1)
-		{
-			continue;
-		}
-
-		/* The TSC must increment at LEAST once every millisecond.  We
-		 * should have waited exactly 30 msec so the TSC delta should
-		 * be >= 30.  Anything less and the processor is way too slow.
-		 */
-
-		if ((tscEnd - tscStart) <= CALIBRATE_TIME_MSEC)
-		{
-			continue;
-		}
-
-		// tscDelta = min(tscDelta, (tscEnd - tscStart))
-		if ((tscEnd - tscStart) < tscDelta)
-		{
-			tscDelta = tscEnd - tscStart;
-		}
-	}
-
-	/* tscDelta is now the least number of TSC ticks the processor made in
-	 * a timespan of 0.03 s (e.g. 30 milliseconds)
-	 * Linux thus divides by 30 which gives the answer in kiloHertz because
-	 * 1 / ms = kHz.  But we're xnu and most of the rest of the code uses
-	 * Hz so we need to convert our milliseconds to seconds.  Since we're
-	 * dividing by the milliseconds, we simply multiply by 1000.
-	 */
-
-	/* Unlike linux, we're not limited to 32-bit, but we do need to take care
-	 * that we're going to multiply by 1000 first so we do need at least some
-	 * arithmetic headroom.  For now, 32-bit should be enough.
-	 * Also unlike Linux, our compiler can do 64-bit integer arithmetic.
-	 */
-
-	if (tscDelta > (1ULL << 32))
-	{
-		retval = 0;
+#if DEBUG_CPU
+		printf("LEAF_15[eax]: 0x%x\n", getCachedCPUID(LEAF_15, eax)); // 0x02		(numerator is always 2)
+		printf("LEAF_15[ebx]: 0x%x\n", getCachedCPUID(LEAF_15, ebx)); // 0x11c	(denominator i.e. 284 = 3.4GHz and 334 = 4GHz)
+		printf("LEAF_15[ecx]: 0x%x\n", getCachedCPUID(LEAF_15, ecx)); // 0x00		(frequency = Intel reserved)
+		printf("LEAF_15[edx]: 0x%x\n", getCachedCPUID(LEAF_15, edx)); // 0x00
+		
+		printf("LEAF_16[eax]: 0x%x\n", getCachedCPUID(LEAF_16, eax)); // 0xd48	(clock speed i.e. 3408MHz for the i7-6700)
+		printf("LEAF_16[ebx]: 0x%x\n", getCachedCPUID(LEAF_16, ebx)); // 0xfa0	(maximum turbo clock speed i.e. 4GHz for the i7-6700)
+		printf("LEAF_16[ecx]: 0x%x\n", getCachedCPUID(LEAF_16, ecx)); // 0x64		(bus speed i.e. 100MHz)
+		printf("LEAF_16[edx]: 0x%x\n", getCachedCPUID(LEAF_16, edx)); // 0x00
+#endif
+		//
+		// Examples:
+		//
+		// 24000000 * 284 / 2 = 3408000000 for the Intel i7-6700  @ 3.4GHz
+		// 24000000 * 334 / 2 = 4008000000 for the Intel i7-6700K @ 4.0GHz
+		//
+		return (BASE_ART_CLOCK_SOURCE * getCachedCPUID(LEAF_15, ebx) / getCachedCPUID(LEAF_15, eax));
 	}
 	else
 	{
-		retval = tscDelta * 1000 / 30;
-	}
+		// DFE: This constant comes from older xnu:
+		#define CLKNUM					1193182	// formerly 1193167
 
-	disable_PIT2();
+		// DFE: These two constants come from Linux except CLOCK_TICK_RATE replaced with CLKNUM
+		#define CALIBRATE_TIME_MSEC		30
+		#define CALIBRATE_LATCH ((CLKNUM * CALIBRATE_TIME_MSEC + 1000/2)/1000)
+
+		/* Time how many TSC ticks elapse in 30 msec using the 8254 PIT
+		 * counter 2.  We run this loop 3 times to make sure the cache
+		 * is hot and we take the minimum delta from all of the runs.
+		 * That is to say that we're biased towards measuring the minimum
+		 * number of TSC ticks that occur while waiting for the timer to
+		 * expire.  That theoretically helps avoid inconsistencies when
+		 * running under a VM if the TSC is not virtualized and the host
+		 * steals time.  The TSC is normally virtualized for VMware.
+		 */
+
+		for (i = 0; i < 10; ++i)
+		{
+			enable_PIT2();
+			set_PIT2_mode0(CALIBRATE_LATCH);
+			tscStart = rdtsc64();
+			pollCount = poll_PIT2_gate();
+			tscEnd = rdtsc64();
+			/* The poll loop must have run at least a few times for accuracy */
+
+			if (pollCount <= 1)
+			{
+				continue;
+			}
+
+			/* The TSC must increment at LEAST once every millisecond.  We
+			 * should have waited exactly 30 msec so the TSC delta should
+			 * be >= 30.  Anything less and the processor is way too slow.
+			 */
+
+			if ((tscEnd - tscStart) <= CALIBRATE_TIME_MSEC)
+			{
+				continue;
+			}
+
+			// tscDelta = min(tscDelta, (tscEnd - tscStart))
+			if ((tscEnd - tscStart) < tscDelta)
+			{
+				tscDelta = tscEnd - tscStart;
+			}
+		}
+
+		/* tscDelta is now the least number of TSC ticks the processor made in
+		 * a timespan of 0.03 s (e.g. 30 milliseconds)
+		 * Linux thus divides by 30 which gives the answer in kiloHertz because
+		 * 1 / ms = kHz.  But we're xnu and most of the rest of the code uses
+		 * Hz so we need to convert our milliseconds to seconds.  Since we're
+		 * dividing by the milliseconds, we simply multiply by 1000.
+		 */
+
+		/* Unlike linux, we're not limited to 32-bit, but we do need to take care
+		 * that we're going to multiply by 1000 first so we do need at least some
+		 * arithmetic headroom.  For now, 32-bit should be enough.
+		 * Also unlike Linux, our compiler can do 64-bit integer arithmetic.
+		 */
+
+		if (tscDelta > (1ULL << 32))
+		{
+			retval = 0;
+		}
+		else
+		{
+			retval = tscDelta * 1000 / 30;
+		}
+
+		disable_PIT2();
+	}
 
 	return retval;
 }
@@ -194,6 +221,9 @@ void initCPUStruct(void)
 
 	_CPU_DEBUG_SLEEP(5);
 #endif
+
+	do_cpuid(0x00000015, gPlatform.CPU.ID[LEAF_15]);
+	do_cpuid(0x00000016, gPlatform.CPU.ID[LEAF_16]);
 
 #if DEBUG_TSS_SUPPORT
 	do_cpuid(0x00000006, gPlatform.CPU.ID[LEAF_6]);				// Thermal and Power Leaf (Function 06h).
@@ -373,6 +403,12 @@ void initCPUStruct(void)
 				case CPU_MODEL_SKYLAKE_H_S:
 					CoreBridgeType = SKYLAKE;
 					hiBit = 31;
+					// gPlatform.CPU.ARTFrequency = (3427489466 * 2 / 284) = 24137249,76056338028169 MHz
+					// 3427489466 / 34 = 100808513,705882352941176
+					// 100808498 * 2 = 201616996
+					// 201616996 / 284 = 709919
+					// 709919 * 284 = 201616996 / 2 = 100808498
+					gPlatform.CPU.ARTFrequency = 0; // BASE_ART_CLOCK_SOURCE; // (tscFrequency * getCachedCPUID(LEAF_x15, eax) / getCachedCPUID(LEAF_x15, ebx));
 					break;
 
 				case CPU_MODEL_NEHALEM:
