@@ -77,6 +77,8 @@
 #define MSR_TEMPERATURE_TARGET		0x01A2
 #define MSR_MISC_PWR_MGMT			0x01AA
 #define	MSR_TURBO_RATIO_LIMIT		0x01AD
+#define	MSR_TURBO_RATIO_LIMIT_1		0x01AE
+#define	MSR_TURBO_RATIO_LIMIT_2		0x01AF
 
 #define IA32_ENERGY_PERF_BIAS		0x01B0
 #define IA32_PLATFORM_DCA_CAP		0x01F8
@@ -148,17 +150,19 @@
 
 // CPUID leaf index values (pointing to the right spot in CPUID/LEAF array).
 
-#define LEAF_0				0			// DHP: Formerly known as CPUID_n
+#define LEAF_0				0		// Basic CPUID Information
 #define LEAF_1				1
 #define LEAF_2				2
-#define LEAF_4				3
-#define LEAF_5				4
-#define LEAF_6				5
-#define LEAF_B				6
-#define LEAF_80				7
-#define LEAF_81				8
+#define LEAF_4				3		// Deterministic Cache Parameters Leaf
+#define LEAF_5				4		// MONITOR/MWAIT Leaf
+#define LEAF_6				5		// Thermal and Power Management Leaf
+#define LEAF_B				6		// Extended Topology Enumeration Leaf
+#define LEAF_15				7		// Time Stamp Counter/Core Crystal Clock Information-leaf
+#define LEAF_16				8		// Processor Frequency Information Leaf
+#define LEAF_80				9		// Extended Function CPUID Information
+#define LEAF_81				10
 
-#define MAX_CPUID_LEAVES	9			// DHP: Formerly known as MAX_CPUID
+#define MAX_CPUID_LEAVES	11		// DHP: Formerly known as MAX_CPUID
 
 /* Copied from: xnu/osfmk/i386/cpuid.h */
 #define CPU_MODEL_YONAH  			0x0E
