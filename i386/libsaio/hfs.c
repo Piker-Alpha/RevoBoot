@@ -514,8 +514,6 @@ long HFSGetFileBlock(CICell ih, char *filePath, unsigned long long *firstBlock)
 	
 	if ((result == -1) || ((flags & kFileTypeMask) != kFileTypeFlat))
 	{
-		printf("HFS: Resolve path %s failed\n", filePath);
-		
 		return -1L;
 	}
 	
@@ -586,8 +584,6 @@ static long ReadFile(void * file, uint64_t * length, void * base, uint64_t offse
 	
 	if (offset > fileLength)
 	{
-		printf("Offset is too large.\n");
-		
 		return -1L;
 	}
 	
@@ -918,6 +914,7 @@ static long ReadBTreeEntry(long btree, void * key, char * entry, long * dirIndex
 			extent		= (HFSExtentDescriptor *)&gHFSMDB->drCTExtRec;
 			extentSize	= SWAP_BE32(gHFSMDB->drCTFlSize);
 		}
+
 		extentFile = kHFSCatalogFileID;
 	}
 	else
@@ -1026,6 +1023,7 @@ static long ReadBTreeEntry(long btree, void * key, char * entry, long * dirIndex
 	if (result != 0)
 	{
 		free(nodeBuf);
+
 		return -1;
 	}
 	
