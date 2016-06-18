@@ -133,9 +133,9 @@ void initEFITree(void)
 		DT__AddProperty(platformNode, "FSBFrequency", sizeof(uint64_t), &gPlatform.CPU.FSBFrequency);
 	}
 
-	if (gPlatform.XHCI.ARTFrequency)
+	if (gPlatform.CPU.ARTFrequency)
 	{
-		DT__AddProperty(platformNode, "ARTFrequency", sizeof(uint64_t), &gPlatform.XHCI.ARTFrequency);
+		DT__AddProperty(platformNode, "ARTFrequency", sizeof(uint64_t), &gPlatform.CPU.ARTFrequency);
 	}
 
 	Node * chosenNode = DT__AddChild(gPlatform.DT.RootNode, "chosen");
