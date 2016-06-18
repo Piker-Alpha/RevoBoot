@@ -30,8 +30,9 @@
 #define LION					2	// Lion (the default).
 #define MOUNTAIN_LION			6	// Mountain Lion (includes Lion changes).
 #define MAVERICKS				10	// Mavericks (includes Lion changes).
-#define YOSEMITE				26	// Yosemite (incl. Lion/Mavericks changes).
-#define EL_CAPITAN				62	// El Capitan (incl. Lion/Mavericks/Yosemite changes).
+#define YOSEMITE				26	// Yosemite (includes Lion and Mavericks changes).
+#define EL_CAPITAN				62	// El Capitan (includes Lion/Mavericks and Yosemite changes).
+#define SIERRA					126	// Sierra (includes Lion/Mavericks/Yosemite and El Capitan changes).
 
 //------------------------------------------------------------------------------
 
@@ -82,7 +83,9 @@
 #define IMAC_171				 IMAC						// Defaults to iMac17,1
 
 #define MACBOOK_41				(MACBOOK | ( 1 << 15))
-#define MACBOOK_81				(MACBOOK | ( 2 << 15))		// Defaults to MacBook8,1
+#define MACBOOK_81				(MACBOOK | ( 2 << 15))
+#define MACBOOK_82				(MACBOOK | ( 3 << 15))
+#define MACBOOK_91				 MACBOOK					// Defaults to MacBook9,1
 
 #define MACBOOK_AIR_41			(MACBOOK_AIR | (1 << 15))
 #define MACBOOK_AIR_42			(MACBOOK_AIR | (2 << 15))
@@ -104,7 +107,10 @@
 #define MACBOOK_PRO_111			(MACBOOK_PRO | ( 9 << 15))
 #define MACBOOK_PRO_112			(MACBOOK_PRO | (10 << 15))
 #define MACBOOK_PRO_113			(MACBOOK_PRO | (11 << 15))
-#define MACBOOK_PRO_121			 MACBOOK_PRO				// Defaults to MacBookPro12,1
+#define MACBOOK_PRO_114			(MACBOOK_PRO | (12 << 15))
+#define MACBOOK_PRO_115			(MACBOOK_PRO | (13 << 15))
+#define MACBOOK_PRO_121			(MACBOOK_PRO | (14 << 15))
+#define MACBOOK_PRO_131			 MACBOOK_PRO				// Defaults to MacBookPro13,1
 
 #define MACMINI_41				(MACMINI | (1 << 15))
 #define MACMINI_51				(MACMINI | (2 << 15))
@@ -280,7 +286,8 @@ typedef struct _PlatformInfo_t
 		uint64_t	TSCFrequency;				// TSC Frequency Hz
 		uint64_t	FSBFrequency;				// FSB Frequency Hz
 		uint64_t	CPUFrequency;				// CPU Frequency Hz
-		
+		uint64_t	ARTFrequency;				// ART Frequency Hz
+
 		uint32_t	QPISpeed;					// QuickPath Interconnect Bus Speed
 		
 		uint8_t		NumberOfTurboRatios;		// Jeroen: initialized in cpu.c and used in ACPI/ssdt_pr_generator.h
@@ -378,12 +385,7 @@ typedef struct _PlatformInfo_t
 		 UInt8	CcdRevision;
 		 } DMI; */
 	} SMBIOS;
-	
-	struct XHCI
-	{
-		uint64_t ARTFrequency;
-	} XHCI;
-	
+
 } PlatformInfo_t;
 
 
