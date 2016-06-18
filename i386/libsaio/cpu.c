@@ -82,6 +82,36 @@ void initTurboRatios()
 		gPlatform.CPU.CoreTurboRatio[6] = ((msr >> 48) & 0xff);
 		gPlatform.CPU.CoreTurboRatio[7] = ((msr >> 56) & 0xff);
 #endif
+
+#if STATIC_CPU_NumCores >= 10			// 20 threads.
+		msr = rdmsr64(MSR_TURBO_RATIO_LIMIT_1);
+
+		gPlatform.CPU.CoreTurboRatio[8] = bitfield32(msr, 7, 0);
+		gPlatform.CPU.CoreTurboRatio[9] = bitfield32(msr, 15, 8);
+#endif
+
+#if STATIC_CPU_NumCores >= 12			// 24 threads.
+		gPlatform.CPU.CoreTurboRatio[10] = bitfield32(msr, 23, 16);
+		gPlatform.CPU.CoreTurboRatio[11] = bitfield32(msr, 31, 24);
+#endif
+
+#if STATIC_CPU_NumCores >= 16			// 32 threads.
+		gPlatform.CPU.CoreTurboRatio[12] = ((msr >> 32) & 0xff);
+		gPlatform.CPU.CoreTurboRatio[13] = ((msr >> 40) & 0xff);
+		gPlatform.CPU.CoreTurboRatio[14] = ((msr >> 48) & 0xff);
+		gPlatform.CPU.CoreTurboRatio[15] = ((msr >> 56) & 0xff);
+#endif
+		
+#if STATIC_CPU_NumCores >= 18			// 36 threads.
+		// Intel® Xeon® Processor E5 v3 Family (0x3F – based on the Haswell-E microarchitecture)
+		// Intel® Xeon® Processor E7 v2 Family (0x3E – based on the Ivy Bridge-E microarchitecture)
+		// can check bit-64 to see if the two extra Turbo MSR's are being used or not.
+		msr = rdmsr64(MSR_TURBO_RATIO_LIMIT_2);
+		
+		gPlatform.CPU.CoreTurboRatio[16] = bitfield32(msr, 7, 0);
+		gPlatform.CPU.CoreTurboRatio[17] = bitfield32(msr, 15, 8);
+
+#endif
 	}
 
 	// Jeroen:	This code snippet was copied from ACPI/ssdt_pr_generator.h 
