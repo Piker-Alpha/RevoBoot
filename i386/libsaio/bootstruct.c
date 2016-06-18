@@ -123,10 +123,12 @@ void initKernelBootConfig(void)
 #endif // #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
 
 #if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
-	bootArgs->flags					|= kBootArgsFlagCSRActiveConfig;
+	bootArgs->flags					|= (kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot);
 
-	bootArgs->csrActiveConfig		= CSR_ALLOW_UNTRUSTED_KEXTS;
-	bootArgs->csrCapabilities		= CSR_VALID_FLAGS;
+	bootArgs->csrActiveConfig		= CSR_ALLOW_DEVICE_CONFIGURATION;
+
+	bootArgs->csrCapabilities		= CSR_CAPABILITY_UNLIMITED;
+
 	bootArgs->boot_SMC_plimit		= 0;
 #endif
 
@@ -212,7 +214,7 @@ void finalizeKernelBootConfig(void)
     bootArgs->deviceTreeP = (uint32_t)addr;
     bootArgs->deviceTreeLength = size;
 	
-/* #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+#if ((MAKE_TARGET_OS & LION) == LION) // All OS versions greater than Lion have bit 1 set.
 	// Adding a 16 KB log space.
 	bootArgs->performanceDataSize	= 0;
 	bootArgs->performanceDataStart	= 0;
@@ -224,9 +226,12 @@ void finalizeKernelBootConfig(void)
 	bootArgs->bootMemSize	= 0;
 	bootArgs->bootMemStart	= 0;
 	
-	bootArgs->flags			= kBootArgsFlagBlack;
 	bootArgs->kslide		= 0;
-#endif */
+#endif
+	
+#if (((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION) && (BLACKMODE == 1))
+	bootArgs->flags			|= kBootArgsFlagBlack;
+#endif
 
 #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	bootArgs->PhysicalMemorySize	= gPlatform.RAM.MemorySize;
