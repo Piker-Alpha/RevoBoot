@@ -294,12 +294,14 @@ long DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize)
 
 static long patchLoadExecutable(unsigned long cmdBase, long listSize, unsigned long textSegmentAddress, unsigned long vldSegmentAddress)
 {
-	// printf("patchLoadExecutable() called\n");
-	// sleep(1);
+#if (DEBUG_BOOT && PATCH_KEXT_LOADING && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+	printf("patchLoadExecutable() called\n");
+	sleep(1);
+#endif
 
 	char * symbolName = NULL;
 
-	// Skip the first 3000 symbols, to make it located our target quicker.
+	// Skip the first 3000 symbols, to speed up the search process.
 	int skippedSymbolCount	= 0; // (3000 * listSize);
 
 	long symbolNumber		= 0;
@@ -325,7 +327,7 @@ static long patchLoadExecutable(unsigned long cmdBase, long listSize, unsigned l
 			{
 				int64_t offset = (nl->n_value - textSegment->vmaddr);
 				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
-				uint64_t endAddress = (startAddress + 0x200);
+				uint64_t endAddress = (startAddress + 0x300);
 
 				/* printf("__ZN6OSKext14loadExecutableEv found!\n");
  				printf("offset..............: 0x%llx\n", offset);
