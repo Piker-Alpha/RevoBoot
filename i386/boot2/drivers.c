@@ -197,6 +197,21 @@ long loadDrivers(char * dirSpec)
 	{
 		_DRIVERS_DEBUG_DUMP("gKextLoadStatus != 3\n");
 
+#if (PATCH_LOAD_EXTRA_KEXTS && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)) // El Capitan and Sierra.
+		// Yes we do. Start by looking for kexts in: /Extra/Extensions/
+		if ((gKextLoadStatus & 2) == 0)
+		{
+			_DRIVERS_DEBUG_DUMP("Calling loadKexts(\"/Extra/Extensions\");\n");
+		 
+			if (loadKexts("/Extra/Extensions", 0) == EFI_SUCCESS)
+			{
+				_DRIVERS_DEBUG_DUMP("loadKexts(2) OK.\n");
+			}
+
+			_DRIVERS_DEBUG_DUMP("\n");
+		}
+#endif
+		// Now progress to the system kexts.
 		if ((gKextLoadStatus & 1) == 0)
 		{
 #if ((MAKE_TARGET_OS & MAVERICKS) == MAVERICKS) // Mavericks, Yosemite and El Capitan specifics.
@@ -205,14 +220,14 @@ long loadDrivers(char * dirSpec)
 			/* For Mavericks we first load the signed kexts.
 			if (loadKexts("/Library/Extensions", 0) == EFI_SUCCESS)
 			{
-				_DRIVERS_DEBUG_DUMP("loadKexts(1) OK.\n");
+				_DRIVERS_DEBUG_DUMP("loadKexts(2) OK.\n");
 			} */
 #endif
 			_DRIVERS_DEBUG_DUMP("\nCalling loadKexts(\"/System/Library/Extensions\");\n");
 			// System kexts
 			if (loadKexts("/System/Library/Extensions", 0) == EFI_SUCCESS)
 			{
-				_DRIVERS_DEBUG_DUMP("loadKexts(2) OK.\n");
+				_DRIVERS_DEBUG_DUMP("loadKexts(3) OK.\n");
 			}
 			_DRIVERS_DEBUG_DUMP("\n");
 		}
@@ -361,7 +376,10 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 				}
 
 #if DEBUG_DRIVERS
-				if (!isPluginRun && ((strcmp(dirEntryName, "AppleEmulator.kext") == 0) || (strcmp(dirEntryName, "FakeSMC.kext") == 0)))
+				// Show essential kexts.
+				if (!isPluginRun && ((strcmp(dirEntryName, "AppleEmulator.kext") == 0) ||
+									 (strcmp(dirEntryName, "FakeSMC.kext") == 0) ||
+									 (strcmp(dirEntryName, "IONVMeFamily.kext") == 0)))
 				{
 					printf("loadKext(%s) found\n", dirEntryName);
 				}
