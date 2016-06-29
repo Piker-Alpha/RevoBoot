@@ -182,7 +182,7 @@ void boot(int biosdev)
 	bootFile[0] = '\0';
 	rootUUID[0] = '\0';
 
-#if PRE_LINKED_KERNEL_SUPPORT
+#if PRELINKED_KERNEL_SUPPORT
 	bool	mayUseKernelCache	= false;
 	bool	flushCaches			= false;
 	bool	kernelSpecified	= false;
@@ -309,7 +309,7 @@ void boot(int biosdev)
 				if (getValueForBootKey(kernelFlags, kIgnoreCachesFlag, &val, &length))
 				{
 					_BOOT_DEBUG_DUMP("Notice: -f (flush cache) specified!\n");
-#if PRE_LINKED_KERNEL_SUPPORT
+#if PRELINKED_KERNEL_SUPPORT
 					flushCaches = true;
 #endif
 				}
@@ -428,7 +428,7 @@ void boot(int biosdev)
 
 	if (haveCABootPlist) // Check boolean before doing more time consuming tasks.
 	{
-#if PRE_LINKED_KERNEL_SUPPORT
+#if PRELINKED_KERNEL_SUPPORT
 		/*
 		 * We cannot use the kernelcache from the Yosemite installer, not yet,
 		 * and thus we load: /System/Library/Caches/Startup/kernelcache instead
@@ -517,7 +517,7 @@ void boot(int biosdev)
 		_BOOT_DEBUG_DUMP("bootInfo->bootFile: %s\n", bootInfo->bootFile);
 		_BOOT_DEBUG_SLEEP(5); */
 
-#if PRE_LINKED_KERNEL_SUPPORT
+#if PRELINKED_KERNEL_SUPPORT
 		_BOOT_DEBUG_DUMP("gPlatform.BootMode = %d\n", gPlatform.BootMode);
 
 		// Preliminary checks to prevent us from doing useless things.
@@ -526,10 +526,10 @@ void boot(int biosdev)
 		_BOOT_DEBUG_DUMP("mayUseKernelCache = %s\n", mayUseKernelCache ? "true" : "false");
 
 		/* 
-		 * A pre-linked kernel, or kernelcache, requires you to have all essential kexts for your
+		 * A prelinkedkernel or kernelcache requires you to have all essential kexts for your
 		 * configuration, including FakeSMC.kext in: /System/Library/Extensions/ 
 		 * Not in /Extra/Extensions/ because this directory will be ignored, completely when a 
-		 * pre-linked kernel or kernelcache is used!
+		 * prelinkedkernel or kernelcache is used!
 		 *
 		 * Note: Not following this word of advise will render your system incapable of booting!
 		 */
@@ -566,7 +566,7 @@ void boot(int biosdev)
 				 */
 				sprintf(bootFile, "%s", gPlatform.KernelCachePath);
 			}
-			else // Try to find a prelinked-kernel/kernelcache
+			else // Try to find a prelinkedkernel/kernelcache
 			{
 				char * preLinkedKernelPath = malloc(128);
 
@@ -584,7 +584,7 @@ void boot(int biosdev)
 				{
 					static char adler32Key[PLATFORM_NAME_LEN + ROOT_PATH_LEN];
 				
-					_BOOT_DEBUG_DUMP("Checking for pre-linked kernel...\n");
+					_BOOT_DEBUG_DUMP("Checking for prelinkedkernel...\n");
 				
 					// Zero out platform info (name and kernel root path).
 					bzero(adler32Key, sizeof(adler32Key));
@@ -686,7 +686,7 @@ void boot(int biosdev)
 		}
 #endif // #if ((MAKE_TARGET_OS & LION) == LION)
 
-#endif // PRE_LINKED_KERNEL_SUPPORT
+#endif // PRELINKED_KERNEL_SUPPORT
 
 		/*
 		 * The 'bootFile' normally points to (mach_)kernel but will be empty when

@@ -230,7 +230,7 @@ typedef struct _PlatformInfo_t
 	char *				KextPlistSpec;			// Initialized and used in drivers.c
 	char *				KernelCachePath;		// Initialized in platform.c and used in boot.c, driver.c
 	char *				HelperPath;				// Initialized in stringTable.c and used in boot.c 	
-#if PRE_LINKED_KERNEL_SUPPORT
+#if PRELINKED_KERNEL_SUPPORT
 	bool				KernelCacheSpecified;	// Set to indicate that a full path is specified.
 #endif
 	
