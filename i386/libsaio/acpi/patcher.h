@@ -49,10 +49,11 @@ unsigned int search64bitPattern(unsigned int aStartAddress, int aNumberOfBytes, 
 
 int loadACPITable(int tableIndex)
 {
-	char dirSpec[48] = "";
+	char dirSpec[48];
 	long fileSize = 0;
 	void * tableAddress = (void *)kLoadAddr;
-
+	
+	bzero(dirSpec, 48);
 #if LOAD_MODEL_SPECIFIC_ACPI_DATA
 	// Example: /Extra/ACPI/DSDT-MacBookPro101.aml
 	//          0123456789 0123456789 0123456789 1

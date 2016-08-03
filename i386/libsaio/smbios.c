@@ -83,7 +83,7 @@ void setupSMBIOS(void)
 			if (currentStructureType == kSMBTypeMemoryDevice)
 			{
 				UInt64 memorySize = 0;
-#if DYNAMIC_RAM_OVERRIDE_SIZE
+#if STATIC_RAM_OVERRIDE_SIZE
 				memorySize = getRAMSize();
 #else
 				memorySize = ((SMBMemoryDevice *)header)->memorySize;

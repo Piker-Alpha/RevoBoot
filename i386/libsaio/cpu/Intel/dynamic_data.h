@@ -393,14 +393,20 @@ void initCPUStruct(void)
 					hiBit = 31;
 					break;
 
-//				case CPU_MODEL_BROADWELL:
-				case CPU_MODEL_BROADWELL_ULT:
+				case CPU_MODEL_BROADWELL:
+//				case CPU_MODEL_BROADWELL_ULT:
+				case CPU_MODEL_BROADWELL_H:
+				case CPU_MODEL_BRYSTALWELL:
+				case CPU_MODEL_BROADWELL_E:
+
 					CoreBridgeType = BROADWELL;
 					hiBit = 31;
 					break;
 
 				case CPU_MODEL_SKYLAKE:
-				case CPU_MODEL_SKYLAKE_H_S:
+//				case CPU_MODEL_SKYLAKE_ULT:
+//				case CPU_MODEL_SKYLAKE_ULX:
+				case CPU_MODEL_SKYLAKE_DT:
 					CoreBridgeType = SKYLAKE;
 					hiBit = 31;
 					// gPlatform.CPU.ARTFrequency = (3427489466 * 2 / 284) = 24137249,76056338028169 MHz

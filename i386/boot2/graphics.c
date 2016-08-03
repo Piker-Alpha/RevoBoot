@@ -93,7 +93,7 @@ static unsigned short getVESAModeWithProperties(unsigned short width, unsigned s
 #if DEBUG
 		printf("Mode %x: %dx%dx%d mm:%d attr:%x\n", * modePtr, modeInfo.XResolution, modeInfo.YResolution, modeInfo.BitsPerPixel, 
 													modeInfo.MemoryModel, modeInfo.ModeAttributes);
-		sleep(1);
+		sleep(10);
 #endif
 
 		// Filter out unwanted modes based on mode attributes.
@@ -212,7 +212,7 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 {
 	VBEModeInfoBlock	minfo;
 
-	unsigned short	mode = 280; // Default to 1024 * 768 * 32 (1920 * 1200 * 32 would be 330)
+	unsigned short	mode = 280; // Defaults to 1024 * 768 * 32 (1920 * 1200 * 32 would be 330)
 	unsigned short	vesaVersion;
 
 	long status = (long)EFI_UNSUPPORTED;
@@ -224,7 +224,8 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 										 0, &minfo, &vesaVersion);
 #if DEBUG
 		printf("\nsetVESAGraphicsMode: %d\n%d\n%d\n%d\n%d\n%x\n%x\nSleeping for 25 seconds...", mode, minfo.XResolution,
-			   minfo.YResolution, minfo.BitsPerPixel, minfo.BytesPerScanline, minfo.PhysBasePtr_low, minfo.PhysBasePtr_high);
+			   minfo.YResolution, minfo.BitsPerPixel, minfo.BytesPerScanline, minfo.PhysBasePtr_low, minfo.PhysBasePtr_high, VBEMakeUInt32(minfo.PhysBasePtr));
+		sleep(25);
 #endif
 
 		if (mode == modeEndOfList)
@@ -248,10 +249,10 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 
 		// Update bootArgs with the data provided by the selected VESA mode.
 		bootArgs->Video.v_display	= GRAPHICS_MODE;
-		bootArgs->Video.v_width		= minfo.XResolution;		/* 1920 or 1600 */
-		bootArgs->Video.v_height	= minfo.YResolution;		/* 1200 or 900 */
-		bootArgs->Video.v_depth		= minfo.BitsPerPixel;		/* 32 */
-		bootArgs->Video.v_rowBytes	= minfo.BytesPerScanline;	/* 7680 or 6400 */
+		bootArgs->Video.v_width		= minfo.XResolution;		/* Examples: 1920, 1600, 1680 */
+		bootArgs->Video.v_height	= minfo.YResolution;		/* Examples: 1200, 1050 900 */
+		bootArgs->Video.v_depth		= minfo.BitsPerPixel;		/* Examples: 8, 30, 32 */
+		bootArgs->Video.v_rowBytes	= minfo.BytesPerScanline;	/* Examples: 7680, 6720, 6400 */
 		bootArgs->Video.v_baseAddr	= VBEMakeUInt32(minfo.PhysBasePtr);
 	}
 	while (0);

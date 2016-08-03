@@ -233,7 +233,9 @@ void checkFlexRatioMSR(void)
 	if (msr & bit(16)) // Flex ratio enabled?
 	{
 		uint8_t flexRatio = ((msr >> 8) & 0xff);
-
+#if DEBUG_CPU
+		printf("MSR(%x) Flex ratio enabled!\n", MSR_FLEX_RATIO);
+#endif
 		// Sanity checks.
 		if (flexRatio < gPlatform.CPU.MinBusRatio || flexRatio > gPlatform.CPU.MaxBusRatio)
 		{
@@ -246,6 +248,14 @@ void checkFlexRatioMSR(void)
 			gPlatform.CPU.MaxBusRatio = flexRatio;
 		}
 	}
+#if DEBUG_CPU
+	else
+	{
+		printf("MSR(%x) Flex ratio NOT Enabled\n", MSR_FLEX_RATIO);
+	}
+
+	sleep(1);
+#endif
 }
 #endif // INTEL_CORE_TECHNOLOGY
 

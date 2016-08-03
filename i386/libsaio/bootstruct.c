@@ -95,44 +95,62 @@ void initKernelBootConfig(void)
 	
 #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	// Adding a 16 KB log space.
-	bootArgs->performanceDataSize	= 0;
-	bootArgs->performanceDataStart	= 0;
+	bootArgs->performanceDataSize			= 0;
+	bootArgs->performanceDataStart			= 0;
 	
 	// AppleKeyStore.kext
-	bootArgs->keyStoreDataSize		= 0;
-	bootArgs->keyStoreDataStart		= 0;
+	bootArgs->keyStoreDataSize				= 0;
+	bootArgs->keyStoreDataStart				= 0;
 	
-	bootArgs->bootMemSize			= 0;
-	bootArgs->bootMemStart			= 0;
+	bootArgs->bootMemSize					= 0;
+	bootArgs->bootMemStart					= 0;
 	
 #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-	bootArgs->flags					= 0;
+	bootArgs->flags							= 0;
 
 #if REBOOT_ON_PANIC
-	bootArgs->flags					= kBootArgsFlagRebootOnPanic;
+	bootArgs- >flags						|= kBootArgsFlagRebootOnPanic;
 #endif
 
 #if UISCALE_2X
-	bootArgs->flags					|= kBootArgsFlagHiDPI;
+	bootArgs->flags							|= kBootArgsFlagHiDPI;
 #endif
 
 #if BLACKMODE
-	bootArgs->flags					|= kBootArgsFlagBlackTheme; // (kBootArgsFlagBlack + kBootArgsFlagBlackTheme);
+	bootArgs->flags							|= kBootArgsFlagBlackTheme; // (kBootArgsFlagBlack + kBootArgsFlagBlackTheme);
 #endif
 
 #endif // #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
 
-#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
-	bootArgs->flags					|= (kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot);
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN) // El Capitan and Sierra
+	bootArgs->flags							|= (kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot);
 
-	bootArgs->csrActiveConfig		= CSR_ALLOW_DEVICE_CONFIGURATION;
+	bootArgs->csrActiveConfig				= CSR_ALLOW_DEVICE_CONFIGURATION;
 
-	bootArgs->csrCapabilities		= CSR_CAPABILITY_UNLIMITED;
+	bootArgs->csrCapabilities				= CSR_CAPABILITY_UNLIMITED;
 
-	bootArgs->boot_SMC_plimit		= 0;
+	bootArgs->boot_SMC_plimit				= 0;
+	bootArgs->bootProgressMeterStart		= 0;
+	bootArgs->bootProgressMeterEnd			= 1024;
+
+/*	enum
+	{
+		kProgressMeterMax    = 1024,
+		kProgressMeterEnd    = 512,
+	};
+
+	if (bootArgs->flags & kBootArgsFlagInstallUI)
+	{
+		// Values from 0 to 1024
+		vc_progress_meter_start = (bootargs->bootProgressMeterStart * kProgressMeterMax) / 65535;
+		vc_progress_meter_end   = (bootargs->bootProgressMeterEnd   * kProgressMeterMax) / 65535;
+ 
+		bootArgs->bootProgressMeterStart	= 0;
+		bootArgs->bootProgressMeterEnd		= 1024;
+	} */
+
 #endif
-
-	bootArgs->kslide				= 0;
+	bootArgs->kslide						= 0;
 #endif // #if ((MAKE_TARGET_OS & LION) == LION)
 }
 
@@ -220,18 +238,21 @@ void finalizeKernelBootConfig(void)
 	bootArgs->performanceDataStart	= 0;
 
 	// AppleKeyStore.kext
-	bootArgs->keyStoreDataSize	= 0;
-	bootArgs->keyStoreDataStart	= 0;
+	bootArgs->keyStoreDataSize		= 0;
+	bootArgs->keyStoreDataStart		= 0;
 
-	bootArgs->bootMemSize	= 0;
-	bootArgs->bootMemStart	= 0;
+	bootArgs->bootMemSize			= 0;
+	bootArgs->bootMemStart			= 0;
 	
-	bootArgs->kslide		= 0;
+	bootArgs->kslide				= 0;
 #endif
 	
-#if (((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION) && (BLACKMODE == 1))
-	bootArgs->flags			|= kBootArgsFlagBlack;
-#endif
+/* #if (((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION) && (BLACKMODE == 1))
+	//
+	// Note: Hides the white progressbar and efi://chosen/IOProgressBackbuffer is missing.
+	//
+ 	bootArgs->flags			|= kBootArgsFlagBlack;
+#endif */
 
 #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
 	bootArgs->PhysicalMemorySize	= gPlatform.RAM.MemorySize;

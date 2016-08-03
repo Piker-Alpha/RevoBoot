@@ -238,25 +238,27 @@ void initPlatform(int biosDevice)
 	const char * ramPartNumber[]	= STATIC_RAM_PART_NUMBERS;
 	const char * ramSerialNumber[]	= STATIC_RAM_SERIAL_NUMBERS;
 
-#if DYNAMIC_RAM_OVERRIDE_SIZE
-	int ramSize[]					= DYNAMIC_RAM_OVERRIDE_SIZES;
+#if STATIC_RAM_OVERRIDE_SIZE
+	int ramSize[]					= STATIC_RAM_OVERRIDE_SIZES;
 #endif
 
 	int i = 0;
+	int populatedSlotCount = 0;
 
 	// Loop through the static RAM vendors (might be different).
 	for (; i < STATIC_RAM_SLOTS; i++)
 	{
 		gPlatform.RAM.SlotCount++;
 
-		// We check for "N/A" so make sure you use that in config/settings.h
+		// We check for "N/A" so make sure you use that in config/settings.h for unused RAM banks.
 		if (strcmp(ramVendor[i], "N/A") != 0)
 		{
 			_PLATFORM_DEBUG_DUMP("Slot:%d, ", i); 
 
+			populatedSlotCount++;
 			gPlatform.RAM.MODULE[i].InUse			= true;
-			gPlatform.RAM.MODULE[i].Type			= DYNAMIC_RAM_OVERRIDE_TYPE;
-#if DYNAMIC_RAM_OVERRIDE_SIZE
+			gPlatform.RAM.MODULE[i].Type			= STATIC_RAM_OVERRIDE_TYPE;
+#if STATIC_RAM_OVERRIDE_SIZE
 			gPlatform.RAM.MODULE[i].Size			= ramSize[i];
 
 			_PLATFORM_DEBUG_DUMP("Size:%d, ", gPlatform.RAM.MODULE[i].Size); 
@@ -269,12 +271,20 @@ void initPlatform(int biosDevice)
 								 gPlatform.RAM.MODULE[i].Vendor,
 								 gPlatform.RAM.MODULE[i].PartNumber,
 								 gPlatform.RAM.MODULE[i].SerialNumber);
+           	_PLATFORM_DEBUG_SLEEP(2);
 		}
 		else
 		{
 			// Properly initialized for: smbios/dynamic_data.h which relies on it.
 			gPlatform.RAM.MODULE[i].InUse			= false;
 		}
+		
+		_PLATFORM_DEBUG_SLEEP(1);
+	}
+	
+	if (populatedSlotCount < 2)
+	{
+		stop("At least 2 RAM banks required, check vendors in configuration file)!\n");
 	}
 
 	_PLATFORM_DEBUG_DUMP("Static data for %d RAM BANKS used.\n", gPlatform.RAM.SlotCount);

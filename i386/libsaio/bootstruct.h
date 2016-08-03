@@ -70,10 +70,12 @@
 
 #ifndef kBootArgsFlagBlackTheme
 	#define kBootArgsFlagBlackTheme			(1 << 6)	// 64
+	// Selects the white progressbar (xnu/osfmk/console/video_console.c)
 #endif
 
 #ifndef kBootArgsFlagLoginUI
 	#define kBootArgsFlagLoginUI			(1 << 7)	// 128
+	// Selects the white progressbar (xnu/osfmk/console/video_console.c)
 #endif
 
 #ifndef kBootArgsFlagInstallUI

@@ -160,7 +160,7 @@ struct SMBProperty SMBProperties[] =
 	
 	//----------------------------------------------------------------------------------------------------
 
-#if DYNAMIC_RAM_OVERRIDE_ERROR_HANDLE
+#if STATIC_RAM_OVERRIDE_ERROR_HANDLE
 	// Handle or instance number associated with any error that was previously detected for the device.
 	// If the system does not provide the error information structure, then this field contains FFFEh;
 	// otherwise this field contains either FFFFh (if no error was detected) or the handle (number) of
@@ -168,18 +168,18 @@ struct SMBProperty SMBProperties[] =
 	{ kSMBTypeMemoryDevice,			0x06,	kSMBWord,		.plainData		= 0xFFFE					},
 #endif
 
-#if DYNAMIC_RAM_OVERRIDE_SIZE
+#if STATIC_RAM_OVERRIDE_SIZE
 	{ kSMBTypeMemoryDevice,			0x0c,	kSMBWord,		.getSMBWord		= getRAMSize				},
 #endif
 	
 	{ kSMBTypeMemoryDevice,			0x10,	kSMBString,		.getSMBString	= NULL						},
 	{ kSMBTypeMemoryDevice,			0x11,	kSMBString,		.getSMBString	= NULL						},
 
-#if DYNAMIC_RAM_OVERRIDE_TYPE
+#if STATIC_RAM_OVERRIDE_TYPE
 	{ kSMBTypeMemoryDevice,			0x12,	kSMBByte,		.getSMBByte		= getRAMType				},
 #endif
 
-#if DYNAMIC_RAM_OVERRIDE_FREQUENCY  
+#if STATIC_RAM_OVERRIDE_FREQUENCY
 	{ kSMBTypeMemoryDevice,			0x15,	kSMBWord,		.getSMBWord		= getRAMFrequency			},
 #endif
 
@@ -206,14 +206,13 @@ void setupSMBIOS(void)
 	// return;
 	//--------------------------------------------------------------------------
 
-	// Allocate 1 page of kernel memory (sufficient for a stripped SMBIOS table).
-	void * kernelMemory = (void *)AllocateKernelMemory(8192); // 4096);
+	// Allocate 4 pages of kernel memory (enough for a stripped SMBIOS table).
+	void * kernelMemory = (void *)AllocateKernelMemory(8192); // 4096
 
 	// Setup a new Entry Point Structure at the beginning of the newly allocated memory page.
 	struct SMBEntryPoint * newEPS = (struct SMBEntryPoint *) kernelMemory;
 
-	// Clear the first K bytes (new table will be even shorter).
-	bzero(kernelMemory, 1024);
+	bzero(kernelMemory, 8192);
 
 	newEPS->anchor[0]			= 0x5f;							// _
 	newEPS->anchor[1]			= 0x53;							// S
@@ -289,7 +288,7 @@ void setupSMBIOS(void)
 		newtablesPtr += 8;
 	}
 
-#if (DYNAMIC_RAM_OVERRIDE_ERROR_HANDLE || DYNAMIC_RAM_OVERRIDE_SIZE || DYNAMIC_RAM_OVERRIDE_TYPE || DYNAMIC_RAM_OVERRIDE_FREQUENCY)
+#if (STATIC_RAM_OVERRIDE_ERROR_HANDLE || STATIC_RAM_OVERRIDE_SIZE || STATIC_RAM_OVERRIDE_TYPE || STATIC_RAM_OVERRIDE_FREQUENCY)
 	requiredStructures[17].stop = (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
 #endif
 
@@ -347,7 +346,7 @@ void setupSMBIOS(void)
 		else if (currentStructureType == kSMBTypeMemoryDevice)
 		{
 			UInt64 memorySize = 0;
-#if DYNAMIC_RAM_OVERRIDE_SIZE
+#if STATIC_RAM_OVERRIDE_SIZE
 			memorySize = getRAMSize();
 #else
 			memorySize = ((SMBMemoryDevice *)factoryHeader)->memorySize;

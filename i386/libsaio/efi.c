@@ -75,6 +75,7 @@ void initEFITree(void)
 
 	DT__AddProperty(gPlatform.DT.RootNode, "model", 5, ACPI);
 	DT__AddProperty(gPlatform.DT.RootNode, "compatible", 5, ACPI);
+	// DT__AddProperty(gPlatform.DT.RootNode, "has-safe-sleep", 1, 0);
 	
 	Node * efiNode = DT__AddChild(gPlatform.DT.RootNode, "efi");
 
@@ -126,6 +127,7 @@ void initEFITree(void)
 	DT__AddProperty(platformNode, "StartupPowerEvents", sizeof(STARTUP_POWER_EVENTS), (EFI_UINT8*) &STARTUP_POWER_EVENTS);
 	DT__AddProperty(platformNode, "InitialTSC", sizeof(uint64_t), &gPlatform.CPU.TSCFrequency);
 	DT__AddProperty(platformNode, "SystemSerialNumber", sizeof(SYSTEM_SERIAL_NUMBER), (EFI_CHAR16*) SYSTEM_SERIAL_NUMBER);
+	// DT__AddProperty(platformNode, "nv-edid", sizeof(EFI_UINT8), (EFI_CHAR8*) 0);
 
 	if (gPlatform.CPU.FSBFrequency)
 	{
@@ -222,7 +224,8 @@ void initEFITree(void)
 	}
 	else
 	{
-		EFI_UINT8 seedBuffer[64] = {0};
+		EFI_UINT8 seedBufferAlternative[64];
+		bzero(seedBufferAlternative, 64);
 		//
 		// Main loop to get the 64 bytes.
 		//
@@ -246,7 +249,7 @@ void initEFITree(void)
 			rdi = (rdi ^ rcx);										// xor		%rcx,	%rdi
 			rdi = (rdi ^ rdx);										// xor		%rdx,	%rdi
 
-			seedBuffer[index] = (rdi & 0xff);						// mov		%dil,	(%r15,%r12,1)
+			seedBufferAlternative[index] = (rdi & 0xff);						// mov		%dil,	(%r15,%r12,1)
 
 			edi = (edi & 0x2f);										// and		$0x2f,	%edi
 			edi = (edi + esi);										// add		%esi,	%edi
@@ -256,12 +259,12 @@ void initEFITree(void)
 		} while (index < 64);										// cmp		%r14d,	%r12d
 																	// jne		0x17e55		(next)
 
-		DT__AddProperty(chosenNode, "random-seed", sizeof(seedBuffer), (EFI_UINT8*) &seedBuffer);
-		
-		DT__AddProperty(chosenNode, "booter-name", 12, "bootbase.efi");
-		DT__AddProperty(chosenNode, "booter-version", 11, "version:307");
-		DT__AddProperty(chosenNode, "booter-build-time", 28, "Fri Sep  4 15:34:00 PDT 2015");
+		DT__AddProperty(chosenNode, "random-seed", sizeof(seedBufferAlternative), (EFI_UINT8*) &seedBufferAlternative);
 	}
+
+	DT__AddProperty(chosenNode, "booter-name", 12, "bootbase.efi");
+	DT__AddProperty(chosenNode, "booter-version", 11, "version:307");
+	DT__AddProperty(chosenNode, "booter-build-time", 28, "Fri Sep  4 15:34:00 PDT 2015");
 #endif
 
 #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
