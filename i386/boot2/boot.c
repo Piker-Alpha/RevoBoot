@@ -63,6 +63,10 @@
 	#include "xhci.h"
 #endif
 
+#if PATCH_APIC_RET
+	#include "backup/apic.h"
+#endif
+
 //==============================================================================
 // Local adler32 function.
 
@@ -786,16 +790,19 @@ void boot(int biosdev)
 #if DISABLE_LEGACY_XHCI
 			disableLegacyXHCI();
 #endif
+
+#if PATCH_APIC_RET
+			patchApicRedirectionTables();
+#endif
+
 			// Did we switch to graphics mode yet (think verbose mode)?
 			if (gVerboseMode || bootArgs->Video.v_display != GRAPHICS_MODE)
 			{
-				// _BOOT_DEBUG_SLEEP(6);
-				
 				// Switch to graphics mode and show the (white) Apple logo on a black/gray background.
 				showBootLogo();
+				
+				_BOOT_DEBUG_SLEEP(5);
 			}
-
-			_BOOT_DEBUG_DUMP("execKernel-8\n");
 
 			startMachKernel(kernelEntry, bootArgs); // asm.s
 		}
