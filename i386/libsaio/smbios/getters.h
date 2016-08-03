@@ -27,12 +27,12 @@
 #define NOT_AVAILABLE	"N/A"
 #define RAM_SLOT_EMPTY	""
 
-#ifndef DYNAMIC_RAM_OVERRIDE_TYPE
-	#define DYNAMIC_RAM_OVERRIDE_TYPE	SMB_MEM_TYPE_DDR3
+#ifndef STATIC_RAM_OVERRIDE_TYPE
+	#define STATIC_RAM_OVERRIDE_TYPE	SMB_MEM_TYPE_DDR3
 #endif
 
-#ifndef DYNAMIC_RAM_OVERRIDE_FREQUENCY
-	#define DYNAMIC_RAM_OVERRIDE_FREQUENCY 1066
+#ifndef STATIC_RAM_OVERRIDE_FREQUENCY
+	#define STATIC_RAM_OVERRIDE_FREQUENCY 1066
 #endif
 
 /*==============================================================================
@@ -93,7 +93,8 @@ static inline struct SMBEntryPoint * getEPSAddress(void)
 
 static SMBWord getFSBFrequency(void)
 {
-	_SMBIOS_DEBUG_DUMP("In getFSBFrequency() = %d Hz\n", (gPlatform.CPU.FSBFrequency < 100500000) ? 0 : (gPlatform.CPU.FSBFrequency / 1000000));
+	// _SMBIOS_DEBUG_DUMP("In getFSBFrequency() = %d Hz\n", (gPlatform.CPU.FSBFrequency < 100500000) ? 0 : (gPlatform.CPU.FSBFrequency / 1000000));
+	_SMBIOS_DEBUG_DUMP("In getFSBFrequency() = %d Hz\n", (gPlatform.CPU.FSBFrequency == 0) ? 0 : (gPlatform.CPU.FSBFrequency / 1000000));
 
 	if (gPlatform.CPU.QPISpeed == 0)
 	{
@@ -112,7 +113,7 @@ static SMBWord getFSBFrequency(void)
 	 *		 (for example) report 412 MHz instead of 103 MHz.
 	 */
 
-	return (gPlatform.CPU.FSBFrequency < 100500000) ? 0 : (gPlatform.CPU.FSBFrequency / 1000000);
+	return 100; // (gPlatform.CPU.FSBFrequency < 100500000) ? 0 : (gPlatform.CPU.FSBFrequency / 1000000);
 }
 
 
@@ -136,8 +137,8 @@ static SMBWord getCPUType(void)
 }
 
 
-//==============================================================================
 #if OVERRIDE_DYNAMIC_MEMORY_DETECTION
+//==============================================================================
 
 int getSlotNumber(int slotNumber)
 {
@@ -156,7 +157,7 @@ int getSlotNumber(int slotNumber)
 	}
 
 #if DEBUG_SMBIOS
-	// sleep(1);	// Silent sleep (for debug only / slows down the process).
+	sleep(1);	// Silent sleep (for debug only / slows down the process).
 #endif
 
 	return slotNumber;
@@ -164,8 +165,8 @@ int getSlotNumber(int slotNumber)
 #endif
 
 
+#if STATIC_RAM_OVERRIDE_SIZE
 //==============================================================================
-#if DYNAMIC_RAM_OVERRIDE_SIZE
 
 static SMBWord getRAMSize(void)
 {
@@ -183,28 +184,28 @@ static SMBWord getRAMSize(void)
 #endif
 
 
+#if STATIC_RAM_OVERRIDE_TYPE
 //==============================================================================
-#if DYNAMIC_RAM_OVERRIDE_TYPE
 
 static SMBByte getRAMType(void)
 {
 #if (DEBUG_SMBIOS == 2)
-	_SMBIOS_DEBUG_DUMP("In getRAMType() = %s\n", SMBMemoryDeviceTypes[DYNAMIC_RAM_OVERRIDE_TYPE]);
+	_SMBIOS_DEBUG_DUMP("In getRAMType() = %s\n", SMBMemoryDeviceTypes[STATIC_RAM_OVERRIDE_TYPE]);
 #endif
 
-	return DYNAMIC_RAM_OVERRIDE_TYPE;
+	return STATIC_RAM_OVERRIDE_TYPE;
 }
 #endif
 
 
+#if STATIC_RAM_OVERRIDE_FREQUENCY
 //==============================================================================
-#if DYNAMIC_RAM_OVERRIDE_FREQUENCY
 
 static SMBWord getRAMFrequency(void)
 {
-	_SMBIOS_DEBUG_DUMP("In getRAMFrequency() = %d\n", DYNAMIC_RAM_OVERRIDE_FREQUENCY);
+	_SMBIOS_DEBUG_DUMP("In getRAMFrequency() = %d\n", STATIC_RAM_OVERRIDE_FREQUENCY);
 
-	return DYNAMIC_RAM_OVERRIDE_FREQUENCY;
+	return STATIC_RAM_OVERRIDE_FREQUENCY;
 }
 #endif
 
