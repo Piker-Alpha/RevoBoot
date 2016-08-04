@@ -35,6 +35,11 @@
  *			- STATIC_SYSTEM_ID renamed to SMB_STATIC_SYSTEM_UUID and moved to SMBIOS section (Pike R. Alpha, January 2013).
  *			- Renamed LION_INSTALL_SUPPORT to INSTALL_ESD_SUPPORT (Pike R. Alpha, April 2013).
  *			- Renamed LION_RECOVERY_SUPPORT to RECOVERY_HD_SUPPORT (Pike R. Alpha, October 2013).
+ *			- PRE_LINKED_KERNEL_SUPPORT renamed to PRELINKED_KERNEL_SUPPORT (Pike R. Alpha, October 2015).
+ *			- DYNAMIC_RAM_OVERRIDE_TYPE renamed to STATIC_RAM_OVERRIDE_TYPE (Pike R. Alpha, July 2016).
+ *			- DYNAMIC_RAM_OVERRIDE_SIZE renamed to STATIC_RAM_OVERRIDE_SIZE
+ *			- DYNAMIC_RAM_OVERRIDE_SIZES renamed to  STATIC_RAM_OVERRIDE_SIZES
+ *			- DYNAMIC_RAM_OVERRIDE_FREQUENCY renamed to STATIC_RAM_OVERRIDE_FREQUENCY
  */
 
 
@@ -124,7 +129,7 @@
 												// Note: Don't forget to set PATCH_ACPI_TABLE_DATA to 1.
 
 
-#define LOAD_DSDT_TABLE_FROM_EXTRA_ACPI		0	// Set to 0 by default. Use 1 when your setup requires a modified DSDT table 
+#define LOAD_DSDT_TABLE_FROM_EXTRA_ACPI		0	// Set to 0 by default. Use 1 when your setup requires a modified DSDT table
 												// and you want to load: /Extra/ACPI/dsdt.aml instead of injecting a static 
 												// DSDT table from: RevoBoot/i386/config/ACPI/data.h 
 												//
@@ -192,6 +197,20 @@
 	#define DROP_FACTORY_SSDT_TABLES		0	// Set to 0 by default. Use 1 with caution (might disable CPU Power Management).
 #endif
 
+#if DROP_FACTORY_SSDT_TABLES
+	#define DROP_SELECTED_SSDT_TABLE		1	// Set to 0 by default.
+	//
+	// Haswell (example)
+	//
+	// #define OEM_TABLE_ID_TARGETS			{  "CpuPm", "Cpu0Ist", 0 }
+	//
+	// Skylake (example)
+	//
+	// #define OEM_TABLE_ID_TARGETS			{  "sensrhub", "Ther_Rvp", "SaSsdt ", "CpuSsdt", "PtidDevc", "SataTabl", "xh_rvp10", 0 }
+	// #define OEM_TABLE_ID_TARGETS			{  "sensrhub", "Ther_Rvp",                       "PtidDevc", "SataTabl", "xh_rvp10", 0 }
+	#define OEM_TABLE_ID_TARGETS			{  "SataTabl", "PmMgt", 0 }
+#endif
+
 #define REPLACE_EXISTING_SSDT_TABLES		0	// Set to 0 by default. Use 1 with caution (might disable CPU Power Management).
 												//
 												// Note: Don't forget to set PATCH_ACPI_TABLE_DATA to 1.
@@ -201,6 +220,11 @@
 												// Note:	Don't forget to set PATCH_ACPI_TABLE_DATA to 1 and keep in mind that this can 
 												//			only change the headers of injected/replaced tables. Not the factory tables.
 
+#define VERIFY_OPREGION_GNVS_ADDRESS		1	// Set to 0 by default.
+
+#if VERIFY_OPREGION_GNVS_ADDRESS
+	#define DUMP_OPREGION_GNVS_ADDRESS		0	// Set to 0 by default.
+#endif
 
 #define DEBUG_ACPI							0	// Set to 0 by default. Use 1 when things don't seem to work for you.
 
@@ -208,7 +232,7 @@
 //--------------------------------------------------------------- BOOT.C -------------------------------------------------------------------
 
 
-#define PRE_LINKED_KERNEL_SUPPORT			1	// Set to 1 by default. Change this to 0 to disable the use of pre-linked kernels.
+#define PRELINKED_KERNEL_SUPPORT			1	// Set to 1 by default. Change this to 0 to disable the use of pre-linked kernels.
 
 #define MUST_ENABLE_A20						0	// Set to 0 by default. Change this to 1 when your hardware requires it.
 
@@ -216,8 +240,8 @@
 
 #define RECOVERY_HD_SUPPORT					0	// Set to 0 by default. Change this to 1 to make RevoBoot search for the 'Recovery HD'
 												// partition and, when available, boot from it.
-#if (RECOVERY_HD_SUPPORT == 1 && PRE_LINKED_KERNEL_SUPPORT == 0)
-	#define PRE_LINKED_KERNEL_SUPPORT		1
+#if (RECOVERY_HD_SUPPORT == 1 && PRELINKED_KERNEL_SUPPORT == 0)
+	#define PRELINKED_KERNEL_SUPPORT		1
 #endif
 
 #define STARTUP_DISK_SUPPORT				0	// Set to 0 by default. Change this to 1 for System Preference/Startup Disk support.
@@ -473,5 +497,13 @@
 #define	LOAD_MODEL_SPECIFIC_STATIC_DATA		(LOAD_MODEL_SPECIFIC_ACPI_DATA || LOAD_MODEL_SPECIFIC_EFI_DATA || LOAD_MODEL_SPECIFIC_SMBIOS_DATA)
 
 #define DEBUG_PLATFORM						0	// Set to 0 by default. Change this to 1 when things don't seem to work for you.
+
+//---------------------------------------------------------------- XHCI.H ------------------------------------------------------------------
+
+#define DISABLE_LEGACY_XHCI					0	// Set to 0 by default. Change this to 1 when you need to disable legacy XHCI.
+
+#define DEBUG_XHCI							0
+
+
 
 //================================================================= END ====================================================================
