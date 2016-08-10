@@ -398,7 +398,7 @@ void initCPUStruct(void)
 				case CPU_MODEL_BROADWELL_H:
 				case CPU_MODEL_BRYSTALWELL:
 				case CPU_MODEL_BROADWELL_E:
-
+				case CPU_MODEL_BROADWELL_DE:
 					CoreBridgeType = BROADWELL;
 					hiBit = 31;
 					break;
@@ -407,6 +407,7 @@ void initCPUStruct(void)
 //				case CPU_MODEL_SKYLAKE_ULT:
 //				case CPU_MODEL_SKYLAKE_ULX:
 				case CPU_MODEL_SKYLAKE_DT:
+				case CPU_MODEL_SKYLAKE_X:
 					CoreBridgeType = SKYLAKE;
 					hiBit = 31;
 					// gPlatform.CPU.ARTFrequency = (3427489466 * 2 / 284) = 24137249,76056338028169 MHz
@@ -416,6 +417,11 @@ void initCPUStruct(void)
 					// 709919 * 284 = 201616996 / 2 = 100808498
 					gPlatform.CPU.ARTFrequency = 0; // BASE_ART_CLOCK_SOURCE; // (tscFrequency * getCachedCPUID(LEAF_x15, eax) / getCachedCPUID(LEAF_x15, ebx));
 					break;
+
+				case CPU_MODEL_KABYLAKE:
+				case CPU_MODEL_KABYLAKE_DT:
+					CoreBridgeType = KABYLAKE;
+					hiBit = 31;
 
 				case CPU_MODEL_NEHALEM:
 				case CPU_MODEL_NEHALEM_EX:
@@ -468,7 +474,7 @@ void initCPUStruct(void)
 					requestMaxTurbo(maxBusRatio);
 				}
 
-				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell || Broadwell || SkyLake)
+				if (CoreBridgeType) // (SandyBridge || IvyBridge || Haswell || Broadwell || SkyLake || KabyLake)
 				{
 					// gPlatform.CPU.Type += CoreBridgeType;
 

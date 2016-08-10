@@ -210,5 +210,6 @@
 #define HASWELL			8
 #define BROADWELL		16
 #define SKYLAKE			32
+#define KABYLAKE		64
 
 #endif /* !__LIBSAIO_CPU_ESSENTIALS_H */
