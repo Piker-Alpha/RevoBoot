@@ -109,5 +109,37 @@
 #endif
 
 
+#if DEBUG_KERNEL_PATCHER
+	#define DEBUG_SYMBOL_FOUND(symbol, offset, vmaddr, fileoff, start, end)	\
+						printf("Symbol %s found!\n", symbol);				\
+						printf("offset..............: 0x%llx\n", offset);	\
+						printf("textSegment->vmaddr.: 0x%llx\n", vmaddr);	\
+						printf("textSegment->fileoff: 0x%llx\n", fileoff);	\
+						printf("startAddress........: 0x%llx\n", start);	\
+						printf("endAddress..........: 0x%llx\n", end);		\
+						sleep(3);
+
+	#define DEBUG_PATCH_STATUS(symbol, address, number, seconds)			\
+						printf("Patched %s(0x%llx) symbol-number: %ld\n", symbol, address, number);	\
+																									\
+						if (seconds)																\
+						{																			\
+							sleep(seconds);															\
+						}
+
+	#define DEBUG_DISABLED_MSR(msr, seconds)				\
+						printf("Disabling MSR: 0x%x\n");	\
+															\
+						if (seconds)						\
+						{									\
+							sleep(seconds);					\
+						}
+
+#else
+	#define DEBUG_SYMBOL_FOUND(symbol, offset, vmaddr, fileoff, start, end)
+	#define DEBUG_SYMBOL_PATCH(symbol, address, number, seconds)
+	#define DEBUG_DISABLE_MSR(msr, seconds)
+#endif
+
 #endif // __REVO_DEBUG_H
 
