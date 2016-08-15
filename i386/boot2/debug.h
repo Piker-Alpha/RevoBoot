@@ -127,12 +127,12 @@
 							sleep(seconds);															\
 						}
 
-	#define DEBUG_DISABLED_MSR(msr, seconds)				\
-						printf("Disabling MSR: 0x%x\n");	\
-															\
-						if (seconds)						\
-						{									\
-							sleep(seconds);					\
+	#define DEBUG_DISABLED_MSR(msr, seconds)					\
+						printf("Disabling MSR: 0x%x\n", msr);	\
+																\
+						if (seconds)							\
+						{										\
+							sleep(seconds);						\
 						}
 
 #else
