@@ -151,6 +151,10 @@ extern long		decodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize
 extern long		loadBinaryData(char *aFilePath, void **aMemoryAddress);
 
 
+/* patcher.c */
+extern long		patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize, unsigned long textSegmentAddress, unsigned long vldSegmentAddress);
+
+
 /* memory.c */
 long			AllocateKernelMemory(long inSize);
 long			AllocateMemoryRange(char * rangeName, long start, long length);

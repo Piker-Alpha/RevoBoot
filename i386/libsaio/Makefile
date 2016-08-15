@@ -3,15 +3,16 @@
 #
 # Updates:
 #
-#			- Major cleanup (PikerAlpha, October 2012).
-#			- DMAKE_TARGET_MODEL added (PikerAlpha, October 2012).
-#			- Static data selectors added (PikerAlpha, October 2012).
-#			- STATIC_DATA_FILENAME added (PikerAlpha, October 2012).
-#			- Output added for rm/ar/ranlib actions (PikerAlpha, November 2012).
+#			- Major cleanup (Pike R. Alpha, October 2012).
+#			- DMAKE_TARGET_MODEL added (Pike R. Alpha, October 2012).
+#			- Static data selectors added (Pike R. Alpha, October 2012).
+#			- STATIC_DATA_FILENAME added (Pike R> Alpha, October 2012).
+#			- Output added for rm/ar/ranlib actions (Pike R> Alpha, November 2012).
 #			- Enabled clang compilation (dgsga, PikerAlpha, November 2012. Credits to Evan Lojewski for original work).
-#			- Output change and now using libtool instead of ar/ranlib (PikerAlpha, November 2012).
-#			- SAIO_OBJS changed / base64.o added (PikerAlpha, November 2012).
-#			- MAKE_TARGET_OS_VER added (PikerAlpha, June 2014).
+#			- Output change and now using libtool instead of ar/ranlib (Pike R. Alpha, November 2012).
+#			- SAIO_OBJS changed / base64.o added (Pike R. Alpha, November 2012).
+#			- MAKE_TARGET_OS_VER added (Pike R. Alpha, June 2014).
+#			- patcher.c added (Pike R. Alpha, August 2016).
 
 include ../MakePaths.dir
 
@@ -41,7 +42,7 @@ INC = -I. -I$(SYMROOT) -I$(UTILDIR) -I$(LIBSADIR)
 VPATH = $(OBJROOT):$(SYMROOT)
 
 SAIO_OBJS =	table.o asm.o bios.o biosfn.o guid.o disk.o sys.o cache.o \
-		bootstruct.o base64.o stringTable.o load.o pci.o allocate.o \
+		bootstruct.o base64.o stringTable.o patcher.o load.o pci.o allocate.o \
 		vbe.o hfs.o hfs_compare.o xml.o md5c.o device_tree.o cpu.o \
 		platform.o acpi.o smbios.o efi.o console.o 
 
