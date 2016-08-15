@@ -26,6 +26,7 @@
  *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
  *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
  *			- Stripped (unnecessary) argument from loadSystemConfig (PikerAlpha, April 2013).
+ *			- Use Lower Camel Case for function names (Pike R. Alpha, July 2016)
  *
  */
 
@@ -145,8 +146,8 @@ extern void		utf_decodestr(const u_int8_t *utf8p, u_int16_t *ucsp, u_int16_t *uc
 
 /* load.c */
 extern bool		gLoadKernelDrivers;
-extern long		ThinFatFile(void **binary, unsigned long *length);
-extern long		DecodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize);
+extern long		thinFatFile(void **binary, unsigned long *length);
+extern long		decodeMachO(void *binary, entry_t *rentry, char **raddr, int *rsize);
 extern long		loadBinaryData(char *aFilePath, void **aMemoryAddress);
 
 

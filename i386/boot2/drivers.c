@@ -27,6 +27,10 @@
  *  Copyright (c) 2000 Apple Computer, Inc.
  *
  *  DRI: Josh de Cesare
+ *
+ * Updates:
+ *			- Use Lower Camel Case for function names (Pike R. Alpha, July 2016)
+ *
  */
 
 #include <mach-o/fat.h>
@@ -106,7 +110,7 @@ static long matchLibraries(void);
 
 #ifdef NOTDEF
 	static ModulePtr	findModule(char *name);
-	static void			ThinFatFile(void **loadAddrP, unsigned long *lengthP);
+	static void			thinFatFile(void **loadAddrP, unsigned long *lengthP);
 #endif
 
 static long parseXML(char *buffer, ModulePtr *module, TagPtr *personalities);
@@ -608,7 +612,7 @@ static long loadMatchedModules(void)
                 //driverModuleAddr = (void *)kLoadAddr;
                 //if (length != 0)
                 //{
-                //    ThinFatFile(&driverModuleAddr, &length);
+                //    thinFatFile(&driverModuleAddr, &length);
                 //}
 
                 // Make room in the image area.
@@ -990,20 +994,20 @@ long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsiz
 		}
 	}
 
-	ret = ThinFatFile(&fileLoadBuffer, &len);
+	ret = thinFatFile(&fileLoadBuffer, &len);
 
 	if (ret == 0 && len == 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
 		gPlatform.ArchCPUType = CPU_TYPE_I386;
-		ret = ThinFatFile(&fileLoadBuffer, &len);
+		ret = thinFatFile(&fileLoadBuffer, &len);
 	}
 
-	ret = DecodeMachO(fileLoadBuffer, rentry, raddr, rsize);
+	ret = decodeMachO(fileLoadBuffer, rentry, raddr, rsize);
 
 	if (ret < 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
 		gPlatform.ArchCPUType = CPU_TYPE_I386;
-		ret = DecodeMachO(fileLoadBuffer, rentry, raddr, rsize);
+		ret = decodeMachO(fileLoadBuffer, rentry, raddr, rsize);
 	}
 
 #if DEBUG_DRIVERS

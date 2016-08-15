@@ -53,7 +53,8 @@
  * Copyright 2007 VMware Inc. "Preboot" ramdisk support added by David Elliott
  *
  * Updates:
- *			- Cleanups, white space and layout changes (PikerAlpha, November2012)
+ *			- Cleanups, white space and layout changes (Pike R. Alpha, November 2012)
+ *			- Use Lower Camel Case for function names (Pike R. Alpha, July 2016)
  *
  */
 
@@ -206,7 +207,7 @@ long LoadThinFatFile(const char *fileSpec, void **binary)
 
 		if (length > 0)
 		{
-			if (ThinFatFile(binary, &length) == 0)
+			if (thinFatFile(binary, &length) == 0)
 			{
 				if (length == 0)
 				{
@@ -237,7 +238,7 @@ long LoadThinFatFile(const char *fileSpec, void **binary)
 
 		if (length > 0)
 		{
-			ThinFatFile(binary, &length);
+			thinFatFile(binary, &length);
 		}
 	}
 
