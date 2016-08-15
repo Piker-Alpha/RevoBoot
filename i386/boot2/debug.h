@@ -117,14 +117,14 @@
 						printf("textSegment->fileoff: 0x%llx\n", fileoff);	\
 						printf("startAddress........: 0x%llx\n", start);	\
 						printf("endAddress..........: 0x%llx\n", end);		\
-						sleep(3);
+						sleep(1);
 
-	#define DEBUG_PATCH_STATUS(symbol, address, number, seconds)			\
-						printf("Patched %s(0x%llx) symbol-number: %ld\n", symbol, address, number);	\
-																									\
-						if (seconds)																\
-						{																			\
-							sleep(seconds);															\
+	#define DEBUG_PATCH_STATUS(symbol, address, seconds)					\
+						printf("Patched %s(@ 0x%x)\n", symbol, address);	\
+																			\
+						if (seconds)										\
+						{													\
+							sleep(seconds);									\
 						}
 
 	#define DEBUG_DISABLED_MSR(msr, seconds)					\
