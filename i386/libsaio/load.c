@@ -320,6 +320,7 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 #if PRELINKED_KERNEL_SUPPORT
 	struct segment_command_64 * vldSegment = (struct segment_command_64 *)vldSegmentAddress;
 #endif
+
 	void * stringTable = (void *)(loadAddress + symtab->stroff);
 
 	const uint16_t targetMSRs[] = { 0xE2, 0x01A0, /* 0x01FC, */ 0x01AA, 0x0620, /* 0x064C, */ 0x063A, 0x0642 };
@@ -372,7 +373,7 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 						p = (unsigned char *)endAddress;
 					}
 					else if (*(uint64_t *)p == 0x487174db8548c389) // macOS Sierra DP[2-5] = 89 c3 48 85 db 74 77 48  in HexEdit
-					{
+					{ //                           ^^^^
 						DEBUG_PATCH_STATUS(symbolName, ((uint64_t)p - startAddress), (symbolNumber + (skippedSymbolCount / listSize) + 1), 1)
 
 						*(uint64_t *)p = 0x4812ebdb8548c389;
@@ -460,7 +461,7 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 				}
 			}
 
-			else if (strcmp(symbolName, "_xcpm_idle") == 0)
+			else if (strcmp(symbolName, "_xcpm_idle") == 0) // 2 MSRs (0xE2, 0xE2)
 			{
 				offset = (nl->n_value - textSegment->vmaddr);
 				startAddress = (uint64_t)(textSegment->vmaddr + offset);
@@ -476,7 +477,8 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 					{
 						DEBUG_PATCH_STATUS(symbolName, ((uint64_t)p - startAddress), (symbolNumber + (skippedSymbolCount / listSize) + 1), 1)
 
-						*(uint64_t *)p = 0x9090000000e2b920; // Reversed (48 C1 EA) 20 B9 E2 00 00 00 90 90 (8 bytes).
+						// *(uint64_t *)p = 0x9090000000e2b920; // Reversed (48 C1 EA) 20 B9 E2 00 00 00 90 90 (8 bytes).
+						*(uint32_t *)p = 0x90900000; // Reversed 00 00 90 90 (4 bytes).
 					}
 				}
 			}
@@ -493,7 +495,7 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 
 			symbolName = (char *)stringTable + nl->n_un.n_strx;
 
-			if (strcmp(symbolName, "_xcpm_SMT_scope_msrs") == 0)
+			if (strcmp(symbolName, "_xcpm_SMT_scope_msrs") == 0) // 11 MSRs (0xE2, 0x01A0, 0x01B0, 0x01B0, 0x01B0, 0x0609, 0x038D, 0x038F, 0x0187, 0x0188, 0x0189)
 			{
 				int64_t offset = (nl->n_value - textSegment->vmaddr);
 				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
@@ -503,7 +505,7 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 				DEBUG_SYMBOL_FOUND(symbolName, offset, textSegment->vmaddr, textSegment->fileoff, startAddress, 0)
 				DEBUG_PATCH_STATUS(symbolName, ((uint64_t)p - startAddress), (symbolNumber + (skippedSymbolCount / listSize) + 1), 1)
 				//
-				// Zero out MSR 0xE2 (and MSR 0x01A0
+				// Zero out MSR 0xE2 and MSR 0x01A0
 				//
 				for (repeat = 0; repeat < 8; repeat++)
 				{
@@ -511,7 +513,7 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 					p += 0x08;
 				}
 			}
-			else if (strcmp(symbolName, "_xcpm_core_scope_msrs") == 0)
+			else if (strcmp(symbolName, "_xcpm_core_scope_msrs") == 0) // 2 MSRs (0xE2, 0xE2)
 			{
 				int64_t offset = (nl->n_value - textSegment->vmaddr);
 				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
@@ -535,15 +537,19 @@ static long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long l
 				// *(uint64_t *) = 0x0000000000000000ULL;
 				*(uint32_t *)(p + 4) = 0x00000000UL;
 			}
-			else if (strcmp(symbolName, "_xcpm_pkg_scope_msrs") == 0)
+			else if (strcmp(symbolName, "_xcpm_pkg_scope_msrs") == 0) // 7 MSRs (0x01A0, 0x01FC, 0x01AA, 0x0620, 0x064C, 0x063A, 0x0642)
 			{
+				//
+				// 0x064C MSR_TURBO_ACTIVATION_RATIO (Ivy Bridge Haswell E)
+				// 0x063A MSR_PP0_POLICY
+				// 0x0642 MSR_PP1_POLICY (not supported for server platform)
+				//
 				int64_t offset = (nl->n_value - textSegment->vmaddr);
 				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
 
 				unsigned char * p = (unsigned char *)startAddress;
-				
+
 				DEBUG_SYMBOL_FOUND(symbolName, offset, textSegment->vmaddr, textSegment->fileoff, startAddress, 0)
-				
 				//
 				// New way of patching.
 				//
