@@ -171,7 +171,7 @@ void boot(int biosdev)
 	bool	haveCABootPlist	= false;
 	bool	quietBootMode	= true;
 
-	void *fileLoadBuffer = (void *)kLoadAddr;
+	void *loadBuffer = (void *)kLoadAddr;
 
 	char bootFile[256];
 	char rootUUID[37];
@@ -676,7 +676,7 @@ void boot(int biosdev)
 					if (LoadFile((const char *)preLinkedKernelPath))
 					{
 						retStatus = 1;
-						fileLoadBuffer = (void *)kLoadAddr;
+						loadBuffer = (void *)kLoadAddr;
 						bootFile[0] = 0;
 					}
 
@@ -714,7 +714,7 @@ void boot(int biosdev)
 
 		_BOOT_DEBUG_DUMP("About to load: %s\n", bootFile);
 
-		retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
+		retStatus = LoadThinFatFile(bootFile, &loadBuffer);
 
 #if SUPPORT_32BIT_MODE
 		if (retStatus <= 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
@@ -723,7 +723,7 @@ void boot(int biosdev)
 
 			gPlatform.ArchCPUType = CPU_TYPE_I386;
 
-			retStatus = LoadThinFatFile(bootFile, &fileLoadBuffer);
+			retStatus = LoadThinFatFile(bootFile, &loadBuffer);
 		}
 #endif // SUPPORT_32BIT_MODE
 
@@ -745,7 +745,7 @@ void boot(int biosdev)
 			
 			_BOOT_DEBUG_DUMP("execKernel-1\n");
 			
-			if (decodeKernel(fileLoadBuffer, &kernelEntry, (char **) &bootArgs->kaddr, (int *)&bootArgs->ksize) != 0)
+			if (decodeKernel(loadBuffer, &kernelEntry, (char **) &bootArgs->kaddr, (int *)&bootArgs->ksize) != 0)
 			{
 				stop("DecodeKernel() failed!");
 			}
