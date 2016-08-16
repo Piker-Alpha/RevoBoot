@@ -23,9 +23,9 @@
  *
  * Updates:
  *
- *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (PikerAlpha, October 2012).
- *			- Tidied up (spaces -> tabs) (PikerAlpha, October 2012).
- *			- Stripped (unnecessary) argument from loadSystemConfig (PikerAlpha, April 2013).
+ *  		- loadBinaryData(load.c) and toLowerCase(string.c) added (Pike R. Alpha, October 2012).
+ *			- Tidied up (spaces -> tabs) (Pike R. Alpha, October 2012).
+ *			- Stripped (unnecessary) argument from loadSystemConfig (Pike R. Alpha, April 2013).
  *			- Use Lower Camel Case for function names (Pike R. Alpha, July 2016)
  *
  */
