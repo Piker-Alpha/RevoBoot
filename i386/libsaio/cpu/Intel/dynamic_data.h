@@ -388,6 +388,7 @@ void initCPUStruct(void)
 					break;
 
 				case CPU_MODEL_HASWELL:
+				case CPU_MODEL_HASWELL_E:
 				case CPU_MODEL_HASWELL_ULT:
 					CoreBridgeType = HASWELL;
 					hiBit = 31;
@@ -486,10 +487,7 @@ void initCPUStruct(void)
 					// Check bit-15 of MSR 0xE2 to see if it is locked.
 					msr = rdmsr64(MSR_PKG_CST_CONFIG_CONTROL);
 
-#if PATCH_XCPM_SCOPE_MSRS
 					gPlatform.CPU.CstConfigMsrLocked = (msr & 0x8000);
-#endif
-
 #if DEBUG_CPU
 					printf("MSR_PKG_CST_CONFIG_CONTROL(locked): 0x%x\n", msr);
 #endif

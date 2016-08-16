@@ -262,10 +262,8 @@ typedef struct _PlatformInfo_t
 	struct CPU
 	{
 		bool		Mobile;						// Set to true (in cpu/dynamic_data.h) for Mobile CPU's.
-
-#if PATCH_XCPM_SCOPE_MSRS
 		bool		CstConfigMsrLocked;			// Initialised in cpu/dynamic_data.h and used in load.c
-#endif
+
 		uint16_t	Type;						// CPU type ('cpu-type') used in the SMBIOS patcher.
 		uint32_t	Features;					// CPU Features like MMX, SSE2, VT, MobileCPU
 		uint32_t	Vendor;						// Vendor
