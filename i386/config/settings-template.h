@@ -41,6 +41,8 @@
  *			- DYNAMIC_RAM_OVERRIDE_SIZES renamed to  STATIC_RAM_OVERRIDE_SIZES
  *			- DYNAMIC_RAM_OVERRIDE_FREQUENCY renamed to STATIC_RAM_OVERRIDE_FREQUENCY
  *			- PATCH_XCPI_SCOPE_MSRS renamed to PATCH_XCPM_SCOPE_MSRS
+ *			- PATCH_XCPI_SCOPE_MSRS removed (Pike R. Alpha, August 2016).
+ *			- PATCH_KERNEL, DEBUG_KERNEL_PATCHER, PATCH_XCPM_BOOTSTRAP and PATCH_CPUID_SET_INFO added.
  */
 
 
@@ -423,7 +425,7 @@
 
 #define TARGET_MODEL					MACMINI	// Set to MACMINI by default. Supported models are:
 												//
-												// IMAC and IMAC_131, IMAC_122, IMAC_111, IMAC_121
+												// IMAC and IMAC_171, IMAC_16n, IMAC_15n, IMAC_14n, IMAC_131, IMAC_12n, IMAC_111
 												// MACBOOK and MACBOOK_41
 												// MACBOOKAIR and MACBOOKAIR_42, MACBOOKAIR_41
 												// MACBOOKPRO and MACBOOKPRO_101, MACBOOKPRO_91, MACBOOKPRO_83, MACBOOKPRO_82,
@@ -449,21 +451,29 @@
 
 
 
-//---------------------------------------------------------------- LOAD.C ------------------------------------------------------------------
+//-------------------------------------------------------------- PATCHER.C -----------------------------------------------------------------
 
-#define PATCH_KEXT_LOADING						1	// Set to 1 by default.
+#define PATCH_KERNEL						1	// Set to 1 by default.
+												//
+												// Note: A value of 0 will trigger a panic without a prelinkedkernel, and your computer may
+												//		  not boot without patches.
 
-#define LOAD_EXECUTABLE_TARGET_UINT64			0x487074db8548c389ULL // 89c34885db747048 revered in HexEdit
-#define LOAD_EXECUTABLE_PATCH_UINT64			0x4812ebdb8548c389ULL
+												//
+												// Override value examples:
+												//
+												// Use -8 for Broadwell E to Broadwell H
+												// Use -3 for Haswell E to Haswell
+												// Use 3 for Ivy Bridge to Haswell (untested and unconfirmed).
+												// Use 2 for Ivy Bridge E to Haswell (untested and unconfirmed).
+												//
+#define PATCH_XCPM_BOOTSTRAP				0	// Set to 0 by default. Change this to the value that you want for your processor.
 
-#define PATCH_XCPM_SCOPE_MSRS					0	// Set to 0 by default.
+#define PATCH_CPUID_SET_INFO				0	// Set to 0 by default. Change this to the value that you want for your processor.
+												//
+												// Note: Not required for Haswell E and Ivy Bridge E processors.
+												//
 
-#define XCPM_SCOPE_MSRS_TARGET_UINT64			0x00000002000000E2ULL
-
-#define PATCH_LOAD_EXTRA_KEXTS					0	// Set to 0 by default.
-
-#define READ_STARTUP_EXTENSIONS_TARGET_UINT64	0xe805eb00000025e8ULL // e825000000eb05e8 revered in HexEdit
-#define READ_STARTUP_EXTENSIONS_PATCH_UINT64	0xe8909000000025e8ULL
+#define DEBUG_KERNEL_PATCHER				0	// Set to 0 by default. Use 1 to trace patches (symbol name, address and number).
 
 
 //-------------------------------------------------------------- PLATFORM.C ----------------------------------------------------------------
