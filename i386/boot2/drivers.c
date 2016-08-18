@@ -201,7 +201,8 @@ long loadDrivers(char * dirSpec)
 	{
 		_DRIVERS_DEBUG_DUMP("gKextLoadStatus != 3\n");
 
-#if (PATCH_LOAD_EXTRA_KEXTS && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)) // El Capitan and Sierra.
+// #if (PATCH_LOAD_EXTRA_KEXTS && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)) // El Capitan and Sierra.
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN) // El Capitan and Sierra.
 		// Yes we do. Start by looking for kexts in: /Extra/Extensions/
 		if ((gKextLoadStatus & 2) == 0)
 		{
