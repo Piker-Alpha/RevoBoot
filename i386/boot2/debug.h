@@ -131,7 +131,7 @@
 							sleep(seconds);									\
 						}
 #else
-	#define DEBUG_SYMBOL_PATCH(symbol, address, number, seconds)
+	#define DEBUG_PATCH_STATUS(symbol, address, seconds)
 #endif
 
 #if (DEBUG_KERNEL_PATCHER & 4)
@@ -143,7 +143,7 @@
 							sleep(seconds);						\
 						}
 #else
-	#define DEBUG_DISABLE_MSR(msr, seconds)
+	#define DEBUG_DISABLED_MSR(msr, seconds)
 #endif
 
 #endif // __REVO_DEBUG_H
