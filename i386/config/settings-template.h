@@ -473,8 +473,11 @@
 												// Note: Not required for Haswell E and Ivy Bridge E processors.
 												//
 
-#define DEBUG_KERNEL_PATCHER				0	// Set to 0 by default. Use 1 to trace patches (symbol name, address and number).
-
+#define DEBUG_KERNEL_PATCHER				0	// Set to 0 by default, and the following bits can be set:
+												//
+												// A value of 1 (bit-0) shows the symbol name, offset and address range.
+												// A value of 2 (bit-1) shows the patch status.
+												// A value of 4 (bit-2) shows the disabled MSR's.
 
 //-------------------------------------------------------------- PLATFORM.C ----------------------------------------------------------------
 
