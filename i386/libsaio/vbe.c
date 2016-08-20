@@ -109,6 +109,8 @@ unsigned long getResolutionFromEDID(void)
 	UInt8 targetBlock = 0;
 	const UInt8 header[] = { 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00	};
 
+	bzero(data, 128);
+
 	do
 	{
 		bb.intno	= 0x10;
@@ -132,10 +134,9 @@ unsigned long getResolutionFromEDID(void)
 			}
 
 #if DEBUG_BOOT_GRAPHICS
-			short i = 0;
 			short r = 0;
 
-			for (i = 0; i < 128; i++)
+			for (short i = 0; i < 128; i++)
 			{
 				printf(" %02x", data[i]);
 
@@ -146,15 +147,15 @@ unsigned long getResolutionFromEDID(void)
 					r = 0;
 					printf("\n");
 				}
-			}
 
-			sleep(1);
+				sleep(1);
+
+				if (data[126] == 0)
+				{
+					targetBlock = 0;
+				}
+			}
 #endif
-			if (data[126] == 0)
-			{
-				targetBlock = 0;
-			}
-
 			return (((data[56] | ((data[58] & 0xF0) << 4)) << 16) | (data[59] | ((data[61] & 0xF0) << 4)));
 		}
 		else

@@ -642,13 +642,11 @@ void XMLFreeTag(TagPtr tag)
 
 static char * NewSymbol(char * string)
 {
-	static SymbolPtr lastGuy = 0;
-
 	// Look for string in the list of symbols.
 	SymbolPtr symbol = FindSymbol(string, 0);
 
 	// Add new symbol.
-	if (symbol == 0)
+	if (symbol == NULL)
 	{
 		symbol = (SymbolPtr)malloc(sizeof(Symbol) + 1 + strlen(string));
 
@@ -661,6 +659,9 @@ static char * NewSymbol(char * string)
 			// Add the symbol to the list.
 			symbol->next = gSymbolsHead;
 			gSymbolsHead = symbol;
+			
+			// Update the refCount.
+			symbol->refCount++;
 		}
 		else
 		{
@@ -668,14 +669,7 @@ static char * NewSymbol(char * string)
 		}
 	}
 
-	// Update the refCount and return the string.
-	symbol->refCount++;
-
-	if (lastGuy && lastGuy->next != 0)
-	{
-		stop ("xml.c");
-	}
-
+	// Return the string
 	return symbol->string;
 }
 

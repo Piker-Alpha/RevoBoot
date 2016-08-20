@@ -1003,7 +1003,10 @@ long decodeKernel(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsiz
 		ret = thinFatFile(&fileLoadBuffer, &len);
 	}
 
-	ret = decodeMachO(fileLoadBuffer, rentry, raddr, rsize);
+	if (ret && len)
+	{
+		ret = decodeMachO(fileLoadBuffer, rentry, raddr, rsize);
+	}
 
 	if (ret < 0 && gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
