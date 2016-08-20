@@ -160,6 +160,13 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 		//
 		targetPatches += 120;
 	}
+	else
+	{
+		//
+		// No. Enabling a limited patch set.
+		//
+		targetPatches += 80;
+	}
 	//
 	// Main while loop.
 	//
@@ -194,7 +201,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 						// Done. Disable this patch.
 						//
 						p = (unsigned char *)endAddress;
-						targetPatches =~ 1;
+						targetPatches -= 1;
 					}
 				}
 			}
@@ -221,7 +228,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 						// Done. Disable this patch.
 						//
 						p = (unsigned char *)endAddress;
-						targetPatches =~ 2;
+						targetPatches -= 2;
 					}
 				}
 			}
@@ -248,12 +255,13 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 						// Done. Disable this patch.
 						//
 						p = (unsigned char *)endAddress;
-						targetPatches =~ 4;
+						targetPatches -= 4;
 					}
 				}
 			}
 			else if ((targetPatches & 8) && strcmp(symbolName, "_xcpm_idle") == 0) // 2 MSRs (0xE2, 0xE2)
 			{
+				uint8_t patch_count = 0;
 				offset = (nl->n_value - textSegment->vmaddr);
 				startAddress = (uint64_t)(textSegment->vmaddr + offset);
 				endAddress = (startAddress + 0x200);
@@ -264,14 +272,20 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				{
 					if (*(uint64_t *)p == 0x300f000000e2b920)// (48 C1 EA) 20 B9 E2 00 00 00 0F 30 reversed
 					{
+						patch_count++;
+
 						DEBUG_PATCH_STATUS(symbolName, ((uint64_t)p - startAddress), 1)
 
 						*(uint32_t *)(p + 4) = 0x90900000; // Reversed 00 00 90 90 (4 bytes).
-						//
-						// Done. Disable this patch.
-						//
-						p = (unsigned char *)endAddress;
-						targetPatches =~ 8;
+						
+						if (patch_count == 2)
+						{
+							//
+							// Done. Disable this patch.
+							//
+							p = (unsigned char *)endAddress;
+							targetPatches -= 8;
+						}
 					}
 				}
 			}
@@ -283,7 +297,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				//
 				// Yes. Disable this section.
 				//
-				targetSections =~ nl->n_sect;
+				targetSections -= nl->n_sect;
 			}
 		}
 		else if (nl->n_sect == 8 && nl->n_value && (targetSections & nl->n_sect)) // __DATA,__data
@@ -306,7 +320,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				//
 				// Done. Disable this patch.
 				//
-				targetPatches =~ 16;
+				targetPatches -= 16;
 			}
 			else if ((targetPatches & 32) && strcmp(symbolName, "_xcpm_core_scope_msrs") == 0)
 			{
@@ -324,7 +338,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				//
 				// Done. Disable this patch.
 				//
-				targetPatches =~ 32;
+				targetPatches -= 32;
 			}
 			else if ((targetPatches & 64) && strcmp(symbolName, "_xcpm_pkg_scope_msrs") == 0)
 			{
@@ -342,18 +356,18 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				//
 				// Done. Disable this patch.
 				//
-				targetPatches =~ 64;
+				targetPatches -= 64;
 
 			}
 			//
 			// Are we done patching for this section?
 			//
-			if ((targetPatches & 112) == 0)
+			if (targetPatches == 0)
 			{
 				//
 				// Yes. Disable this section.
 				//
-				targetSections =~ nl->n_sect;
+				targetSections -= nl->n_sect;
 			}
 		}
 #if PRELINKED_KERNEL_SUPPORT
@@ -381,8 +395,8 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 						// Disable this section.
 						//
 						p = (unsigned char *)endAddress;
-						targetPatches =~ 128;
-						targetSections =~ nl->n_sect;
+						targetPatches -= 128;
+						targetSections -= nl->n_sect;
 					}
 				}
 			}
