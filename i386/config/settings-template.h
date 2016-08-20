@@ -43,6 +43,7 @@
  *			- PATCH_XCPI_SCOPE_MSRS renamed to PATCH_XCPM_SCOPE_MSRS
  *			- PATCH_XCPI_SCOPE_MSRS removed (Pike R. Alpha, August 2016).
  *			- PATCH_KERNEL, DEBUG_KERNEL_PATCHER, PATCH_XCPM_BOOTSTRAP and PATCH_CPUID_SET_INFO added.
+ *			- Moving targetMSRs to configuration file.
  */
 
 
@@ -472,6 +473,8 @@
 												//
 												// Note: Not required for Haswell E and Ivy Bridge E processors.
 												//
+
+#define TARGET_XCPM_SCOPE_MSRS				{ 0xE2, 0x01A0, /* 0x01FC, */ 0x01AA, 0x0620, /* 0x064C, */ 0x063A, 0x0642 }
 
 #define DEBUG_KERNEL_PATCHER				0	// Set to 0 by default, and the following bits can be set:
 												//

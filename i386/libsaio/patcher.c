@@ -9,8 +9,13 @@
  *			- Reducing the number of compiler derectives (make it much easier to handle).
  *			- Latest source code from Vector implemented.
  *			- Checks added to catch errors in config.h (think MacPro61.h etc).
+ *			- Moving targetMSRs to configuration file.
  *
  */
+
+//
+// TODO: Add and verify patch data for El Capitan and make diableMSRs smarter.
+//
 
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
@@ -25,9 +30,9 @@
 void disableMSRs(unsigned char * aPointer, uint8_t aNumberOfTargetMSRs)
 {
 	//
-	// Array with target MSRs that we need to disable.
+	// Array from configuration file with target MSRs that need to be disable.
 	//
-	const uint16_t targetMSRs[] = { 0xE2, 0x01A0, /* 0x01FC, */ 0x01AA, 0x0620, /* 0x064C, */ 0x063A, 0x0642 };
+	const uint16_t targetMSRs[] = TARGET_XCPM_SCOPE_MSRS;
 	//
 	// Main for-loop.
 	//
@@ -121,22 +126,22 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 #if (PATCH_XCPM_BOOTSTRAP == 0)
 	switch (gPlatform.CPU.Model)
 	{
-		case CPU_MODEL_IB_CORE:
+		case CPU_MODEL_IB_CORE:		// Verification required!
 			targetPatches					+= 4;
 			xcpm_bootstrap_ModelCorrection	= -1;
 			break;
 
-		case CPU_MODEL_IB_CORE_EX:
+		case CPU_MODEL_IB_CORE_EX:	// Verification required!
 			targetPatches					+= 4;
 			xcpm_bootstrap_ModelCorrection	= -2;
 			break;
 			
-		case CPU_MODEL_HASWELL_E:
+		case CPU_MODEL_HASWELL_E:	// Confirmed working in El Capitan and Sierra.
 			targetPatches					+= 4;
 			xcpm_bootstrap_ModelCorrection	= -3;
 			break;
 			
-		case CPU_MODEL_BROADWELL_E:
+		case CPU_MODEL_BROADWELL_E:	// Confirmed working in El Capitan and Sierra.
 			targetPatches					+= 4;
 			xcpm_bootstrap_ModelCorrection	= -8;
 			break;
@@ -161,10 +166,6 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 	while ((symbolNumber < symtab->nsyms) && targetSections)
 	{
 		struct nlist_64 * nl = (struct nlist_64 *)pointer;
-
-        offset			= 0;
-        startAddress	= 0;
-        endAddress		= 0;
 
 		if (nl->n_sect == 1 && nl->n_value && (targetSections & nl->n_sect)) // __TEXT,__text
 		{
