@@ -333,11 +333,9 @@ static long initKernelVersionInfo(unsigned long loadAddress, unsigned long cmdBa
 	if (gPlatform.ArchCPUType == CPU_TYPE_X86_64)
 	{
 #endif
-		struct nlist_64 * nl = (struct nlist_64 *)pointer;
-	
 		while (symbolNumber > 0)
 		{
-			nl = (struct nlist_64 *)pointer;
+			struct nlist_64 * nl = (struct nlist_64 *)pointer;
 			
 			if ((nl->n_sect == 2 /* __TEXT,__const */) && nl->n_value)
 			{

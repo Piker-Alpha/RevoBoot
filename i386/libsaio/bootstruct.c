@@ -38,7 +38,7 @@ PrivateBootInfo_t *bootInfo;
 
 void initKernelBootConfig(void)
 {
-	bootArgs = (kernel_boot_args *)malloc(sizeof(boot_args));
+	bootArgs = (kernel_boot_args *)malloc(sizeof(kernel_boot_args));
 	bootInfo = (PrivateBootInfo_t *)malloc(sizeof(PrivateBootInfo_t));
 
 	if (bootArgs == 0 || bootInfo == 0)

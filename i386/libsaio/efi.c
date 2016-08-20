@@ -196,14 +196,17 @@ void initEFITree(void)
 	DT__AddProperty(chosenNode, "machine-signature", sizeof(MACHINE_SIGNATURE), (EFI_UINT8*) &MACHINE_SIGNATURE);
 
 #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // El Capitan and Yosemite
-	UInt8 index = 0;
-	EFI_UINT16 PMTimerValue = 0;
-	uint64_t randomValue, tempValue, cpuTick;
-	EFI_UINT32 ecx, esi, edi = 0;
-	EFI_UINT32 rcx, rdx, rsi, rdi;
+	UInt8 index				= 0;
 
-	randomValue = tempValue = ecx = esi = edi = 0;					// xor		%ecx,	%ecx
-	rcx = rdx = rsi = rdi = cpuTick = 0;
+	uint64_t randomValue	= 0;
+	uint64_t cpuTick		= 0;
+
+	EFI_UINT16 PMTimerValue	= 0;
+
+	EFI_UINT32 ecx, esi, edi = 0;
+	EFI_UINT32 rcx, rdx, rdi, rsi = 0;
+
+	ecx = 0;														// xor		%ecx,	%ecx
 
 																	// LEAF_1 - Feature Information (Function 01h).
 	if (gPlatform.CPU.ID[LEAF_1][2] & 0x40000000)					// Checking ecx:bit-30
@@ -249,7 +252,7 @@ void initEFITree(void)
 			rdi = (rdi ^ rcx);										// xor		%rcx,	%rdi
 			rdi = (rdi ^ rdx);										// xor		%rdx,	%rdi
 
-			seedBufferAlternative[index] = (rdi & 0xff);						// mov		%dil,	(%r15,%r12,1)
+			seedBufferAlternative[index] = (rdi & 0xff);			// mov		%dil,	(%r15,%r12,1)
 
 			edi = (edi & 0x2f);										// and		$0x2f,	%edi
 			edi = (edi + esi);										// add		%esi,	%edi

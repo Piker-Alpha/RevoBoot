@@ -741,9 +741,16 @@ BVRef diskScanGPTBootVolumes(int biosdev, int * countPtr)
 			}
 		}
 	}
-	_DISK_DEBUG_ELSE_DUMP("Failed to read boot sector from BIOS device %02xh\n", biosdev);
+	else
+	{
+		_DISK_DEBUG_DUMP("Failed to read boot sector from BIOS device %02xh\n", biosdev);
 
-	free(buffer);
+		if (buffer)
+		{
+			free(buffer);
+		}
+	}
+
 	*countPtr = 0;
 
 	_DISK_DEBUG_SLEEP(5);

@@ -89,20 +89,20 @@ void setBackgroundColor(uint32_t aBackGroundColor)
 
 void drawDataRectangle(unsigned short x, unsigned short y, unsigned short width, unsigned short height, unsigned char *data)
 {
-	unsigned short drawWidth;
-	
 	long pixelBytes = VIDEO(depth) / 8;
 	
-	unsigned char * vram = (unsigned char *) VIDEO(baseAddr) + VIDEO(rowBytes) * y + pixelBytes * x;
+	char * vram = (char *) VIDEO(baseAddr) + VIDEO(rowBytes) * y + pixelBytes * x;
 	
-	drawWidth = MIN(width, VIDEO(width) - x);
 	height = MIN(height, VIDEO(height) - y);
-	
-	while (height--)
+
+	if (data)
 	{
-		bcopy( data, vram, width * pixelBytes );
-		vram += VIDEO(rowBytes);
-		data += width * pixelBytes;
+		while (height--)
+		{
+			bcopy(data, vram, (width * pixelBytes));
+			vram += VIDEO(rowBytes);
+			data += (width * pixelBytes);
+		}
 	}
 }
 

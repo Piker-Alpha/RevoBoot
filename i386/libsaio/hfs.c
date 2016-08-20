@@ -761,7 +761,7 @@ static long GetCatalogEntry(long * dirIndex, char ** name, long * flags, long * 
 	void *extent;
 	char *nodeBuf, *testKey, *entry;
 	
-	BTNodeDescriptor  *node;
+	BTNodeDescriptor  *node = NULL;
 	
 	if (gIsHFSPlus)
 	{
@@ -774,9 +774,13 @@ static long GetCatalogEntry(long * dirIndex, char ** name, long * flags, long * 
 		extentSize	= SWAP_BE32(gHFSMDB->drCTFlSize);
 	}
 	
-	nodeSize	= SWAP_BE16(gBTHeaders[kBTreeCatalog]->nodeSize);
-	nodeBuf		= (char *)malloc(nodeSize);
-	node		= (BTNodeDescriptor *)nodeBuf;
+	nodeSize		= SWAP_BE16(gBTHeaders[kBTreeCatalog]->nodeSize);
+	nodeBuf			= (char *)malloc(nodeSize);
+	
+	if (nodeBuf)
+	{
+		node = (BTNodeDescriptor *)nodeBuf;
+	}
 	
 	index   = *dirIndex % nodeSize;
 	curNode = *dirIndex / nodeSize;
@@ -793,8 +797,7 @@ static long GetCatalogEntry(long * dirIndex, char ** name, long * flags, long * 
 	}
 	else
 	{
-		strncpy(gTempStr, (const char *)&((HFSCatalogKey *)testKey)->nodeName[1],
-				((HFSCatalogKey *)testKey)->nodeName[0]);
+		strncpy(gTempStr, (const char *)&((HFSCatalogKey *)testKey)->nodeName[1], ((HFSCatalogKey *)testKey)->nodeName[0]);
 		
 		gTempStr[((HFSCatalogKey *)testKey)->nodeName[0]] = '\0';
 	}
@@ -804,7 +807,7 @@ static long GetCatalogEntry(long * dirIndex, char ** name, long * flags, long * 
 	// Update dirIndex.
 	index++;
 	
-	if (index == SWAP_BE16(node->numRecords))
+	if (node && (index == SWAP_BE16(node->numRecords)))
 	{
 		index = 0;
 		curNode = SWAP_BE32(node->fLink);
@@ -832,13 +835,6 @@ static long ReadCatalogEntry(char * fileName, long dirID, void * entry, long * d
 	if (gIsHFSPlus)
 	{
 		hfsPlusKey->parentID = SWAP_BE32(dirID);
-		length = strlen(fileName);
-		
-		if (length > 255)
-		{
-			length = 255;
-		}
-		
 		utf_decodestr((u_int8_t *)fileName, hfsPlusKey->nodeName.unicode, &(hfsPlusKey->nodeName.length), 512);
 	}
 	else
@@ -896,7 +892,7 @@ static long ReadBTreeEntry(long btree, void * key, char * entry, long * dirIndex
 	long nodeSize, result = 0, entrySize = 0;
 	long curNode, index = 0, lowerBound, upperBound;
 	long extentSize;
-	char *testKey, *recordData;
+	char *testKey, *recordData = NULL;
 	char *nodeBuf;
 	
 	BTNodeDescriptor *node;
@@ -1009,7 +1005,7 @@ static long ReadBTreeEntry(long btree, void * key, char * entry, long * dirIndex
 		}
 		
 		// Found the closest key... Recurse on it if this is an index node.
-		if (node->kind == kBTIndexNode)
+		if (recordData && node->kind == kBTIndexNode)
 		{
 			curNode = SWAP_BE32( *((long *)recordData) );
 		}
@@ -1060,9 +1056,12 @@ static long ReadBTreeEntry(long btree, void * key, char * entry, long * dirIndex
 			entrySize = sizeof(HFSExtentRecord);
 		}
 	}
-	
-	bcopy(recordData, entry, entrySize);
-	
+
+	if (recordData)
+	{
+		bcopy(recordData, entry, entrySize);
+	}
+
 	// Update dirIndex.
 	if (dirIndex != 0)
 	{

@@ -192,13 +192,11 @@ void initCPUStruct(void)
 	// bool IvyBridge	= false;
 	uint8_t		CoreBridgeType = 0;
 
-	uint8_t		maxcoef, maxdiv, currcoef, currdiv;
+	uint8_t		maxdiv, currcoef, currdiv;
 
 	uint32_t	qpiSpeed = 0;
 
 	uint64_t	tscFrequency, fsbFrequency, cpuFrequency, msr;
-
-	maxcoef = maxdiv = currcoef = currdiv = 0;
 
 	// Get and cache CPUID data.
 	do_cpuid( 0x00000000, gPlatform.CPU.ID[LEAF_0]);			// Vendor-ID and Largest Standard Function (Function 0h).
@@ -423,6 +421,7 @@ void initCPUStruct(void)
 				case CPU_MODEL_KABYLAKE_DT:
 					CoreBridgeType = KABYLAKE;
 					hiBit = 31;
+					break;
 
 				case CPU_MODEL_NEHALEM:
 				case CPU_MODEL_NEHALEM_EX:
@@ -499,6 +498,8 @@ void initCPUStruct(void)
 			}
 			else // For all other (mostly older) Intel CPU models.
 			{
+				uint8_t maxcoef = maxdiv = currcoef = currdiv = 0;
+
 				//--------------------------------------------------------------------------
 				// Get core and thread count - the old way.
 

@@ -272,7 +272,6 @@ long CreateUUIDString(uint8_t uubytes[], int nbytes, char *uuidStr)
 
 
 	// generate the text: e.g. 5EB1869F-C4FA-3502-BDEB-3B8ED5D87292
-	i = 0;
 	fmtbase = 0;
 
 	for (fmtidx = 0; fmtidx < sizeof(uuidfmt); fmtidx++)
@@ -715,7 +714,7 @@ BVRef getBootVolumeRef(const char * path, const char ** outPath)
 {
 	const char * cp;
 	BVRef bvr = gPlatform.RootVolume;
-	int biosdev = gPlatform.BIOSDevice;
+	int biosdev;
 
 	// Search for left parenthesis in the path specification.
 
@@ -910,25 +909,21 @@ BVRef getTargetRootVolume(char *rootUUID)
 	#define FIRST_HDD_TO_CHECK	0x80
 	#define LAST_HDD_TO_CHECK	0x86	// Limits drive scanning to 6 (top).
 	
-	BVRef bvr = NULL;
-	BVRef chain = gPlatform.BootPartitionChain;
-
-	int _bvCount = 0;
 	int hdIndex = FIRST_HDD_TO_CHECK;
 
 	while(hdIndex <= LAST_HDD_TO_CHECK)
 	{
 		if (testBiosread(hdIndex, 0) == 0)
 		{
-			_bvCount = 0;
+			int _bvCount = 0;
 			scanBootVolumes(hdIndex, &_bvCount);
 		
 			if (_bvCount)
 			{
-				chain = getBVChainForBIOSDev(hdIndex);
+				BVRef chain = getBVChainForBIOSDev(hdIndex);
 
 				// Traverse back from the last to the first partition in the chain.
-				for (bvr = chain; bvr; bvr = bvr->next)
+				for (BVRef bvr = chain; bvr; bvr = bvr->next)
 				{
 					if ((bvr->biosdev == hdIndex) && ((bvr->flags & kBVFlagSystemVolume) || (bvr->flags & kBVFlagInstallVolume)))
 					{
