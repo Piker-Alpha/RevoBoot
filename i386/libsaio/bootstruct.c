@@ -41,6 +41,11 @@ void initKernelBootConfig(void)
 	bootArgs = (kernel_boot_args *)malloc(sizeof(kernel_boot_args));
 	bootInfo = (PrivateBootInfo_t *)malloc(sizeof(PrivateBootInfo_t));
 
+	if (sizeof(kernel_boot_args) != sizeof(boot_args))
+	{
+		stop("Size of kernel_boot_args != boot_args\n");
+	}
+
 	if (bootArgs == 0 || bootInfo == 0)
 	{
 		stop("Couldn't allocate boot info\n");
