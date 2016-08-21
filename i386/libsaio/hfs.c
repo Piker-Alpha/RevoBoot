@@ -1075,7 +1075,7 @@ static long ReadBTreeEntry(long btree, void * key, char * entry, long * dirIndex
 		
 		*dirIndex = curNode * nodeSize + index;
 	}
-	
+
 	free(nodeBuf);
 	
 	return 0;

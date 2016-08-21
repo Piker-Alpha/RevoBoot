@@ -665,7 +665,7 @@ static char * NewSymbol(char * string)
 		}
 		else
 		{
-			stop ("xml.c");
+			stop ("xml.c (symbol == NULL)");
 		}
 	}
 

@@ -189,7 +189,7 @@ void boot(int biosdev)
 #if PRELINKED_KERNEL_SUPPORT
 	bool	mayUseKernelCache	= false;
 	bool	flushCaches			= false;
-	bool	kernelSpecified	= false;
+	bool	kernelSpecified		= false;
 #endif
 
 	long flags, cachetime;
@@ -796,7 +796,7 @@ void boot(int biosdev)
 #endif
 
 			// Did we switch to graphics mode yet (think verbose mode)?
-			if (gVerboseMode || bootArgs->Video.v_display != GRAPHICS_MODE)
+			if (gVerboseMode || bootArgs->Video_V1.v_display != GRAPHICS_MODE)
 			{
 				// Switch to graphics mode and show the (white) Apple logo on a black/gray background.
 				showBootLogo();

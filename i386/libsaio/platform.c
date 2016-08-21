@@ -242,11 +242,10 @@ void initPlatform(int biosDevice)
 	int ramSize[]					= STATIC_RAM_OVERRIDE_SIZES;
 #endif
 
-	int i = 0;
 	int populatedSlotCount = 0;
 
 	// Loop through the static RAM vendors (might be different).
-	for (; i < STATIC_RAM_SLOTS; i++)
+	for (int i = 0; i < STATIC_RAM_SLOTS; i++)
 	{
 		gPlatform.RAM.SlotCount++;
 

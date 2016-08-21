@@ -2,7 +2,7 @@
 #define APPLE_LOGO_WIDTH  84
 #define APPLE_LOGO_HEIGHT 103
 
-#define VIDEO(x) (bootArgs->Video.v_ ## x)
+#define VIDEO(x) (bootArgs->Video_V1.v_ ## x)
 
 /*
  * Used in showBootLogo(). Now using the VIDEO() macro instead of the static

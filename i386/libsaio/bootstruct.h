@@ -25,6 +25,7 @@
  *
  *			- Yosemite support added (Pike R. Alpha, June 2014).
  *			- El Capitan support added (Pike R. Alpha, June 2015).
+ *			- Sierra support added (Pike R. Alpha, August 2016).
  */
 
 #ifndef __BOOTSTRUCT_H
@@ -34,6 +35,34 @@
 #include "saio_types.h"
 #include "bios.h"
 #include "platform.h"
+
+/*
+ * Video information (from boot.h)
+ */
+
+struct Boot_Video_V1
+{
+	uint32_t	v_baseAddr;		// Base address (32-bit) of video memory.
+	uint32_t	v_display;		// Display Code (if Applicable.
+	uint32_t	v_rowBytes;		// Number of bytes per pixel row.
+	uint32_t	v_width;		// Width.
+	uint32_t	v_height;		// Height.
+	uint32_t	v_depth;		// Pixel Depth.
+};
+typedef struct Boot_Video_V1	Boot_Video_V1;
+
+struct Boot_Video_V2
+{
+	uint32_t	v_display;		// Display Code (if Applicable.
+	uint32_t	v_rowBytes;		// Number of bytes per pixel row.
+	uint32_t	v_width;		// Width.
+	uint32_t	v_height;		// Height.
+	uint32_t	v_depth;		// Pixel Depth.
+	uint32_t	v_resv[7];		// Reserved.
+	uint32_t	v_baseAddr;		// Base address (64-bit) of video memory.
+};
+typedef struct Boot_Video_V2	Boot_Video_V2;
+
 
 #if ((MAKE_TARGET_OS & YOSEMITE) == YOSEMITE) // El Capitan and Yosemite
 	#define kDefaultKernel	"kernel"
@@ -192,25 +221,25 @@ enum
  */
 typedef struct PrivateBootInfo
 {
-    int              convmem;                      // conventional memory
-    int              extmem;                       // extended memory
+	int				convmem;							// conventional memory
+	int				extmem;								// extended memory
 
-    char             bootFile[128];                // kernel file name
+	char			bootFile[128];						// kernel file name
 
-    unsigned long    memoryMapCount;
-    MemoryRange      memoryMap[kMemoryMapCountMax];
+	unsigned long	memoryMapCount;
+	MemoryRange		memoryMap[kMemoryMapCountMax];
 
-    PCI_bus_info_t   pciInfo;
+	PCI_bus_info_t	pciInfo;
 
-    char *           configEnd;                    // pointer to end of config files
-    char             config[CONFIG_SIZE];
+	char *			configEnd;							// pointer to end of config files
+	char			config[CONFIG_SIZE];
 
-    config_file_t    bootConfig;		           // com.apple.Boot.plist
+	config_file_t	bootConfig;							// com.apple.Boot.plist
 
-    config_file_t    smbiosConfig;				   // smbios.plist
+	config_file_t	smbiosConfig;						// smbios.plist
 
 #if RAMDISK_SUPPORT
-    config_file_t    ramdiskConfig;                // RAMDisk.plist
+	config_file_t	ramdiskConfig;						// RAMDisk.plist
 #endif
 } PrivateBootInfo_t;
 
@@ -218,86 +247,93 @@ extern PrivateBootInfo_t *bootInfo;
 
 typedef struct boot_args_new
 {
-    uint16_t    Revision;							// Revision of boot_args structure.
-    uint16_t    Version;							// Version of boot_args structure.
+	uint16_t		Revision;							// Revision of boot_args structure.
+	uint16_t		Version;							// Version of boot_args structure.
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
-    uint8_t     efiMode;							// 32 = 32-bit, 64 = 64-bit.
+#if ((MAKE_TARGET_OS & LION) == LION)					// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+	uint8_t			efiMode;							// 32 = 32-bit, 64 = 64-bit.
 
-    uint8_t     debugMode;							// Bit field with behavior changes.
+	uint8_t			debugMode;							// Bit field with behavior changes.
 
 #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-    uint16_t    flags;
+	uint16_t		flags;
 #else
-    uint8_t     __reserved1[2];
+	uint8_t			__reserved1[2];
 #endif
 
 #endif	
-    char        CommandLine[BOOT_LINE_LENGTH];		// Passed in command line.
+	char			CommandLine[BOOT_LINE_LENGTH];		// Passed in command line.
 	
-    uint32_t    MemoryMap;							// Physical address of memory map.
-    uint32_t    MemoryMapSize;
-    uint32_t    MemoryMapDescriptorSize;
-    uint32_t    MemoryMapDescriptorVersion;
-	
-    Boot_Video	Video;								// Video Information.
-	
-    uint32_t    deviceTreeP;						// Physical address of flattened device tree.
-    uint32_t    deviceTreeLength;					// Length of flattened tree.
-	
-    uint32_t    kaddr;								// Physical address of beginning of kernel text.
-    uint32_t    ksize;								// Size of combined kernel text+data+efi.
-	
-    uint32_t    efiRuntimeServicesPageStart;		// Physical address of defragmented runtime pages.
-    uint32_t    efiRuntimeServicesPageCount;
+	uint32_t		MemoryMap;							// Physical address of memory map.
+	uint32_t		MemoryMapSize;
+	uint32_t		MemoryMapDescriptorSize;
+	uint32_t		MemoryMapDescriptorVersion;
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
-    uint64_t    efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
+	Boot_Video_V1	Video_V1;							// Video V1 Information.
+
+	uint32_t		deviceTreeP;						// Physical address of flattened device tree.
+	uint32_t		deviceTreeLength;					// Length of flattened tree.
+
+	uint32_t		kaddr;								// Physical address of beginning of kernel text.
+	uint32_t		ksize;								// Size of combined kernel text+data+efi.
+
+	uint32_t		efiRuntimeServicesPageStart;		// Physical address of defragmented runtime pages.
+	uint32_t		efiRuntimeServicesPageCount;
+
+#if ((MAKE_TARGET_OS & LION) == LION)					// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+	uint64_t		efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
 #endif
 
-    uint32_t    efiSystemTable;						// Physical address of system table in runtime area.
+	uint32_t		efiSystemTable;						// Physical address of system table in runtime area.
 
-#if ((MAKE_TARGET_OS & LION) == LION)				// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
-    uint32_t    kslide;
+#if ((MAKE_TARGET_OS & LION) == LION)					// El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
+	uint32_t		kslide;
 
-    uint32_t    performanceDataStart;				// Physical address of log.
-    uint32_t    performanceDataSize;
+	uint32_t		performanceDataStart;				// Physical address of log.
+	uint32_t		performanceDataSize;
 
-    uint32_t    keyStoreDataStart;					// Physical address of key store data.
-    uint32_t    keyStoreDataSize;
+	uint32_t		keyStoreDataStart;					// Physical address of key store data.
+	uint32_t		keyStoreDataSize;
 
-    uint64_t	bootMemStart;						// Physical address of interperter boot memory.
-    uint64_t	bootMemSize;
+	uint64_t		bootMemStart;						// Physical address of interperter boot memory.
+	uint64_t		bootMemSize;
 
-    uint64_t    PhysicalMemorySize;
-    uint64_t    FSBFrequency;
+	uint64_t		PhysicalMemorySize;
+	uint64_t		FSBFrequency;
 
-    uint64_t    pciConfigSpaceBaseAddress;
-	uint32_t    pciConfigSpaceStartBusNumber;
-	uint32_t    pciConfigSpaceEndBusNumber;
+	uint64_t		pciConfigSpaceBaseAddress;
+	uint32_t		pciConfigSpaceStartBusNumber;
+	uint32_t		pciConfigSpaceEndBusNumber;
 
-#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
-	uint32_t    csrActiveConfig;
-	uint32_t    csrCapabilities;
-	uint32_t    boot_SMC_plimit;
-	uint16_t	bootProgressMeterStart;
-	uint16_t	bootProgressMeterEnd;
-	uint32_t    __reserved4[726];
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)		// El Capitan and Sierra.
+	uint32_t		csrActiveConfig;
+	uint32_t		csrCapabilities;
+	uint32_t		boot_SMC_plimit;
+	uint16_t		bootProgressMeterStart;
+	uint16_t		bootProgressMeterEnd;
+#endif
+
+#if ((MAKE_TARGET_OS & SIERRA) == SIERRA)				// Sierra only.
+	Boot_Video_V2	Video_V2;							// Video V2 Information.
+
+	uint32_t		__reserved4[712];
+#elif ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
+	uint32_t		__reserved4[726];
 #elif ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
-	uint32_t    __reserved4[730];
+	uint32_t		__reserved4[730];
 #else
-    uint32_t    __reserved4[734];
+	uint32_t		__reserved4[734];
 #endif
 
 #else
-    uint8_t     efiMode;							// 32 = 32-bit, 64 = 64-bit.
+	uint8_t			efiMode;							// 32 = 32-bit, 64 = 64-bit.
 
-    uint8_t     __reserved1[3];
-    uint32_t    __reserved2[3];
+	uint8_t			__reserved1[3];
+	uint32_t		__reserved2[3];
 
-    uint64_t    efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
+	uint64_t		efiRuntimeServicesVirtualPageStart;	// Virtual address of defragmented runtime pages.
 
-    uint32_t    __reserved3[2];
+	uint32_t		__reserved3[2];
 #endif // #if ((MAKE_TARGET_OS & LION) == LION)
 } kernel_boot_args;
 

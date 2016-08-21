@@ -71,7 +71,7 @@ void initKernelBootConfig(void)
 	}
 
 	bootInfo->configEnd = bootInfo->config;
-	bootArgs->Video.v_display = VGA_TEXT_MODE;
+	bootArgs->Video_V1.v_display = VGA_TEXT_MODE;
 
 	// What Lion species is screaming here?
 	if ((gPlatform.OSType & LION) == LION)
