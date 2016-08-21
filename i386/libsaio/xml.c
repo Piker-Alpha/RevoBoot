@@ -22,8 +22,9 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  * Updates:
- *			- Cleanups, white space and layout changes (PikerAlpha, November 2012)
- *			- New/improved kXMLTagData support (PikerAlpha, November 2012)
+ *			- Cleanups, white space and layout changes (Pike R. Alpha, November 2012)
+ *			- New/improved kXMLTagData support (Pike R. Alpha, November 2012)
+ *			- Cleanups and regression in function NewSymbol fixed (Pike R. Alpha, August 2016)
  *
  */
 
@@ -659,14 +660,17 @@ static char * NewSymbol(char * string)
 			// Add the symbol to the list.
 			symbol->next = gSymbolsHead;
 			gSymbolsHead = symbol;
-			
-			// Update the refCount.
-			symbol->refCount++;
 		}
 		else
 		{
 			stop ("xml.c (symbol == NULL)");
 		}
+	}
+	
+	if (symbol)
+	{
+		// Update the refCount.
+		symbol->refCount++;
 	}
 
 	// Return the string
