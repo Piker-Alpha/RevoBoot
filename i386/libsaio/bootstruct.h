@@ -59,7 +59,7 @@ struct Boot_Video_V2
 	uint32_t	v_height;		// Height.
 	uint32_t	v_depth;		// Pixel Depth.
 	uint32_t	v_resv[7];		// Reserved.
-	uint32_t	v_baseAddr;		// Base address (64-bit) of video memory.
+	uint64_t	v_baseAddr;		// Base address (64-bit) of video memory.
 };
 typedef struct Boot_Video_V2	Boot_Video_V2;
 
