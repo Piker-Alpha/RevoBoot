@@ -111,7 +111,9 @@
 #define MACBOOK_PRO_114			(MACBOOK_PRO | (12 << 15))
 #define MACBOOK_PRO_115			(MACBOOK_PRO | (13 << 15))
 #define MACBOOK_PRO_121			(MACBOOK_PRO | (14 << 15))
-#define MACBOOK_PRO_131			 MACBOOK_PRO				// Defaults to MacBookPro13,1
+#define MACBOOK_PRO_131			(MACBOOK_PRO | (15 << 15))
+#define MACBOOK_PRO_132			(MACBOOK_PRO | (16 << 15))
+#define MACBOOK_PRO_133			 MACBOOK_PRO				// Defaults to MacBookPro13,3
 
 #define MACMINI_41				(MACMINI | (1 << 15))
 #define MACMINI_51				(MACMINI | (2 << 15))

@@ -357,12 +357,30 @@
 		#define SMB_PRODUCT_NAME	"MacBookPro11,5"
 		#define SMB_BOARD_PRODUCT	"Mac-06F11F11946D27C5"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '1', ',', '5' }
-	#else // Defaults to MacBookPro12,1
+	#elif (TARGET_MODEL == MACBOOK_PRO_121)
 		// Intel Core i5-5257U @ 2.70 GHz - 2 cores / 4 threads.
 		#define SMB_BIOS_VERSION	"MBP121.88Z.0167.B16.1602111810"
 		#define SMB_PRODUCT_NAME	"MacBookPro12,1"
 		#define SMB_BOARD_PRODUCT	"Mac-E43C1C25D4880AD6"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '2', ',', '1' }
+    #elif (TARGET_MODEL == MACBOOK_PRO_131)
+        // Intel Core...
+        #define SMB_BIOS_VERSION	"MBP131.88Z.0205.B02.1610121536"
+        #define SMB_PRODUCT_NAME	"MacBookPro13,1"
+        #define SMB_BOARD_PRODUCT	"Mac-473D31EABEB93F9B"
+        #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '1' }
+    #elif (TARGET_MODEL == MACBOOK_PRO_132)
+        // Intel Core...
+        #define SMB_BIOS_VERSION	"MBP132.88Z.0223.B00.1610201042"
+        #define SMB_PRODUCT_NAME	"MacBookPro13,2"
+        #define SMB_BOARD_PRODUCT	"Mac-66E35819EE2D0D05"
+        #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '2' }
+    #else // Defaults to MacBookPro13,3
+        // Intel Core i7-6...
+        #define SMB_BIOS_VERSION	"MBP133.88Z.0223.B00.1610201042"
+        #define SMB_PRODUCT_NAME	"MacBookPro13,3"
+        #define SMB_BOARD_PRODUCT	"Mac-A5C67F76ED83108C"
+        #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '3' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
