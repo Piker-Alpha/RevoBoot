@@ -364,19 +364,27 @@
 		#define SMB_BOARD_PRODUCT	"Mac-E43C1C25D4880AD6"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '2', ',', '1' }
     #elif (TARGET_MODEL == MACBOOK_PRO_131)
-        // Intel Core...
+        // 13-inch without Touch Bar / Touch ID
+        // Intel Core i5-6360U 2.0 GHz (max Turbo Boost 3.1 GHz)
+        // Intel Core i7-6660U 2.4 GHz (max Turbo Boost 3.4 GHz)
         #define SMB_BIOS_VERSION	"MBP131.88Z.0205.B02.1610121536"
         #define SMB_PRODUCT_NAME	"MacBookPro13,1"
         #define SMB_BOARD_PRODUCT	"Mac-473D31EABEB93F9B"
         #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '1' }
     #elif (TARGET_MODEL == MACBOOK_PRO_132)
-        // Intel Core...
+        // 13-inch with Touch Bar / Touch ID
+        // Intel Core i5-6267U 2.9 GHz (max Turbo Boost 3.3 GHz)
+        // Intel Core i5-6287U 3.1 GHz (max Turbo Boost 3.5 GHz)
+        // Intel Core i7-6567U 3.3 GHz (max Turbo Boost 3.6 GHz)
         #define SMB_BIOS_VERSION	"MBP132.88Z.0223.B00.1610201042"
         #define SMB_PRODUCT_NAME	"MacBookPro13,2"
         #define SMB_BOARD_PRODUCT	"Mac-66E35819EE2D0D05"
         #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '2' }
     #else // Defaults to MacBookPro13,3
-        // Intel Core i7-6...
+        // 15-inch with Touch Bar / Touch ID
+        // Intel Core i7-6700HQ 2.6 GHz (max Turbo Boost 3.5 GHz)
+        // Intel Core i7-6820HQ 2.7 GHz (max Turbo Boost 3.6 GHz)
+        // Intel Core i7-6920HQ 2.9 GHz (max Turbo Boost 3.8 GHz)
         #define SMB_BIOS_VERSION	"MBP133.88Z.0223.B00.1610201042"
         #define SMB_PRODUCT_NAME	"MacBookPro13,3"
         #define SMB_BOARD_PRODUCT	"Mac-A5C67F76ED83108C"
