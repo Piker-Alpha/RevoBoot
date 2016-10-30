@@ -121,14 +121,14 @@
 		// Intel Core i5-4690 @ 3.50 GHz - 4 cores / 4 threads
 		// Intel Core i7-4790K @ 4.00 GHz - 4 cores / 8 threads
 		// AMD Radeon R9 M290X, AMD Radeon R9 M295X
-		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B06.1602221600"
+		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B07.1607221823"
 		#define SMB_PRODUCT_NAME	"iMac15,1"
 		#define SMB_BOARD_PRODUCT	"Mac-42FD25EABCABB274"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '1' }
 	#elif (TARGET_MODEL == IMAC_152) // Retina 5K, 27-inch, Mid 2015
 		// Intel Core i5-4590 @ 3.30 GHz - 4 cores / 4 threads
 		// AMD Radeon R9 M290
-		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B06.1602221600"
+		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B07.1607221823"
 		#define SMB_PRODUCT_NAME	"iMac15,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FA842E06C61E91C5"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '2' }
@@ -144,14 +144,14 @@
 		// Intel Core i5-5675R @ 3.10 GHz - 4 cores / 4 threads
 		// Intel Core i7-5775R @ 3.30 GHz - 4 cores / 8 threads
 		// Intel Iris Pro Graphics 6200
-		#define SMB_BIOS_VERSION	"IM162.88Z.0206.B00.1508281353"
+		#define SMB_BIOS_VERSION	"IM162.88Z.0206.B01.1607221823"
 		#define SMB_PRODUCT_NAME	"iMac16,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FFE5EF870D7BA81A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '6', ',', '2' }
 	#else // Defaults to iMac17,1 (Retina 5K, 27-inch, Late 2015)
 		// Intel Core i5-6500 @ 3.20 GHz - 4 cores / 4 threads
 		// AMD Radeon R9 M380
-		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B08.1604111319"
+		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B09.1607221343"
 		#define SMB_PRODUCT_NAME	"iMac17,1"
 		#define SMB_BOARD_PRODUCT	"Mac-65CE76090165799A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' }
@@ -188,7 +188,7 @@
 		// Intel Core M-5Y31 @ 1.10 GHz (2 cores, 4 threads)
 		// Intel Core M-5Y51 @ 1.20 GHz (2 cores, 4 threads)
 		// Intel Core M-5Y71 @ 1.30 GHz (2 cores, 4 threads)
-		#define SMB_BIOS_VERSION	"MB81.88Z.0164.B13.1602161331"
+		#define SMB_BIOS_VERSION	"MB81.88Z.0164.B18.1608121416"
 		#define SMB_PRODUCT_NAME	"MacBook8,1"
 		#define SMB_BOARD_PRODUCT	"Mac-BE0E8AC46FE800CC"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', '8', ',', '1' }
@@ -464,7 +464,7 @@
 		#define SMB_BOARD_PRODUCT	"Mac-F221BEC8"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '5', ',', '1' }
 	#else // Defaults to MacPro6,1
-		#define SMB_BIOS_VERSION	"MP61.88Z.0116.B17.1602221600"
+		#define SMB_BIOS_VERSION	"MP61.88Z.0116.B20.1610051057"
 		#define SMB_PRODUCT_NAME	"MacPro6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F60DEB81FF30ACF6"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '6', ',', '1' }
