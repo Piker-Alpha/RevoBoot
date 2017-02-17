@@ -43,7 +43,7 @@
 struct Boot_Video_V1
 {
 	uint32_t	v_baseAddr;		// Base address (32-bit) of video memory.
-	uint32_t	v_display;		// Display Code (if Applicable.
+	uint32_t	v_display;		// Display Code (if Applicable).
 	uint32_t	v_rowBytes;		// Number of bytes per pixel row.
 	uint32_t	v_width;		// Width.
 	uint32_t	v_height;		// Height.
@@ -53,7 +53,7 @@ typedef struct Boot_Video_V1	Boot_Video_V1;
 
 struct Boot_Video_V2
 {
-	uint32_t	v_display;		// Display Code (if Applicable.
+	uint32_t	v_display;		// Display Code (if Applicable).
 	uint32_t	v_rowBytes;		// Number of bytes per pixel row.
 	uint32_t	v_width;		// Width.
 	uint32_t	v_height;		// Height.
@@ -72,15 +72,15 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 
 // Bitfields for boot_args->flags
 #ifndef kBootArgsFlagRebootOnPanic
-	#define kBootArgsFlagRebootOnPanic		(1 << 0)
+	#define kBootArgsFlagRebootOnPanic		(1 << 0)	// 1
 #endif
 
 #ifndef kBootArgsFlagHiDPI
-	#define kBootArgsFlagHiDPI				(1 << 1)
+	#define kBootArgsFlagHiDPI				(1 << 1)	// 2
 #endif
 
 #ifndef kBootArgsFlagBlack
-	#define kBootArgsFlagBlack				(1 << 2)
+	#define kBootArgsFlagBlack				(1 << 2)	// 4 (Boot without the white progressbar)
 #endif
 
 #ifndef kBootArgsFlagCSRActiveConfig
@@ -121,6 +121,7 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 	#define CSR_ALLOW_UNRESTRICTED_DTRACE	(1 << 5)	// 32
 	#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 	#define CSR_ALLOW_DEVICE_CONFIGURATION	(1 << 7)	// 128
+	#define CSR_ALLOW_ANY_RECOVERY_OS		(1 << 8)	// 256
 
 	#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
 			CSR_ALLOW_UNRESTRICTED_FS | \
@@ -129,7 +130,8 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 			CSR_ALLOW_APPLE_INTERNAL | \
 			CSR_ALLOW_UNRESTRICTED_DTRACE | \
 			CSR_ALLOW_UNRESTRICTED_NVRAM | \
-			CSR_ALLOW_DEVICE_CONFIGURATION)
+			CSR_ALLOW_DEVICE_CONFIGURATION | \
+			CSR_ALLOW_ANY_RECOVERY_OS)
 #endif
 
 /* CSR capabilities that a booter can give to the system */
@@ -269,7 +271,7 @@ typedef struct boot_args_new
 	uint32_t		MemoryMapDescriptorSize;
 	uint32_t		MemoryMapDescriptorVersion;
 
-	Boot_Video_V1	Video_V1;							// Video V1 Information.
+	Boot_Video_V1	Video_V1;							// Video V1 Information (for backward compatibility).
 
 	uint32_t		deviceTreeP;						// Physical address of flattened device tree.
 	uint32_t		deviceTreeLength;					// Length of flattened tree.
@@ -314,7 +316,7 @@ typedef struct boot_args_new
 #endif
 
 #if ((MAKE_TARGET_OS & SIERRA) == SIERRA)				// Sierra only.
-	Boot_Video_V2	Video_V2;							// Video V2 Information.
+	Boot_Video_V2	Video_V2;							// Video V2 Information (with a 64-bit v_baseAddr).
 
 	uint32_t		__reserved4[712];
 #elif ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)

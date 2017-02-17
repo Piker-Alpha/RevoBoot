@@ -382,9 +382,9 @@
         #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '2' }
     #else // Defaults to MacBookPro13,3
         // 15-inch with Touch Bar / Touch ID
-        // Intel Core i7-6700HQ 2.6 GHz (max Turbo Boost 3.5 GHz)
-        // Intel Core i7-6820HQ 2.7 GHz (max Turbo Boost 3.6 GHz)
-        // Intel Core i7-6920HQ 2.9 GHz (max Turbo Boost 3.8 GHz)
+        // Intel Core i7-6700HQ 2.6 GHz (max Turbo Boost 3.5 GHz) 45W
+        // Intel Core i7-6820HQ 2.7 GHz (max Turbo Boost 3.6 GHz) 45W
+        // Intel Core i7-6920HQ 2.9 GHz (max Turbo Boost 3.8 GHz) 45W
         #define SMB_BIOS_VERSION	"MBP133.88Z.0223.B00.1610201042"
         #define SMB_PRODUCT_NAME	"MacBookPro13,3"
         #define SMB_BOARD_PRODUCT	"Mac-A5C67F76ED83108C"

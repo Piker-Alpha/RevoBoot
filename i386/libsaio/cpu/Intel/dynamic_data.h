@@ -40,14 +40,14 @@ static uint64_t getTSCFrequency(void)
 	if (getCachedCPUID(LEAF_0, eax) > 0x14) // Intel Skylake Processors.
 	{
 #if DEBUG_CPU
-		printf("LEAF_15[eax]: 0x%x\n", getCachedCPUID(LEAF_15, eax)); // 0x02		(numerator is always 2)
-		printf("LEAF_15[ebx]: 0x%x\n", getCachedCPUID(LEAF_15, ebx)); // 0x11c	(denominator i.e. 284 = 3.4GHz and 334 = 4GHz)
-		printf("LEAF_15[ecx]: 0x%x\n", getCachedCPUID(LEAF_15, ecx)); // 0x00		(frequency = Intel reserved)
+		printf("LEAF_15[eax]: 0x%x\n", getCachedCPUID(LEAF_15, eax)); // 0x02 (numerator is always 2)
+		printf("LEAF_15[ebx]: 0x%x\n", getCachedCPUID(LEAF_15, ebx)); // 0x11c (denominator i.e. 284 = 3.4GHz and 334 = 4GHz)
+		printf("LEAF_15[ecx]: 0x%x\n", getCachedCPUID(LEAF_15, ecx)); // 0x00 (frequency = Intel reserved)
 		printf("LEAF_15[edx]: 0x%x\n", getCachedCPUID(LEAF_15, edx)); // 0x00
 		
-		printf("LEAF_16[eax]: 0x%x\n", getCachedCPUID(LEAF_16, eax)); // 0xd48	(clock speed i.e. 3408MHz for the i7-6700)
-		printf("LEAF_16[ebx]: 0x%x\n", getCachedCPUID(LEAF_16, ebx)); // 0xfa0	(maximum turbo clock speed i.e. 4GHz for the i7-6700)
-		printf("LEAF_16[ecx]: 0x%x\n", getCachedCPUID(LEAF_16, ecx)); // 0x64		(bus speed i.e. 100MHz)
+		printf("LEAF_16[eax]: 0x%x\n", getCachedCPUID(LEAF_16, eax)); // 0xd48 (clock speed i.e. 3408MHz for the i7-6700)
+		printf("LEAF_16[ebx]: 0x%x\n", getCachedCPUID(LEAF_16, ebx)); // 0xfa0 (maximum turbo clock speed i.e. 4GHz for the i7-6700)
+		printf("LEAF_16[ecx]: 0x%x\n", getCachedCPUID(LEAF_16, ecx)); // 0x64 (bus speed i.e. 100MHz)
 		printf("LEAF_16[edx]: 0x%x\n", getCachedCPUID(LEAF_16, edx)); // 0x00
 #endif
 		//

@@ -4,9 +4,9 @@
  *
  * Updates:
  *
- *			- STATIC_SMBIOS_MODEL_ID renamed to SMB_PRODUCT_NAME (PikerAlpha, October 2012).
- *			- Yosemite support added (PikerAlpha, June 2014).
- *			- Replaced hard-coded OS version control with a flexible one (PikerAlpha, June 2014).
+ *			- STATIC_SMBIOS_MODEL_ID renamed to SMB_PRODUCT_NAME (Pike R. Alpha, October 2012).
+ *			- Yosemite support added (Pike R. Alpha, June 2014).
+ *			- Replaced hard-coded OS version control with a flexible one (Pike R. Alpha, June 2014).
  *
  */
 
