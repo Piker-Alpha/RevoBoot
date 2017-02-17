@@ -98,6 +98,8 @@ void initEFITree(void)
 	// Satisfying AppleACPIPlatform.kext
 	static EFI_UINT8 const DEVICE_PATHS_SUPPORTED[] = { 0x01, 0x00, 0x00, 0x00 };
 
+	DT__AddProperty(platformNode, "device-colors", sizeof(DEVICE_PATHS_SUPPORTED), (EFI_UINT8*) &DEVICE_PATHS_SUPPORTED);
+
 	DT__AddProperty(platformNode, "DevicePathsSupported", sizeof(DEVICE_PATHS_SUPPORTED), (EFI_UINT8*) &DEVICE_PATHS_SUPPORTED);
 
 	// The use of sizeof() here is mandatory (to prevent breakage).
@@ -265,9 +267,27 @@ void initEFITree(void)
 		DT__AddProperty(chosenNode, "random-seed", sizeof(seedBufferAlternative), (EFI_UINT8*) &seedBufferAlternative);
 	}
 
-	DT__AddProperty(chosenNode, "booter-name", 12, "bootbase.efi");
-	DT__AddProperty(chosenNode, "booter-version", 11, "version:307");
-	DT__AddProperty(chosenNode, "booter-build-time", 28, "Fri Sep  4 15:34:00 PDT 2015");
+	static EFI_UINT8 const booterName[] =
+	{
+		0x62, 0x6f, 0x6f, 0x74, 0x2e, 0x65, 0x66, 0x69, 0x00
+	};
+
+	DT__AddProperty(chosenNode, "booter-name", sizeof(booterName), (EFI_UINT8*) &booterName);
+
+	static EFI_UINT8 const booterVersion[] =
+	{
+		0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x3a, 0x33, 0x32, 0x34, 0x2e, 0x33, 0x30, 0x2e, 0x32, 0x00
+	};
+
+	DT__AddProperty(chosenNode, "booter-version", sizeof(booterVersion), (EFI_UINT8*) &booterVersion);
+
+	static EFI_UINT8 const booterBuildTime[] =
+	{
+		0x54, 0x68, 0x75, 0x20, 0x4E, 0x6F, 0x76, 0x20, 0x31, 0x30, 0x20, 0x31, 0x35, 0x3A, 0x34, 0x33, 0x3A,
+		0x32, 0x38, 0x20, 0x50, 0x53, 0x54, 0x20, 0x32, 0x30, 0x31, 0x36, 0x00
+	};
+
+	DT__AddProperty(chosenNode, "booter-build-time", sizeof(booterBuildTime), (EFI_UINT8*) &booterBuildTime);
 #endif
 
 #if ((MAKE_TARGET_OS & LION) == LION) // El Capitan, Yosemite, Mavericks and Mountain Lion also have bit 1 set like Lion.
