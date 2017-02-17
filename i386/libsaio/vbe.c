@@ -146,9 +146,8 @@ unsigned long getResolutionFromEDID(void)
 				{
 					r = 0;
 					printf("\n");
+					sleep(1);
 				}
-
-				sleep(1);
 
 				if (data[126] == 0)
 				{
