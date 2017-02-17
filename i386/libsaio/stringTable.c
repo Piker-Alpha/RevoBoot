@@ -380,6 +380,7 @@ long loadCABootPlist(void)
 #endif
 
 #if INSTALL_ESD_SUPPORT
+		"macOS Install Data",
 		"OS X Install Data",
 		".IABootFiles",
 		"Mac OS X Install Data",
@@ -403,7 +404,7 @@ long loadCABootPlist(void)
 		int len = (sizeof(dirspec) / sizeof(dirspec[0]));
 #if INSTALL_ESD_SUPPORT
 		int start = 0;
-		int end = 3;
+		int end = 4;
 	#if RECOVERY_HD_SUPPORT
 		start++;
 		end++;
