@@ -644,3 +644,14 @@ void delay(int ms)
     bb.edx.rr	= ms & 0xFFFF;
     bios(&bb);
 }
+
+
+//==============================================================================
+
+void setCursorType(int type)
+{
+	bb.intno   = 0x10;
+	bb.eax.r.h = 0x01;
+	bb.ecx.rr  = type;
+	bios(&bb);
+}
