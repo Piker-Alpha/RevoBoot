@@ -43,7 +43,7 @@ void initKernelBootConfig(void)
 
 	if (sizeof(kernel_boot_args) != sizeof(boot_args))
 	{
-		stop("Size of kernel_boot_args != boot_args\n");
+		printf("Warning: sizeof(%d != %d)\n", sizeof(kernel_boot_args), sizeof(boot_args));
 	}
 
 	if (bootArgs == 0 || bootInfo == 0)
@@ -62,9 +62,7 @@ void initKernelBootConfig(void)
 	// Get system memory map. Also update the size of the
 	// conventional/extended memory for backwards compatibility.
 
-	bootInfo->memoryMapCount = getMemoryMap(bootInfo->memoryMap, kMemoryMapCountMax,
-											(unsigned long *) &bootInfo->convmem, 
-											(unsigned long *) &bootInfo->extmem);
+	bootInfo->memoryMapCount = getMemoryMap(bootInfo->memoryMap, kMemoryMapCountMax, (unsigned long *) &bootInfo->convmem, (unsigned long *) &bootInfo->extmem);
 
 	if (bootInfo->memoryMapCount == 0)
 	{
@@ -76,8 +74,10 @@ void initKernelBootConfig(void)
 	}
 
 	bootInfo->configEnd = bootInfo->config;
-	bootArgs->Video_V1.v_display = VGA_TEXT_MODE;
 
+	bootArgs->Video_V1.v_display = VGA_TEXT_MODE;
+	// bootArgs->Video_V2.v_display = VGA_TEXT_MODE;
+	
 	// What Lion species is screaming here?
 	if ((gPlatform.OSType & LION) == LION)
 	{
@@ -122,7 +122,7 @@ void initKernelBootConfig(void)
 #endif
 
 #if BLACKMODE
-	bootArgs->flags							|= kBootArgsFlagBlackTheme; // (kBootArgsFlagBlack + kBootArgsFlagBlackTheme);
+	bootArgs->flags							|= kBootArgsFlagBlackTheme;
 #endif
 
 #endif // #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
@@ -135,8 +135,9 @@ void initKernelBootConfig(void)
 	bootArgs->csrCapabilities				= CSR_CAPABILITY_UNLIMITED;
 
 	bootArgs->boot_SMC_plimit				= 0;
+
 	bootArgs->bootProgressMeterStart		= 0;
-	bootArgs->bootProgressMeterEnd			= 1024;
+	bootArgs->bootProgressMeterEnd			= 0; // 1024;
 
 /*	enum
 	{

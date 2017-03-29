@@ -23,7 +23,16 @@
 
 #include "platform.h"
 
-#if (PATCH_KERNEL && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+#ifndef PATCH_CPUID_SET_INFO
+	#define PATCH_CPUID_SET_INFO	-1
+#endif
+
+#ifndef PATCH_XCPM_BOOTSTRAP
+	#define PATCH_XCPM_BOOTSTRAP	-1
+#endif
+
+
+#if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 //==============================================================================
 // Called from patchKernel()
 
@@ -66,17 +75,18 @@ void disableMSRs(unsigned char * aPointer, uint8_t aNumberOfTargetMSRs)
 		aPointer += 0x30;
 	}
 }
+#endif
 
-			 
+
 //==============================================================================
 // Called from decodeMachO()
 
 long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize, unsigned long textSegmentAddress, unsigned long vldSegmentAddress)
 {
-#if DEBUG_KERNEL_PATCHER
-	printf("patchKernel() called\n");
-	sleep(1);
-#endif
+	#if DEBUG_KERNEL_PATCHER
+		printf("patchKernel(%d/%d/%d) called\n", PRELINKED_KERNEL_SUPPORT, PATCH_CPUID_SET_INFO, PATCH_XCPM_BOOTSTRAP);
+		sleep(1);
+	#endif
 
 	char * symbolName = NULL;
 	unsigned char * p = NULL;
@@ -93,7 +103,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 	struct symtab_command * symtab = (struct symtab_command *)cmdBase;
 	struct segment_command_64 * textSegment = (struct segment_command_64 *)textSegmentAddress;
 #if PRELINKED_KERNEL_SUPPORT
-	struct segment_command_64 * vldSegment = (struct segment_command_64 *)vldSegmentAddress;
+	// struct segment_command_64 * vldSegment = (struct segment_command_64 *)vldSegmentAddress;
 	
 	targetSections |= 25;
 #endif
@@ -107,6 +117,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 	uint64_t startAddress	= 0;
 	uint64_t endAddress		= 0;
 
+#if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 	uint8_t cpuid_set_info_ModelCorrection = 0;
 	uint8_t xcpm_bootstrap_ModelCorrection = 0;
 
@@ -145,11 +156,15 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 			targetPatches					+= 4;
 			xcpm_bootstrap_ModelCorrection	= -8;
 			break;
+			
+		default:
+			return 0;
 	}
 #else
 	targetPatches							+= 4;
 	xcpm_bootstrap_ModelCorrection			= PATCH_XCPM_BOOTSTRAP;
 #endif
+
 	//
 	// Is MSR(0xE2) locked (bit-15 set)?
 	//
@@ -167,6 +182,8 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 		//
 		targetPatches += 80;
 	}
+#endif // #if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+
 	//
 	// Main while loop.
 	//
@@ -174,7 +191,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 	{
 		struct nlist_64 * nl = (struct nlist_64 *)pointer;
 
-		if (nl->n_sect == 1 && nl->n_value && (targetSections & nl->n_sect)) // __TEXT,__text
+		if (nl->n_sect == 1 && nl->n_value && (targetSections & nl->n_sect))	// __TEXT,__text
 		{
 			symbolName = (char *)stringTable + nl->n_un.n_strx;
 
@@ -205,6 +222,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 					}
 				}
 			}
+#if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 			else if ((targetPatches & 2) && strcmp(symbolName, "_cpuid_set_info") == 0)
 			{
 				offset = (nl->n_value - textSegment->vmaddr);
@@ -289,6 +307,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 					}
 				}
 			}
+#endif // #if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 			//
 			// Are we done patching for this section?
 			//
@@ -300,10 +319,11 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				targetSections -= nl->n_sect;
 			}
 		}
-		else if (nl->n_sect == 8 && nl->n_value && (targetSections & nl->n_sect)) // __DATA,__data
+		else if (nl->n_sect == 8 && nl->n_value && (targetSections & nl->n_sect))	// __DATA,__data
 		{
 			symbolName = (char *)stringTable + nl->n_un.n_strx;
 
+#if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 			if ((targetPatches & 16) && strcmp(symbolName, "_xcpm_SMT_scope_msrs") == 0)
 			{
 				//
@@ -359,6 +379,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				targetPatches -= 64;
 
 			}
+#endif // #if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 			//
 			// Are we done patching for this section?
 			//
@@ -371,7 +392,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 			}
 		}
 #if PRELINKED_KERNEL_SUPPORT
-		else if (nl->n_sect == 25 && nl->n_value && (targetSections & nl->n_sect)) // __KLD,__text
+		else if (nl->n_sect == 25 && nl->n_value && (targetSections & nl->n_sect))	// __KLD,__text
 		{
 			symbolName = (char *)stringTable + nl->n_un.n_strx;
 			
@@ -409,4 +430,3 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 
 	return 0;
 }
-#endif

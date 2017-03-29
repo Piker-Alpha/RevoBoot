@@ -241,7 +241,7 @@ long decodeMachO(void *fileLoadBuffer, entry_t *rentry, char **raddr, int *rsize
 
 			case LC_SYMTAB:
 				initKernelVersionInfo(loadAddress, cmdBase, listSize, textSegmentAddress);
-#if (PATCH_KERNEL && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN)
 				patchKernel(loadAddress, cmdBase, listSize, textSegmentAddress, vldSegmentAddress);
 #endif
 				break;
