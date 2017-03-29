@@ -263,17 +263,17 @@ void checkFlexRatioMSR(void)
 #if USE_STATIC_CPU_DATA
 
 	#if CPU_VENDOR_ID == CPU_VENDOR_INTEL
-		#include "cpu/intel/static_data.h"
+		#include "cpu/Intel/static_data.h"
 	#else
-		#include "cpu/amd/static_data.h"
+		#include "cpu/AMD/static_data.h"
 	#endif
 
 #else
 
 	#if CPU_VENDOR_ID == CPU_VENDOR_INTEL
-		#include "cpu/intel/dynamic_data.h"
+		#include "cpu/Intel/dynamic_data.h"
 	#else
-		#include "cpu/amd/dynamic_data.h"
+		#include "cpu/AMD/dynamic_data.h"
 	#endif
 
 #endif
