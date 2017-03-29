@@ -18,6 +18,7 @@
 #			- Changed default from Mavericks to Yosemite (Pike R. Alpha, June 2014).
 #			- El Capitan support added (Pike R. Alpha, June 2015).
 #			- Sierra support added (Pike R. Alpha, June 2016).
+#			- macOS 10.13 support added (Pike R. Alpha, March 2017).
 #
 
 #
@@ -50,25 +51,34 @@ EXCLUDE = --exclude=.DS_Store --exclude=sym --exclude=obj --exclude=*.sh
 
 VPATH = $(OBJROOT):$(SYMROOT)
 
+OS_TYPE = "OS\ X"
+
 #
 # Check if OS build target is specified (example: make mountain-lion).
 #
 
 ifeq ($(MAKECMDGOALS),)
 	#
-	# No OS build target given. Build for Sierra (default).
+	# No OS build target given. Build for CodeName (default).
 	#
-	MAKEGOAL = sierra
-	MAKE_TARGET_OS = 126;
-	MAKE_TARGET_OS_VER = 10.12
+	MAKEGOAL = codename
+	MAKE_TARGET_OS = 254;
+	MAKE_TARGET_OS_VER = 10.13
+        OS_TYPE = "macOS"
 else
 	#
 	# Setting MAKE_TARGET_OS and MAKEGOAL based on OS build target.
 	#
-	ifeq ($(MAKECMDGOALS), sierra)
+	ifeq ($(MAKECMDGOALS), codename)
+		MAKEGOAL = codename
+		MAKE_TARGET_OS = 254;
+		MAKE_TARGET_OS_VER = 10.13
+                OS_TYPE = "macOS"
+	else ifeq ($(MAKECMDGOALS), sierra)
 		MAKEGOAL = sierra
 		MAKE_TARGET_OS = 126;
 		MAKE_TARGET_OS_VER = 10.12
+                OS_TYPE = "macOS"
 	else ifeq ($(MAKECMDGOALS), el-capitan)
 		MAKEGOAL = el-capitan
 		MAKE_TARGET_OS = 62;
@@ -201,7 +211,7 @@ $(MAKEGOAL):
 #
 # normal make goal
 #
-	@printf "\nCompiling RevoBoot, setup for a $(MODEL) running OS X $(MAKE_TARGET_OS_VER) ($@)\n" >&2;
+	@printf "\nCompiling RevoBoot, setup for a $(MODEL) running $(OS_TYPE) $(MAKE_TARGET_OS_VER) ($@)\n" >&2;
 
 	@if [ ! -f $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE) ]; then \
 		echo "\t[CP] $(CONFIG_DIR)/ACPI/data-template.h $(CONFIG_DIR)/$(MAKE_ACPI_DATA_FILE)"; \

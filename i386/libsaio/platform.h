@@ -33,6 +33,7 @@
 #define YOSEMITE				26	// Yosemite (includes Lion and Mavericks changes).
 #define EL_CAPITAN				62	// El Capitan (includes Lion/Mavericks and Yosemite changes).
 #define SIERRA					126	// Sierra (includes Lion/Mavericks/Yosemite and El Capitan changes).
+#define CODENAME				254	// CodeName (includes Lion/Mavericks/Yosemite/El Capitan and Sierra changes).
 
 //------------------------------------------------------------------------------
 
@@ -81,6 +82,7 @@
 #define IMAC_152				(IMAC | (12 << 15))
 #define IMAC_161				(IMAC | (13 << 15))
 #define IMAC_162				(IMAC | (14 << 15))
+#define IMAC_181				(IMAC | (15 << 15))
 #define IMAC_171				 IMAC						// Defaults to iMac17,1
 
 #define MACBOOK_41				(MACBOOK | ( 1 << 15))
@@ -121,12 +123,15 @@
 #define MACMINI_53				(MACMINI | (4 << 15))
 #define MACMINI_61				(MACMINI | (5 << 15))
 #define MACMINI_62				(MACMINI | (6 << 15))
+#define MACMINI_81				(MACMINI | (7 << 15))
 #define MACMINI_71				 MACMINI					// Defaults to Macmini7,1
 
 #define MACPRO_31				(MACPRO | (1 << 15))
 #define MACPRO_41				(MACPRO | (2 << 15))
 #define MACPRO_51				(MACPRO | (3 << 15))
+#define MACPRO_71				(MACPRO | (4 << 15))
 #define MACPRO_61				 MACPRO						// Defaults to MacPro6,1
+
 
 #if ((TARGET_MODEL & MACPRO) == MACPRO)
 	#define PM_PROFILE_OVERRIDE	3
