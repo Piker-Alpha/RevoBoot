@@ -16,13 +16,14 @@
  *			- Dynamic and static SMBIOS data gathering added by DHP in 2010.
  *			- Complete rewrite / overhaul by DHP in Februari 2011.
  *			- Coding style changes by DHP in Februari 2011.
- *			- Model data stripped and simplified (PikerAlpha, October 2012).
- *			- EFI/SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
- *			- SMB_PRODUCT_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
- *			- EFI_MODEL_NAME renamed/moved over from settings.h (PikerAlpha, October 2012).
- *			- Data for new MacBookPro and Macmini added (PikerAlpha, October 2012).
- *			- Data for iMac13,2 and MacBookPro9,2 added (PikerAlpha, October 2013).
- *			- Typo in SMB_BOARD_PRODUCT for iMac12,n fixed (PikerAlpha, April 2013).
+ *			- Model data stripped and simplified (Pike R. Alpha, October 2012).
+ *			- EFI/SMBIOS data logic moved to preprocessor code (Pike R. Alpha, October 2012).
+ *			- SMB_PRODUCT_NAME renamed/moved over from settings.h (Pike R. Alpha, October 2012).
+ *			- EFI_MODEL_NAME renamed/moved over from settings.h (Pike R. Alpha, October 2012).
+ *			- Data for new MacBookPro and Macmini added (Pike R. Alpha, October 2012).
+ *			- Data for iMac13,2 and MacBookPro9,2 added (Pike R. Alpha, October 2013).
+ *			- Typo in SMB_BOARD_PRODUCT for iMac12,n fixed (Pike R. Alpha, April 2013).
+  *			- Data for new iMac18,x and MacBookPro14,x added (Pike R. Alpha, June 2017).
  *
  * Credits:
  *			- blackosx, DB1, dgsga, FKA, humph, scrax and STLVNUB (testers).
@@ -148,28 +149,28 @@
 		#define SMB_PRODUCT_NAME	"iMac16,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FFE5EF870D7BA81A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '6', ',', '2' }
-	#else // Defaults to iMac17,1 (Retina 5K, 27-inch, Late 2015)
+	#elif (TARGET_MODEL == IMAC_171) // (Retina 5K, 27-inch, Late 2015)
 		// Intel Core i5-6500 @ 3.20 GHz - 4 cores / 4 threads
 		// AMD Radeon R9 M380
 		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B09.1607221343"
 		#define SMB_PRODUCT_NAME	"iMac17,1"
 		#define SMB_BOARD_PRODUCT	"Mac-65CE76090165799A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' }
-	/* #elif (TARGET_MODEL == IMAC_171) // Retina 5K, 27-inch, Late 2015
-		// Intel Core i5-6500 @ 3.20 GHz - 4 cores / 4 threads
-		// AMD Radeon R9 M390
-		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B08.1604111319"
-		#define SMB_PRODUCT_NAME	"iMac17,1"
-		#define SMB_BOARD_PRODUCT	"Mac-DB15BD556843C820"
-		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' }
-	#elif (TARGET_MODEL == IMAC_171) // Retina 5K, 27-inch, Late 2015
-		// Intel Core i5-6600 @ 3.30 GHz - 4 cores / 4 threads
-		// Intel Core i7-6700K @ 4.00 GHz - 4 cores / 8 threads
-		// AMD Radeon R9 M395 & AMD Radeon R9 M395X
-		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B08.1604111319"
-		#define SMB_PRODUCT_NAME	"iMac17,1"
-		#define SMB_BOARD_PRODUCT	"Mac-B809C3757DA9BB8D"
-		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' } */
+	#elif (TARGET_MODEL == IMAC_181) // Retina 5K, 27-inch, 2017
+		#define SMB_BIOS_VERSION	"IM181.88Z.0145.B07.1705082121"
+		#define SMB_PRODUCT_NAME	"iMac18,1"
+		#define SMB_BOARD_PRODUCT	"Mac-4B682C642B45593E"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '8', ',', '1' }
+	#elif (TARGET_MODEL == IMAC_182) // Retina 5K, 27-inch, 2017
+		#define SMB_BIOS_VERSION	"IM182.88Z.0145.B07.1705082121"
+		#define SMB_PRODUCT_NAME	"iMac18,2"
+		#define SMB_BOARD_PRODUCT	"Mac-77F17D7DA9285301"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '8', ',', '2' }
+	#else // Defaults to iMac18,3 Retina 5K, 27-inch, 2017
+		#define SMB_BIOS_VERSION	"IM183.88Z.0145.B07.1705082121"
+		#define SMB_PRODUCT_NAME	"iMac18,3"
+		#define SMB_BOARD_PRODUCT	"Mac-BE088AF8C5EB4FA2"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '8', ',', '3' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
@@ -380,15 +381,41 @@
         #define SMB_PRODUCT_NAME	"MacBookPro13,2"
         #define SMB_BOARD_PRODUCT	"Mac-66E35819EE2D0D05"
         #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '2' }
-    #else // Defaults to MacBookPro13,3
+    #elif (TARGET_MODEL == MACBOOK_PRO_133)
         // 15-inch with Touch Bar / Touch ID
-        // Intel Core i7-6700HQ 2.6 GHz (max Turbo Boost 3.5 GHz) 45W
-        // Intel Core i7-6820HQ 2.7 GHz (max Turbo Boost 3.6 GHz) 45W
-        // Intel Core i7-6920HQ 2.9 GHz (max Turbo Boost 3.8 GHz) 45W
+        // Intel Core i7-6700HQ 2.6 GHz (max Turbo Boost 3.5 GHz)
+        // Intel Core i7-6820HQ 2.7 GHz (max Turbo Boost 3.6 GHz)
+        // Intel Core i7-6920HQ 2.9 GHz (max Turbo Boost 3.8 GHz)
         #define SMB_BIOS_VERSION	"MBP133.88Z.0223.B00.1610201042"
         #define SMB_PRODUCT_NAME	"MacBookPro13,3"
         #define SMB_BOARD_PRODUCT	"Mac-A5C67F76ED83108C"
         #define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '3', ',', '3' }
+	#elif (TARGET_MODEL == MACBOOK_PRO_141)
+		// 13-inch without Touch Bar / Touch ID
+		// Intel Core i5-7360U 2.3 GHz (max Turbo Boost 3.6 GHz)
+		// Intel Core i7-7660U 2.5 GHz (max Turbo Boost 4.0 GHz)
+		#define SMB_BIOS_VERSION	"MBP141.88Z.0160.B00.1705082121"
+		#define SMB_PRODUCT_NAME	"MacBookPro14,1"
+		#define SMB_BOARD_PRODUCT	"Mac-B4831CEBD52A0C4C"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '4', ',', '1' }
+	#elif (TARGET_MODEL == MACBOOK_PRO_142)
+		// 13-inch with Touch Bar / Touch ID
+		// Intel Core i5-7267U 3.1 GHz (max Turbo Boost 3.5 GHz)
+		// Intel Core i5-7287U 3.3 GHz (max Turbo Boost 3.7 GHz)
+		// Intel Core i7-7567U 3.5 GHz (max Turbo Boost 4.0 GHz)
+		#define SMB_BIOS_VERSION	"MBP142.88Z.0160.B00.1705082121"
+		#define SMB_PRODUCT_NAME	"MacBookPro14,2"
+		#define SMB_BOARD_PRODUCT	"Mac-CAD6701F7CEA0921 "
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '4', ',', '2' }
+	#else // Defaults to MacBookPro14,3
+		// 15-inch with Touch Bar / Touch ID
+		// Intel Core i7-7700HQ 2.8 GHz (max Turbo Boost 3.8 GHz)
+		// Intel Core i7-7820HQ 2.9 GHz (max Turbo Boost 3.9 GHz)
+		// Intel Core i7-7920HQ 3.1 GHz (max Turbo Boost 4.1 GHz)
+		#define SMB_BIOS_VERSION	"MBP143.88Z.0160.B00.1705090111"
+		#define SMB_PRODUCT_NAME	"MacBookPro14,3"
+		#define SMB_BOARD_PRODUCT	"Mac-551B86E5744E2388"
+		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'B', 'o', 'o', 'k', 'P', 'r', 'o', '1', '4', ',', '3' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
