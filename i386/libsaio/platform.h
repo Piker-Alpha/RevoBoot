@@ -33,7 +33,7 @@
 #define YOSEMITE				26	// Yosemite (includes Lion and Mavericks changes).
 #define EL_CAPITAN				62	// El Capitan (includes Lion/Mavericks and Yosemite changes).
 #define SIERRA					126	// Sierra (includes Lion/Mavericks/Yosemite and El Capitan changes).
-#define CODENAME				254	// CodeName (includes Lion/Mavericks/Yosemite/El Capitan and Sierra changes).
+#define HIGH_SIERRA				254	// High Sierra (includes Lion/Mavericks/Yosemite/El Capitan and Sierra changes).
 
 //------------------------------------------------------------------------------
 
@@ -82,8 +82,10 @@
 #define IMAC_152				(IMAC | (12 << 15))
 #define IMAC_161				(IMAC | (13 << 15))
 #define IMAC_162				(IMAC | (14 << 15))
-#define IMAC_181				(IMAC | (15 << 15))
-#define IMAC_171				 IMAC						// Defaults to iMac17,1
+#define IMAC_171				(IMAC | (15 << 15))
+#define IMAC_181				(IMAC | (16 << 15))
+#define IMAC_182				(IMAC | (17 << 15))
+#define IMAC_183				 IMAC						// Defaults to iMac18,3
 
 #define MACBOOK_41				(MACBOOK | ( 1 << 15))
 #define MACBOOK_81				(MACBOOK | ( 2 << 15))
@@ -115,7 +117,10 @@
 #define MACBOOK_PRO_121			(MACBOOK_PRO | (14 << 15))
 #define MACBOOK_PRO_131			(MACBOOK_PRO | (15 << 15))
 #define MACBOOK_PRO_132			(MACBOOK_PRO | (16 << 15))
-#define MACBOOK_PRO_133			 MACBOOK_PRO				// Defaults to MacBookPro13,3
+#define MACBOOK_PRO_133			(MACBOOK_PRO | (17 << 15))
+#define MACBOOK_PRO_141			(MACBOOK_PRO | (18 << 15))
+#define MACBOOK_PRO_142			(MACBOOK_PRO | (19 << 15))
+#define MACBOOK_PRO_143			 MACBOOK_PRO				// Defaults to MacBookPro14,3
 
 #define MACMINI_41				(MACMINI | (1 << 15))
 #define MACMINI_51				(MACMINI | (2 << 15))
