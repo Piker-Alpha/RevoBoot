@@ -59,9 +59,9 @@ OS_TYPE = "OS\ X"
 
 ifeq ($(MAKECMDGOALS),)
 	#
-	# No OS build target given. Build for CodeName (default).
+	# No OS build target given. Build for High Sierra (default).
 	#
-	MAKEGOAL = codename
+	MAKEGOAL = high-sierra
 	MAKE_TARGET_OS = 254;
 	MAKE_TARGET_OS_VER = 10.13
         OS_TYPE = "macOS"
@@ -69,8 +69,8 @@ else
 	#
 	# Setting MAKE_TARGET_OS and MAKEGOAL based on OS build target.
 	#
-	ifeq ($(MAKECMDGOALS), codename)
-		MAKEGOAL = codename
+	ifeq ($(MAKECMDGOALS), high-sierra)
+		MAKEGOAL = high-sierra
 		MAKE_TARGET_OS = 254;
 		MAKE_TARGET_OS_VER = 10.13
                 OS_TYPE = "macOS"
