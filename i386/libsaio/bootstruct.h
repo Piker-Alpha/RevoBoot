@@ -315,7 +315,14 @@ typedef struct boot_args_new
 	uint16_t		bootProgressMeterEnd;
 #endif
 
-#if ((MAKE_TARGET_OS & SIERRA) == SIERRA)				// Sierra only.
+#if ((MAKE_TARGET_OS & HIGH_SIERRA) == HIGH_SIERRA)		// High Sierra only.
+	Boot_Video_V2	Video_V2;							// Video V2 Information (with a 64-bit v_baseAddr).
+
+	uint32_t		apfsDataStart;						// Physical address of apfs volume key structure.
+	uint32_t		apfsDataSize;
+
+	uint32_t		__reserved4[710];
+#elif ((MAKE_TARGET_OS & SIERRA) == SIERRA)				// Sierra only.
 	Boot_Video_V2	Video_V2;							// Video V2 Information (with a 64-bit v_baseAddr).
 
 	uint32_t		__reserved4[712];
