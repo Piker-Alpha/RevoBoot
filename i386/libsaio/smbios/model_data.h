@@ -39,7 +39,7 @@
 		// Intel Core i5-750 @ 2.66 GHz - 4 cores / 4 threads
 		// Intel Core i7-860 @ 2.80 GHz - 4 cores / 8 threads
 		// ATI Radeon HD 4850
-		#define SMB_BIOS_VERSION	"IM111.88Z.0034.B04.1509231906"
+		#define SMB_BIOS_VERSION	"IM111.88Z.0034.B12.1705021416"
 		#define SMB_PRODUCT_NAME	"iMac11,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F2268DAE"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '1', ',', '1' }
@@ -49,7 +49,7 @@
 		// Intel Core i5-2500S @ 2.70 GHz - 4 cores / 4 threads
 		// Intel Core i7-2600S @ 2.80 GHz - 4 cores / 8 threads
 		// AMD Radeon HD 6750M & AMD Radeon HD 6770M
-		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B23.1510261412"
+		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B33.1705101231"
 		#define SMB_PRODUCT_NAME	"iMac12,1"
 		#define SMB_BOARD_PRODUCT	"Mac-942B5BF58194151B"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '2', ',', '1' }
@@ -58,7 +58,7 @@
 		// Intel Core i5-2500S @ 2.70 GHz - 4 cores / 4 threads
 		// Intel Core i7-2600 @ 3.40 GHz - 4 cores / 8 threads
 		// AMD Radeon HD 6770M & AMD Radeon HD 6970M
-		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B23.1510261412"
+		#define SMB_BIOS_VERSION	"IM121.88Z.0047.B33.1705101231"
 		#define SMB_PRODUCT_NAME	"iMac12,2"
 		#define SMB_BOARD_PRODUCT	"Mac-942B59F58194171B"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '2', ',', '2' }
@@ -67,7 +67,7 @@
 		// Intel Core i5-3470S @ 2.90 GHz - 4 cores / 4 threads
 		// Intel Core i7-3770S @ 3.10 GHz - 4 cores / 8 threads
 		// NVIDIA GeForce GT 640M & NVIDIA GeForce GT 650M
-		#define SMB_BIOS_VERSION	"IM131.88Z.010A.B09.1509111558"
+		#define SMB_BIOS_VERSION	"IM131.88Z.010A.B1C.1705011311"
 		#define SMB_PRODUCT_NAME	"iMac13,1"
 		#define SMB_BOARD_PRODUCT	"Mac-00BE6ED71E35EB86"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '1' }
@@ -76,21 +76,21 @@
 		// Intel Core i5-3470 @ 3.2 GHz - 4 cores / 4 threads
 		// Intel Core i7-3770 @ 3.4 GHz - 4 cores / 8 threads
 		// NVIDIA GeForce GTX 660M, NVIDIA GeForce GTX 675MX & NVIDIA GeForce GTX 680MX
-		#define SMB_BIOS_VERSION	"IM131.88Z.010A.B09.1509111558"
+		#define SMB_BIOS_VERSION	"IM131.88Z.010A.B1C.1705011311"
 		#define SMB_PRODUCT_NAME	"iMac13,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FC02E91DDD3FA6A4"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '2' }
 	#elif (TARGET_MODEL == IMAC_133) // 21.5-inch, Early 2013 (Education)
 		// Intel Core i3-3225 @ 3.30 GHz - 2 cores / 4 threads
 		// Intel HD Graphics 4000
-		#define SMB_BIOS_VERSION	"IM131.88Z.010A.B09.1509111558"
+		#define SMB_BIOS_VERSION	"IM131.88Z.010A.B1C.1705011311"
 		#define SMB_PRODUCT_NAME	"iMac13,3"
 		#define SMB_BOARD_PRODUCT	"Mac-7DF2A3B5E5D671ED"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '3', ',', '3' }
 	#elif (TARGET_MODEL == IMAC_141) // 21.5-inch, Late 2013
 		// Intel Core i5-4570R @ 2.70 GHz - 4 cores / 4 threads
 		// Intel Iris Pro Graphics 5200
-		#define SMB_BIOS_VERSION	"IM141.88Z.0118.B13.1602221714"
+		#define SMB_BIOS_VERSION	"IM141.88Z.0118.B46.1705011412"
 		#define SMB_PRODUCT_NAME	"iMac14,1"
 		#define SMB_BOARD_PRODUCT	"Mac-031B6874CF7F642A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '1' }
@@ -99,7 +99,7 @@
 		// Intel Core i5-4670 @ 3.40 GHz - 4 cores / 4 threads
 		// Intel Core i7-4771 @ 3.50 GHz - 4 cores / 8 threads
 		// NVIDIA GeForce GT 755M, NVIDIA GeForce GTX 775M & NVIDIA GeForce GTX 780M
-		#define SMB_BIOS_VERSION	"IM142.88Z.0118.B13.1602221716"
+		#define SMB_BIOS_VERSION	"IM142.88Z.0118.B46.1705011513"
 		#define SMB_PRODUCT_NAME	"iMac14,2"
 		#define SMB_BOARD_PRODUCT	"Mac-27ADBB7B4CEE8E61"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '2' }
@@ -114,7 +114,7 @@
 	#elif (TARGET_MODEL == IMAC_144) // 21.5-inch, Mid 2014
 		// Intel Core i5-4260U @ 1.40 GHz - 2 cores / 4 threads
 		// Intel HD Graphics 5000
-		#define SMB_BIOS_VERSION	"IM144.88Z.0179.B13.1602221719"
+		#define SMB_BIOS_VERSION	"IM144.88Z.0179.B30.1705011718"
 		#define SMB_PRODUCT_NAME	"iMac14,4"
 		#define SMB_BOARD_PRODUCT	"Mac-81E3E92DD6088272"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '4', ',', '4' }
@@ -122,21 +122,21 @@
 		// Intel Core i5-4690 @ 3.50 GHz - 4 cores / 4 threads
 		// Intel Core i7-4790K @ 4.00 GHz - 4 cores / 8 threads
 		// AMD Radeon R9 M290X, AMD Radeon R9 M295X
-		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B07.1607221823"
+		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B26.1705011718"
 		#define SMB_PRODUCT_NAME	"iMac15,1"
 		#define SMB_BOARD_PRODUCT	"Mac-42FD25EABCABB274"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '1' }
 	#elif (TARGET_MODEL == IMAC_152) // Retina 5K, 27-inch, Mid 2015
 		// Intel Core i5-4590 @ 3.30 GHz - 4 cores / 4 threads
 		// AMD Radeon R9 M290
-		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B07.1607221823"
+		#define SMB_BIOS_VERSION	"IM151.88Z.0207.B26.1705011718"
 		#define SMB_PRODUCT_NAME	"iMac15,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FA842E06C61E91C5"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '5', ',', '2' }
 	#elif (TARGET_MODEL == IMAC_161) // 21.5-inch, Late 2015
 		// Intel Core i5-5250U @ 1.60 GHz - 2 cores / 4 threads
 		// Intel HD Graphics 6000
-		#define SMB_BIOS_VERSION	"IM161.88Z.0207.B03.1602181033"
+		#define SMB_BIOS_VERSION	"IM161.88Z.0207.B19.1705011046"
 		#define SMB_PRODUCT_NAME	"iMac16,1"
 		#define SMB_BOARD_PRODUCT	"Mac-A369DDC4E67F1C45"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '6', ',', '1' }
@@ -145,14 +145,14 @@
 		// Intel Core i5-5675R @ 3.10 GHz - 4 cores / 4 threads
 		// Intel Core i7-5775R @ 3.30 GHz - 4 cores / 8 threads
 		// Intel Iris Pro Graphics 6200
-		#define SMB_BIOS_VERSION	"IM162.88Z.0206.B01.1607221823"
+		#define SMB_BIOS_VERSION	"IM162.88Z.0206.B19.1705011413"
 		#define SMB_PRODUCT_NAME	"iMac16,2"
 		#define SMB_BOARD_PRODUCT	"Mac-FFE5EF870D7BA81A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '6', ',', '2' }
 	#elif (TARGET_MODEL == IMAC_171) // (Retina 5K, 27-inch, Late 2015)
 		// Intel Core i5-6500 @ 3.20 GHz - 4 cores / 4 threads
 		// AMD Radeon R9 M380
-		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B09.1607221343"
+		#define SMB_BIOS_VERSION	"IM171.88Z.0105.B25.1704292104"
 		#define SMB_PRODUCT_NAME	"iMac17,1"
 		#define SMB_BOARD_PRODUCT	"Mac-65CE76090165799A"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '7', ',', '1' }
@@ -495,6 +495,19 @@
 		#define SMB_PRODUCT_NAME	"MacPro6,1"
 		#define SMB_BOARD_PRODUCT	"Mac-F60DEB81FF30ACF6"
 		#define EFI_MODEL_NAME		{ 'M', 'a', 'c', 'P', 'r', 'o', '6', ',', '1' }
+	#endif
+// -------------------------------------------------------------------------------------
+#endif
+
+#if TARGET_MODEL & IMACPRO														// 64
+// -------------------------------------------------------------------------------------
+	#define SMB_FAMILY	"iMacPro"
+
+	#if (TARGET_MODEL == IMACPRO_10)
+		#define SMB_BIOS_VERSION	"IMP10.88Z.0058.B00.1705091711"
+		#define SMB_PRODUCT_NAME	"iMacPro1,1"
+		#define SMB_BOARD_PRODUCT	"Mac-CF21D135A7D34AA6"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', 'P', 'r', 'o', '1', ',', '0' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
