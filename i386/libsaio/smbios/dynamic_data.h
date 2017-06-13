@@ -252,7 +252,7 @@ void setupSMBIOS(void)
 	SMBWord handle = 1;
 
 	//------------------------------------------------------------------------------
-	// Add SMBOemProcessorType structure.
+	// Add SMBOemProcessorType structure (131)
 
 	struct SMBStructHeader * newHeader = (struct SMBStructHeader *) newtablesPtr;
 
@@ -269,7 +269,41 @@ void setupSMBIOS(void)
 	newtablesPtr += 8;
 
 	//------------------------------------------------------------------------------
-	// Add SMBOemProcessorBusSpeed structure (when we have something to inject).
+	// Add SMBFirmwareVolume structure (128).
+	
+	newHeader = (struct SMBStructHeader *) newtablesPtr;
+
+	newHeader->type		= kSMBTypeFirmwareVolume;
+	newHeader->length	= 6;
+	newHeader->handle	= handle;
+
+	newtablesPtr += 4;
+
+	struct SMBFirmwareVolume * firmwareVolume = (struct SMBFirmwareVolume *) newtablesPtr;
+
+	firmwareVolume->RegionCount				= 1;
+	firmwareVolume->Reserved[0]				= 0x00;
+	firmwareVolume->Reserved[1]				= 0x00;
+	firmwareVolume->Reserved[2]				= 0x00;
+	firmwareVolume->FirmwareFeatures		= 0xC003FF37;	// getFirmwareFeatures();
+	firmwareVolume->FirmwareFeaturesMask	= 0xFFFFFFFF;	// getFirmwareFeaturesEx();
+	firmwareVolume->RegionType[0]			= FW_REGION_MAIN;
+	firmwareVolume->RegionType[1]			= FW_REGION_RESERVED;
+	firmwareVolume->RegionType[2]			= FW_REGION_RESERVED;
+	firmwareVolume->RegionType[3]			= FW_REGION_RESERVED;
+	firmwareVolume->RegionType[4]			= FW_REGION_RESERVED;
+	firmwareVolume->RegionType[5]			= FW_REGION_RESERVED;
+	firmwareVolume->RegionType[6]			= FW_REGION_RESERVED;
+	firmwareVolume->RegionType[7]			= FW_REGION_RESERVED;
+	
+	// Update EPS
+	newEPS->dmi.tableLength += sizeof(firmwareVolume);
+	newEPS->dmi.structureCount++;
+	
+	newtablesPtr += sizeof(firmwareVolume);
+
+	//------------------------------------------------------------------------------
+	// Add SMBOemProcessorBusSpeed structure (132/when we have something to inject).
 
 	if (gPlatform.CPU.QPISpeed)
 	{
@@ -287,6 +321,38 @@ void setupSMBIOS(void)
 
 		newtablesPtr += 8;
 	}
+	
+	//------------------------------------------------------------------------------
+	// Add SMBOemPlatformFeature structure (133).
+	
+	newHeader = (struct SMBStructHeader *) newtablesPtr;
+		
+	newHeader->type		= kSMBTypeOemPlatformFeature;
+	newHeader->length	= 6;
+	newHeader->handle	= ++handle;
+		
+	*((uint16_t *)(((char *)newHeader) + 4)) = 0xFFFF;
+		
+	// Update EPS
+	newEPS->dmi.tableLength += 8;
+	newEPS->dmi.structureCount++;
+		
+	newtablesPtr += 8;
+	
+	/*------------------------------------------------------------------------------
+	// Add SMBOemSMCVersion structure (134).
+	
+	newHeader = (struct SMBStructHeader *) newtablesPtr;
+	
+	newHeader->type		= kSMBTypeOemSMCVersion;
+	newHeader->length	= 6;
+	newHeader->handle	= ++handle;
+	
+	// Update EPS
+	newEPS->dmi.tableLength += 8;
+	newEPS->dmi.structureCount++;
+	
+	newtablesPtr += 8; */
 
 #if (STATIC_RAM_OVERRIDE_ERROR_HANDLE || STATIC_RAM_OVERRIDE_SIZE || STATIC_RAM_OVERRIDE_TYPE || STATIC_RAM_OVERRIDE_FREQUENCY)
 	requiredStructures[17].stop = (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
