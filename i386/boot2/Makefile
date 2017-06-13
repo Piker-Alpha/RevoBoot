@@ -84,6 +84,8 @@ boot:	$(OBJS)
 		exit 1;\
 	else \
 		echo "=========== boot is $$size bytes ============"; \
-	fi)
+	fi) \
+
+	@../../c
 
 include ../MakeInc.dir
