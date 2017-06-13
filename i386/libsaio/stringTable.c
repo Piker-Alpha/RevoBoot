@@ -380,7 +380,11 @@ long loadCABootPlist(void)
 #endif
 
 #if INSTALL_ESD_SUPPORT
+	#if ((MAKE_TARGET_OS & HIGH_SIERRA) == HIGH_SIERRA)
+		"macOS Install Data/Locked Files/Boot Files",
+	#else
 		"macOS Install Data",
+	#endif
 		"OS X Install Data",
 		".IABootFiles",
 		"Mac OS X Install Data",
@@ -435,7 +439,7 @@ long loadCABootPlist(void)
 			if (retValue == EFI_SUCCESS)
 			{
 #if INSTALL_ESD_SUPPORT
-				if (i > start && i < end)
+				if (i >= start && i < end)
 				{
 					// Installation data directory located
 					gPlatform.BootVolume->flags = kBVFlagInstallVolume;
