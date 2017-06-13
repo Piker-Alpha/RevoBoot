@@ -110,6 +110,7 @@ enum {
     kSMBTypeOemProcessorType            = 131,
     kSMBTypeOemProcessorBusSpeed        = 132,
 	kSMBTypeOemPlatformFeature          = 133,
+	kSMBTypeOemSMCVersion				= 134,
 
 	// Structures dropped by RevoBoot.
 	kSMBUnused							= 255
