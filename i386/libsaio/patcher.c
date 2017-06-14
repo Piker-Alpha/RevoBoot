@@ -105,7 +105,9 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 #if PRELINKED_KERNEL_SUPPORT
 	// struct segment_command_64 * vldSegment = (struct segment_command_64 *)vldSegmentAddress;
 	
-	targetSections |= 25;
+	// targetSections |= 25;	// El Capitan
+	// targetSections |= 26;	// Sierra
+	targetSections |= 27;		// High Sierra
 #endif
 
 	void * stringTable = (void *)(loadAddress + symtab->stroff);
@@ -177,10 +179,17 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 	}
 	else
 	{
+#if PRELINKED_KERNEL_SUPPORT
 		//
-		// No. Enabling a limited patch set.
+		// Yes. Enable patche: _xcpm_SMT_scope_msrs(16), _xcpm_pkg_scope_msrs(64), __ZN12KLDBootstrap21readStartupExtensionsEv(128)
+		//
+		targetPatches += 208;
+#else
+		//
+		// No. Enabling a limited patch set: _xcpm_SMT_scope_msrs(16), _xcpm_pkg_scope_msrs(64)
 		//
 		targetPatches += 80;
+#endif
 	}
 #endif // #if (PATCH_KERNEL_XCPM && ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN))
 
@@ -392,12 +401,14 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 			}
 		}
 #if PRELINKED_KERNEL_SUPPORT
-		else if (nl->n_sect == 25 && nl->n_value && (targetSections & nl->n_sect))	// __KLD,__text
+		else if (/* nl->n_sect == 27 && */ nl->n_value /* && (targetSections & nl->n_sect) */)	// __KLD,__text
 		{
 			symbolName = (char *)stringTable + nl->n_un.n_strx;
-			
-			if ((targetPatches & 128) && strcmp(symbolName, "__ZN12KLDBootstrap21readStartupExtensionsEv") == 0)
+
+			if (/* (targetPatches & 128) && */ strcmp(symbolName, "__ZN12KLDBootstrap21readStartupExtensionsEv") == 0)
 			{
+				printf("nl->n_sect: %ld\n", nl->n_sect);
+
 				int64_t offset = (nl->n_value - textSegment->vmaddr);
 				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
 				uint64_t endAddress = (startAddress + 0x3f);
@@ -416,7 +427,7 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 						// Disable this section.
 						//
 						p = (unsigned char *)endAddress;
-						targetPatches -= 128;
+						// targetPatches -= 128;
 						targetSections -= nl->n_sect;
 					}
 				}
