@@ -8,17 +8,18 @@
  *			- Complete rewrite / overhaul by DHP in Februari 2011.
  *			- More work, including bug fixes by DHP in Februari 2011.
  *			- Do more with cleaner and faster code in less bytes (DHP in March 2012).
- *			- SMBIOS data logic moved to preprocessor code (PikerAlpha, October 2012).
- *			- SMBProperties changed for speed and simplicity (PikerAlpha, October 2012).
- *			- Calls with SMBProperties.keyString cleaned up (PikerAlpha, October 2012).
- *			- Fixed requiredStructures.start/stop values (PikerAlpha, October 2012).
- *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (PikerAlpha, October 2012).
- *			- Removed some unused experimental code snippets (PikerAlpha, November 2012).
- *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (PikerAlpha, November 2012).
- *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (PikerAlpha, November 2012).
- *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (PikerAlpha, January 2013).
- *			- SMBStructure.start[2] was 13 but should have been 11 (PikerAlpha, January 2013).
- *			- Override factory SystemID when (PikerAlpha, January 2013).
+ *			- SMBIOS data logic moved to preprocessor code (Pike R. Alpha, October 2012).
+ *			- SMBProperties changed for speed and simplicity (Pike R. Alpha, October 2012).
+ *			- Calls with SMBProperties.keyString cleaned up (Pike R. Alpha, October 2012).
+ *			- Fixed requiredStructures.start/stop values (Pike R. Alpha, October 2012).
+ *			- STATIC_SMSERIALNUMBER renamed to SMB_SYSTEM_SERIAL_NUMBER (Pike R. Alpha, October 2012).
+ *			- Removed some unused experimental code snippets (Pike R. Alpha, November 2012).
+ *			- Option SET_MAX_STRUCTURE_LENGTH to verify/fix newEPS->maxStructureSize (Pike R. Alpha, November 2012).
+ *			- Allow DEBUG_SMBIOS = 2 to filter out some of the output (Pike R. Alpha, November 2012).
+ *			- Pre-compiler directive PROBOARD removed, which is required for iMessage (Pike R. Alpha, January 2013).
+ *			- SMBStructure.start[2] was 13 but should have been 11 (Pike R. Alpha, January 2013).
+ *			- Override factory SystemID when (Pike R. Alpha, January 2013).
+  *			- Add table type 128 for High Sierra (Pike R. Alpha, June 2017).
  *
  * Credits:
  *			- Kabyl (see notes in source code)
@@ -271,36 +272,34 @@ void setupSMBIOS(void)
 	//------------------------------------------------------------------------------
 	// Add SMBFirmwareVolume structure (128).
 	
-	newHeader = (struct SMBStructHeader *) newtablesPtr;
-
-	newHeader->type		= kSMBTypeFirmwareVolume;
-	newHeader->length	= 6;
-	newHeader->handle	= handle;
-
-	newtablesPtr += 4;
-
 	struct SMBFirmwareVolume * firmwareVolume = (struct SMBFirmwareVolume *) newtablesPtr;
 
-	firmwareVolume->RegionCount				= 1;
-	firmwareVolume->Reserved[0]				= 0x00;
-	firmwareVolume->Reserved[1]				= 0x00;
-	firmwareVolume->Reserved[2]				= 0x00;
-	firmwareVolume->FirmwareFeatures		= 0xC003FF37;	// getFirmwareFeatures();
-	firmwareVolume->FirmwareFeaturesMask	= 0xFFFFFFFF;	// getFirmwareFeaturesEx();
-	firmwareVolume->RegionType[0]			= FW_REGION_MAIN;
+	bzero(firmwareVolume, sizeof(struct SMBFirmwareVolume));
+
+	firmwareVolume->header.type				= kSMBTypeFirmwareVolume;
+	firmwareVolume->header.length			= sizeof(struct SMBFirmwareVolume);
+	firmwareVolume->header.handle			= ++handle;
+
+	firmwareVolume->RegionCount				= (SMBByte) 1;
+	firmwareVolume->Reserved[0]				= (SMBByte) 0;
+	firmwareVolume->Reserved[1]				= (SMBByte) 0;
+	firmwareVolume->Reserved[2]				= (SMBByte) 0;
+	firmwareVolume->FirmwareFeatures		= getFirmwareFeatures();
+	firmwareVolume->FirmwareFeaturesMask	= getFirmwareFeaturesEx();
+	/* firmwareVolume->RegionType[0]			= FW_REGION_MAIN;
 	firmwareVolume->RegionType[1]			= FW_REGION_RESERVED;
 	firmwareVolume->RegionType[2]			= FW_REGION_RESERVED;
 	firmwareVolume->RegionType[3]			= FW_REGION_RESERVED;
 	firmwareVolume->RegionType[4]			= FW_REGION_RESERVED;
 	firmwareVolume->RegionType[5]			= FW_REGION_RESERVED;
 	firmwareVolume->RegionType[6]			= FW_REGION_RESERVED;
-	firmwareVolume->RegionType[7]			= FW_REGION_RESERVED;
-	
+	firmwareVolume->RegionType[7]			= FW_REGION_RESERVED; */
+
 	// Update EPS
-	newEPS->dmi.tableLength += sizeof(firmwareVolume);
+	newEPS->dmi.tableLength += sizeof(struct SMBFirmwareVolume) + 2;
 	newEPS->dmi.structureCount++;
 	
-	newtablesPtr += sizeof(firmwareVolume);
+	newtablesPtr += sizeof(struct SMBFirmwareVolume) + 2;
 
 	//------------------------------------------------------------------------------
 	// Add SMBOemProcessorBusSpeed structure (132/when we have something to inject).
@@ -322,38 +321,6 @@ void setupSMBIOS(void)
 		newtablesPtr += 8;
 	}
 	
-	//------------------------------------------------------------------------------
-	// Add SMBOemPlatformFeature structure (133).
-	
-	newHeader = (struct SMBStructHeader *) newtablesPtr;
-		
-	newHeader->type		= kSMBTypeOemPlatformFeature;
-	newHeader->length	= 6;
-	newHeader->handle	= ++handle;
-		
-	*((uint16_t *)(((char *)newHeader) + 4)) = 0xFFFF;
-		
-	// Update EPS
-	newEPS->dmi.tableLength += 8;
-	newEPS->dmi.structureCount++;
-		
-	newtablesPtr += 8;
-	
-	/*------------------------------------------------------------------------------
-	// Add SMBOemSMCVersion structure (134).
-	
-	newHeader = (struct SMBStructHeader *) newtablesPtr;
-	
-	newHeader->type		= kSMBTypeOemSMCVersion;
-	newHeader->length	= 6;
-	newHeader->handle	= ++handle;
-	
-	// Update EPS
-	newEPS->dmi.tableLength += 8;
-	newEPS->dmi.structureCount++;
-	
-	newtablesPtr += 8; */
-
 #if (STATIC_RAM_OVERRIDE_ERROR_HANDLE || STATIC_RAM_OVERRIDE_SIZE || STATIC_RAM_OVERRIDE_TYPE || STATIC_RAM_OVERRIDE_FREQUENCY)
 	requiredStructures[17].stop = (sizeof(SMBProperties) / sizeof(SMBProperties[0])) -1;
 #endif
@@ -599,6 +566,21 @@ void setupSMBIOS(void)
 	newEPS->dmi.structureCount++;
   
 	newtablesPtr += 0x0E;
+
+	/*------------------------------------------------------------------------------
+	 // Add SMBOemSMCVersion structure (134).
+	 
+	 newHeader = (struct SMBStructHeader *) newtablesPtr;
+	 
+	 newHeader->type		= kSMBTypeOemSMCVersion;
+	 newHeader->length	= 6;
+	 newHeader->handle	= ++handle;
+	 
+	 // Update EPS
+	 newEPS->dmi.tableLength += 8;
+	 newEPS->dmi.structureCount++;
+	 
+	 newtablesPtr += 8; */
 
 	//------------------------------------------------------------------------------
 	// Add EndOfTable structure.
