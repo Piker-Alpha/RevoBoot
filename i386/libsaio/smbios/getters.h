@@ -333,7 +333,7 @@ static const char * getBIOSDate(void)
 
 	const char * retValue = biosDate;
 
-	return retValue; // Example: "01/24/2012";
+	return "05/01/2017"; // retValue; // Example: "01/24/2012";
 }
 
 //==============================================================================
@@ -366,4 +366,25 @@ static SMBByte getBoardType(void)
 #else
 	return 0x0a;
 #endif
+}
+
+//==============================================================================
+
+static SMBDWord getFirmwareFeatures(void)
+{
+	return 0xE907F537;
+}
+
+//==============================================================================
+
+static SMBDWord getFirmwareFeaturesEx(void)
+{
+	return 0xFFFFFFFF;
+}
+
+//==============================================================================
+
+static SMBDWord getROMFeatures(void)
+{
+	return 0xFFFFFFFF;
 }
