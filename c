@@ -4,16 +4,17 @@
 # Bash script executed from: RevoBoot/i386/boot2/Makefile
 #
 #
-# Version 1.1 - Copyright (c) 2013-2017 by Pike R. Alpha
+# Version 1.2 - Copyright (c) 2013-2017 by Pike R. Alpha
 #
 # Updates:
 #		- v1.1 Improved output (Pike R. Alpha, June 2017).	
-#
+#               - v1.2 Fix typo (Pike R. Alpha, June 2017).
+#               -      Now also asks if you want to reboot.
 
 let index=0
 
 #
-# Collect available volume name.
+# Collect available volume names.
 #
 targetVolumes=($(ls /Volumes | sort))
 
@@ -53,6 +54,14 @@ if [ $volumeNumber -gt $index ];
       then
         echo "Error: Copying boot file failed!"
       else
-        echo "Done!"
+        echo ""
+        read -p "Do you want to reboot now (y/n) ?" shouldReboot
+
+        if [ $shouldReboot == "y" ];
+          then
+            sudo reboot now
+          else
+            echo "Done!"
+        fi
     fi 
 fi
