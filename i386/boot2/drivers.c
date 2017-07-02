@@ -384,6 +384,7 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 				// Show essential kexts.
 				if (!isPluginRun && ((strcmp(dirEntryName, "AppleEmulator.kext") == 0) ||
 									 (strcmp(dirEntryName, "FakeSMC.kext") == 0) ||
+ 									 (strcmp(dirEntryName, "AppleSMC.kext") == 0) ||
 									 (strcmp(dirEntryName, "IONVMeFamily.kext") == 0)))
 				{
 					printf("loadKext(%s) found\n", dirEntryName);
@@ -399,7 +400,7 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 				{
 					// Setup plug-ins path.
 					sprintf(gPlatform.KextFileSpec, "%s/%sPlugIns", gPlatform.KextFileName, (isBundleType2) ? "Contents/" : "");
-
+					
 // #if DEBUG_DRIVERS
 					if (strlen(gPlatform.KextFileSpec) >= MAX_KEXT_PATH_LENGTH)
 					{
@@ -808,7 +809,7 @@ static bool isLoadableInSafeBoot(char * OSBundleRequired)
 static long parseXML(char * buffer, ModulePtr * module, TagPtr * personalities)
 {
 	long       length, pos = 0;
-	TagPtr     moduleDict, required;
+	TagPtr     moduleDict, required, identifier;
 	ModulePtr  tmpModule;
   
 	while (1)
@@ -887,8 +888,17 @@ static long parseXML(char * buffer, ModulePtr * module, TagPtr * personalities)
 	// if ((required == 0) || (required->type != kTagTypeString) || !isLoadableInSafeBoot(required->string))
 	// if ( (required != NULL)  && (required->type == kTagTypeString) && !strcmp(required->string, "Safe Boot"))
 	{
-		XMLFreeTag(moduleDict);
-		return -2;
+		identifier = XMLGetProperty(moduleDict, "CFBundleIdentifier");
+		
+		if (strcmp(identifier->string, "com.apple.driver.AppleSMC") == 0)
+		{
+			_DRIVERS_DEBUG_DUMP("Forced load of: AppleSMC.kext\n");
+		}
+		else
+		{
+			XMLFreeTag(moduleDict);
+			return -2;
+		}
 	}
 
 	// tmpModule = (ModulePtr)malloc(sizeof(Module));
