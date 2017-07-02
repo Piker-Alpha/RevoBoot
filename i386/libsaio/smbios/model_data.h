@@ -166,11 +166,16 @@
 		#define SMB_PRODUCT_NAME	"iMac18,2"
 		#define SMB_BOARD_PRODUCT	"Mac-77F17D7DA9285301"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '8', ',', '2' }
-	#else // Defaults to iMac18,3 Retina 5K, 27-inch, 2017
+	#elif (TARGET_MODEL == IMAC_183) // Defaults to iMac18,3 Retina 5K, 27-inch, 2017
 		#define SMB_BIOS_VERSION	"IM183.88Z.0145.B07.1705082121"
 		#define SMB_PRODUCT_NAME	"iMac18,3"
 		#define SMB_BOARD_PRODUCT	"Mac-BE088AF8C5EB4FA2"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '8', ',', '3' }
+	#else // Defaults to iMac19,1 Retina 5K, 27-inch, 2017
+		#define SMB_BIOS_VERSION	"IM191.88Z.0058.B00.1705091711"
+		#define SMB_PRODUCT_NAME	"iMac19,1"
+		#define SMB_BOARD_PRODUCT	"Mac-CF21D135A7D34AA6"
+		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '9', ',', '1' }
 	#endif
 // -------------------------------------------------------------------------------------
 #endif
