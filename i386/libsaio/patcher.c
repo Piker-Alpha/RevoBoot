@@ -216,7 +216,9 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 				{
 					//
 					// Search pattern: 89 C3 48 85 DB 74 71 48 (in HexEdit)
+					// Search pattern: 89 C3 48 85 DB 74 69 48 8b 03 48 89 df ff 50 28 (in HexEdit for High Sierra DP1)
 					//
+					// if ((*(uint32_t *)p == 0x8548c389) && (*(uint16_t *)(p + 4) == 0x74db) && (*(uint8_t *)(p + 7) == 0x48) && (*(uint64_t *)(p + 8) == 0x2850ffdf8948038b))
 					if ((*(uint32_t *)p == 0x8548c389) && (*(uint16_t *)(p + 4) == 0x74db) && (*(uint8_t *)(p + 7) == 0x48))
 					{
 						DEBUG_PATCH_STATUS(symbolName, ((uint64_t)p - startAddress), 1)
@@ -407,8 +409,6 @@ long patchKernel(unsigned long loadAddress, unsigned long cmdBase, long listSize
 
 			if (/* (targetPatches & 128) && */ strcmp(symbolName, "__ZN12KLDBootstrap21readStartupExtensionsEv") == 0)
 			{
-				printf("nl->n_sect: %ld\n", nl->n_sect);
-
 				int64_t offset = (nl->n_value - textSegment->vmaddr);
 				uint64_t startAddress = (uint64_t)(textSegment->vmaddr + offset);
 				uint64_t endAddress = (startAddress + 0x3f);
