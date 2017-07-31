@@ -333,7 +333,7 @@ static const char * getBIOSDate(void)
 
 	const char * retValue = biosDate;
 
-	return "05/01/2017"; // retValue; // Example: "01/24/2012";
+	return retValue; // Example: "01/24/2012";
 }
 
 //==============================================================================
