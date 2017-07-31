@@ -26,6 +26,7 @@
  *			- Yosemite support added (Pike R. Alpha, June 2014).
  *			- El Capitan support added (Pike R. Alpha, June 2015).
  *			- Sierra support added (Pike R. Alpha, August 2016).
+ *			- High Sierra support added (Pike R. Alpha, June 2017).
  */
 
 #ifndef __BOOTSTRUCT_H
@@ -111,8 +112,12 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 	#define kBootArgsFlagInstallUI			(1 << 8)	// 256
 #endif
 
+#ifndef kBootArgsFlagUnknownHS
+	#define kBootArgsFlagUnknownHS			(1 << 9)	// 512 (High Sierra only)
+#endif
+
+/* SIP (System Integrity Protection) booter configuration flags */
 #ifndef CSR_VALID_FLAGS
-	/* Rootless configuration flags */
 	#define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)	// 1
 	#define CSR_ALLOW_UNRESTRICTED_FS		(1 << 1)	// 2
 	#define CSR_ALLOW_TASK_FOR_PID			(1 << 2)	// 4
@@ -122,17 +127,34 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 	#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 	#define CSR_ALLOW_DEVICE_CONFIGURATION	(1 << 7)	// 128
 	#define CSR_ALLOW_ANY_RECOVERY_OS		(1 << 8)	// 256
+	#define CSR_ALLOW_UNKNOWN_HS			(1 << 9)	// 512 (High Sierra only)
 
-	#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
-			CSR_ALLOW_UNRESTRICTED_FS | \
-			CSR_ALLOW_TASK_FOR_PID | \
-			CSR_ALLOW_KERNEL_DEBUGGER | \
-			CSR_ALLOW_APPLE_INTERNAL | \
-			CSR_ALLOW_UNRESTRICTED_DTRACE | \
-			CSR_ALLOW_UNRESTRICTED_NVRAM | \
-			CSR_ALLOW_DEVICE_CONFIGURATION | \
-			CSR_ALLOW_ANY_RECOVERY_OS)
+	#if ((MAKE_TARGET_OS & HIGH_SIERRA) == HIGH_SIERRA)
+		#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
+				CSR_ALLOW_UNRESTRICTED_FS | \
+				CSR_ALLOW_TASK_FOR_PID | \
+				CSR_ALLOW_KERNEL_DEBUGGER | \
+				CSR_ALLOW_APPLE_INTERNAL | \
+				CSR_ALLOW_UNRESTRICTED_DTRACE | \
+				CSR_ALLOW_UNRESTRICTED_NVRAM | \
+				CSR_ALLOW_DEVICE_CONFIGURATION | \
+				CSR_ALLOW_ANY_RECOVERY_OS | \
+				CSR_ALLOW_UNKNOWN_HS)
+	#else
+		#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
+				CSR_ALLOW_UNRESTRICTED_FS | \
+				CSR_ALLOW_TASK_FOR_PID | \
+				CSR_ALLOW_KERNEL_DEBUGGER | \
+				CSR_ALLOW_APPLE_INTERNAL | \
+				CSR_ALLOW_UNRESTRICTED_DTRACE | \
+				CSR_ALLOW_UNRESTRICTED_NVRAM | \
+				CSR_ALLOW_DEVICE_CONFIGURATION | \
+				CSR_ALLOW_ANY_RECOVERY_OS)
+	#endif
 #endif
+
+/* Used in csr_check(csr_config_t mask) */
+#define CSR_ALWAYS_ENFORCED_FLAGS (CSR_ALLOW_DEVICE_CONFIGURATION | CSR_ALLOW_ANY_RECOVERY_OS)
 
 /* CSR capabilities that a booter can give to the system */
 #define CSR_CAPABILITY_UNLIMITED				(1 << 0)

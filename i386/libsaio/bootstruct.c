@@ -127,12 +127,15 @@ void initKernelBootConfig(void)
 
 #endif // #if ((MAKE_TARGET_OS & MOUNTAIN_LION) == MOUNTAIN_LION)
 
-#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN) // El Capitan and Sierra
+#if ((MAKE_TARGET_OS & EL_CAPITAN) == EL_CAPITAN) // El Capitan, Sierra and High Sierra.
+	// csr_init()							checks for: kBootArgsFlagCSRActiveConfig and kBootArgsFlagCSRConfigMode
+	// csr_get_active_config()				checks for: kBootArgsFlagCSRActiveConfig
+	// csr_check(csr_config_t mask)			checks for: kBootArgsFlagCSRConfigMode
 	bootArgs->flags							|= (kBootArgsFlagCSRActiveConfig + kBootArgsFlagCSRConfigMode + kBootArgsFlagCSRBoot + kBootArgsFlagInstallUI);
 
-	bootArgs->csrActiveConfig				= CSR_ALLOW_DEVICE_CONFIGURATION;
+	bootArgs->csrActiveConfig				= CSR_ALWAYS_ENFORCED_FLAGS;
 
-	bootArgs->csrCapabilities				= CSR_VALID_FLAGS; // CSR_CAPABILITY_UNLIMITED;
+	bootArgs->csrCapabilities				= CSR_VALID_CAPABILITIES;
 
 	bootArgs->boot_SMC_plimit				= 0;
 
