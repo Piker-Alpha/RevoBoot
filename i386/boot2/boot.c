@@ -798,10 +798,10 @@ void boot(int biosdev)
 			// Did we switch to graphics mode yet (think verbose mode)?
 			if (gVerboseMode || bootArgs->Video_V1.v_display != GRAPHICS_MODE)
 			{
+				// _BOOT_DEBUG_SLEEP(5);
+
 				// Switch to graphics mode and show the (white) Apple logo on a black/gray background.
 				showBootLogo();
-				
-				_BOOT_DEBUG_SLEEP(5);
 			}
 
 			startMachKernel(kernelEntry, bootArgs); // asm.s
