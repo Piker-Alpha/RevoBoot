@@ -239,6 +239,12 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 		{
 			break;
 		}
+#if DEBUG_BOOT_GRAPHICS
+		else
+		{
+			printf ("VESA Graphics mode: %d\n", mode);
+		}
+#endif
 
 		// Is this required for buggy Video BIOS implementations? If so for which adapter?
 		
@@ -250,8 +256,8 @@ long setVESAGraphicsMode(unsigned short width, unsigned short height, unsigned c
 		// Update bootArgs with the data provided by the selected VESA mode.
 		bootArgs->Video_V1.v_display	= GRAPHICS_MODE;
 		bootArgs->Video_V1.v_width		= minfo.XResolution;		/* Examples: 1920, 1600, 1680 */
-		bootArgs->Video_V1.v_height	= minfo.YResolution;		/* Examples: 1200, 1050 900 */
-		bootArgs->Video_V1.v_depth		= minfo.BitsPerPixel;		/* Examples: 8, 30, 32 */
+		bootArgs->Video_V1.v_height		= minfo.YResolution;		/* Examples: 1200, 1050 900 */
+		bootArgs->Video_V1.v_depth		= minfo.BitsPerPixel;		/* Examples: 8, 30, 32, 64 */
 		bootArgs->Video_V1.v_rowBytes	= minfo.BytesPerScanline;	/* Examples: 7680, 6720, 6400 */
 		bootArgs->Video_V1.v_baseAddr	= VBEMakeUInt32(minfo.PhysBasePtr);
 	}

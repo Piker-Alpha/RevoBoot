@@ -127,7 +127,7 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 	#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 	#define CSR_ALLOW_DEVICE_CONFIGURATION	(1 << 7)	// 128
 	#define CSR_ALLOW_ANY_RECOVERY_OS		(1 << 8)	// 256
-	#define CSR_ALLOW_UNKNOWN_HS			(1 << 9)	// 512 (High Sierra only)
+	#define CSR_ALLOW_UNAPPROVED_KEXTS		(1 << 9)	// 512 (High Sierra only)
 
 	#if ((MAKE_TARGET_OS & HIGH_SIERRA) == HIGH_SIERRA)
 		#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
@@ -139,7 +139,7 @@ typedef struct Boot_Video_V2	Boot_Video_V2;
 				CSR_ALLOW_UNRESTRICTED_NVRAM | \
 				CSR_ALLOW_DEVICE_CONFIGURATION | \
 				CSR_ALLOW_ANY_RECOVERY_OS | \
-				CSR_ALLOW_UNKNOWN_HS)
+				CSR_ALLOW_UNAPPROVED_KEXTS)
 	#else
 		#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
 				CSR_ALLOW_UNRESTRICTED_FS | \

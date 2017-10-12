@@ -340,6 +340,18 @@ void boot(int biosdev)
 
 					gPlatform.BootVolume->flags |= kBVFlagInstallVolume;
 				}
+				else if (getValueForBootKey(kernelFlags, "auth-root-dmg", &val, &length))
+				{
+					_BOOT_DEBUG_DUMP("Target auth-root-dmg=%s\n", val);
+
+					gPlatform.BootVolume->flags |= kBVFlagInstallVolume;
+				}
+				else if (getValueForBootKey(kernelFlags, "rp=file:///", &val, &length))
+				{
+					_BOOT_DEBUG_DUMP("Target rp=%s\n", val);
+
+					gPlatform.BootVolume->flags |= kBVFlagInstallVolume;
+				}
 				else
 				{
 					gPlatform.BootVolume->flags = ~kBVFlagInstallVolume;

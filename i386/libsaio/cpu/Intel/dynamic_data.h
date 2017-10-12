@@ -406,7 +406,7 @@ void initCPUStruct(void)
 //				case CPU_MODEL_SKYLAKE_ULT:
 //				case CPU_MODEL_SKYLAKE_ULX:
 				case CPU_MODEL_SKYLAKE_DT:
-				case CPU_MODEL_SKYLAKE_X:
+				case CPU_MODEL_SKYLAKE_W:
 					CoreBridgeType = SKYLAKE;
 					hiBit = 31;
 					// gPlatform.CPU.ARTFrequency = (3427489466 * 2 / 284) = 24137249,76056338028169 MHz
@@ -588,7 +588,7 @@ void initCPUStruct(void)
 		}
 	}
 	
-#if DEBUG_CPU
+#if (DEBUG_CPU && INTEL_CORE_TECHNOLOGY == 0)
 	gPlatform.CPU.MaxCoef		= maxcoef;
 	gPlatform.CPU.MaxDiv		= maxdiv;
 	gPlatform.CPU.CurrCoef		= currcoef;

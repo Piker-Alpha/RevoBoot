@@ -384,7 +384,7 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 				// Show essential kexts.
 				if (!isPluginRun && ((strcmp(dirEntryName, "AppleEmulator.kext") == 0) ||
 									 (strcmp(dirEntryName, "FakeSMC.kext") == 0) ||
- 									 (strcmp(dirEntryName, "AppleSMC.kext") == 0) ||
+									 (strcmp(dirEntryName, "AppleSMC.kext") == 0) ||
 									 (strcmp(dirEntryName, "IONVMeFamily.kext") == 0)))
 				{
 					printf("loadKext(%s) found\n", dirEntryName);
@@ -400,7 +400,7 @@ static int loadKexts(char * targetFolder, bool isPluginRun)
 				{
 					// Setup plug-ins path.
 					sprintf(gPlatform.KextFileSpec, "%s/%sPlugIns", gPlatform.KextFileName, (isBundleType2) ? "Contents/" : "");
-					
+
 // #if DEBUG_DRIVERS
 					if (strlen(gPlatform.KextFileSpec) >= MAX_KEXT_PATH_LENGTH)
 					{
