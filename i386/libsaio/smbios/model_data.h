@@ -172,7 +172,7 @@
 		#define SMB_BOARD_PRODUCT	"Mac-BE088AF8C5EB4FA2"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '8', ',', '3' }
 	#else // Defaults to iMac19,1 Retina 5K, 27-inch, 2017
-		#define SMB_BIOS_VERSION	"IM191.88Z.0058.B00.1705091711"
+		#define SMB_BIOS_VERSION	"IM191.88Z.0058.B00.1708081711"
 		#define SMB_PRODUCT_NAME	"iMac19,1"
 		#define SMB_BOARD_PRODUCT	"Mac-CF21D135A7D34AA6"
 		#define EFI_MODEL_NAME		{ 'i', 'M', 'a', 'c', '1', '9', ',', '1' }

@@ -372,7 +372,15 @@ static SMBByte getBoardType(void)
 
 static SMBDWord getFirmwareFeatures(void)
 {
-	return 0xE907F537;
+	return 0xE80FE137;
+	/*
+	 * With 0xE907F537 you'll get:
+	 *
+	 * OSInstaller[574]: ROM Features returned: 3909612855
+	 * OSInstaller[574]: ROM does not support APFS
+	 *
+	 * Note: It is bit-19 (0x80000) that adds support for APFS.
+	 */
 }
 
 //==============================================================================
